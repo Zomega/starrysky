@@ -55,6 +55,12 @@ const stars = [];
 for (let i = 0; i < poolSize; i++) {
   const star = document.createElement("div");
   star.className = "shooting_star";
+
+  const icon = document.createElement("span");
+  icon.className = "material-symbols-outlined star-icon";
+  icon.textContent = "star";
+  star.appendChild(icon);
+
   nightSky.appendChild(star);
   stars.push(star);
 

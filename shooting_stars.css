@@ -51,6 +51,9 @@
   border-radius: 999px;
   filter: drop-shadow(0 0 6px var(--accent));
   opacity: 0; /* Invisible while resting */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Keep head of tail at the right */
 }
 
 .shooting_star.is-shooting {
@@ -60,39 +63,29 @@
     shooting 3000ms ease-in-out forwards;
 }
 
-.shooting_star::before,
-.shooting_star::after {
-  content: "";
-  position: absolute;
-  top: calc(50% - 1px);
-  right: 0;
-  height: 2px;
-  background: linear-gradient(
-    -45deg,
-    var(--star-tail-color),
-    var(--accent),
-    var(--star-tail-color)
-  );
-  border-radius: 100%;
+.shooting_star .star-icon {
+  font-size: 1rem;
+  color: var(--accent);
+  font-variation-settings: "FILL" 1;
+  /* Reset positioning to stay in flex flow */
+  position: relative;
+  /* Use translate to center the glyph on the 2px tail line */
+  translate: 0.4rem 0;
+  rotate: 90deg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.shooting_star.is-shooting::before,
-.shooting_star.is-shooting::after {
-  animation: shining 3000ms ease-in-out forwards;
-}
-
-.shooting_star::before {
-  transform: translateX(50%) rotate(calc(90deg - var(--sky-angle)));
-}
-.shooting_star::after {
-  transform: translateX(50%) rotate(calc(0deg - var(--sky-angle)));
+.shooting_star.is-shooting .star-icon {
+  animation: star-glow 3000ms ease-in-out forwards;
 }
 
 @keyframes tail {
   0% {
     width: 0;
   }
-  50% {
+  30% {
     width: 100px;
   }
   100% {
@@ -100,15 +93,18 @@
   }
 }
 
-@keyframes shining {
+@keyframes star-glow {
   0% {
-    width: 0;
+    scale: 0;
+    opacity: 0;
   }
-  50% {
-    width: 30px;
+  30% {
+    scale: 1.2;
+    opacity: 1;
   }
   100% {
-    width: 0;
+    scale: 0;
+    opacity: 0;
   }
 }
 
