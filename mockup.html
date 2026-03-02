@@ -199,6 +199,22 @@
     color: var(--color-text-heading);
   }
 
+  .streak-association {
+    font-size: 0.75rem; /* Smaller for badge look */
+    font-weight: 700;
+    color: var(--color-text-muted);
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 0; 
+    background-color: var(--color-background-alt);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    pointer-events: none;
+  }
+
   /* Shared Streak/Grid Components */
   .streak-grid-container {
     position: relative;
@@ -264,6 +280,8 @@
     align-items: center;
     justify-content: center;
     gap: 1.5rem;
+    position: relative; /* Anchor for absolute children */
+    padding-top: 2.5rem; /* Extra room for the association badge */
     @media (width < 600px) {
       flex-direction: column;
       text-align: center;
@@ -340,6 +358,7 @@
     display: grid;
     grid-template-areas: "center";
     position: relative;
+    z-index: 5; /* Ensure stars are above badge */
   }
 
   .star-icon {
@@ -772,6 +791,7 @@
     for (let i = 0; i < displayCount; i++) {
       display.appendChild(createStar(i));
     }
+    fancyCard.querySelector(".streak-association").textContent = "Wordle";
     fancyCard.querySelector(".streak-title").textContent =
       `${count} day streak!`;
     fragment.appendChild(fancyCard);
@@ -940,6 +960,7 @@
     <div class="card fancy-streak">
       <div class="star-display"></div>
       <div class="victory-text">
+        <h2 class="streak-association"></h2>
         <h2 class="streak-title"></h2>
         <p>Come back tomorrow to continue your streak!</p>
       </div>
