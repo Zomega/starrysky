@@ -1,0 +1,15 @@
+# Ignore Node dependencies anywhere they appear
+**/node_modules/
+
+# Ignore secrets
+**/.env
+**/.env.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS specific files
+.DS_Store
+Thumbs.db

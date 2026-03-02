@@ -1,108 +1,111 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Starrysky | Proof of Consistency</title>
     <style>
-        :root {
-            --bg: #0a0a0c;
-            --text: #f0f0f2;
-            --accent: #3b82f6;
-            --secondary: #64748b;
-        }
+      :root {
+        --bg: #0a0a0c;
+        --text: #f0f0f2;
+        --accent: #3b82f6;
+        --secondary: #64748b;
+      }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-            background: radial-gradient(circle at center, #111827 0%, #000000 100%);
-        }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+        background: radial-gradient(circle at center, #111827 0%, #000000 100%);
+      }
 
-        .container {
-            text-align: center;
-            padding: 2rem;
-            max-width: 500px;
-            z-index: 10;
-        }
+      .container {
+        text-align: center;
+        padding: 2rem;
+        max-width: 500px;
+        z-index: 10;
+      }
 
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 0.5rem;
-            letter-spacing: -1px;
-            background: linear-gradient(to right, #fff, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+      h1 {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+        letter-spacing: -1px;
+        background: linear-gradient(to right, #fff, #3b82f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
 
-        p {
-            color: var(--secondary);
-            font-size: 1.1rem;
-            line-height: 1.6;
-            margin-bottom: 2rem;
-        }
+      p {
+        color: var(--secondary);
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+      }
 
-        .login-box {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px border rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
+      .login-box {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px border rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+      }
 
-        input {
-            width: 80%;
-            padding: 0.8rem;
-            border-radius: 6px;
-            border: 1px solid #333;
-            background: #111;
-            color: white;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
+      input {
+        width: 80%;
+        padding: 0.8rem;
+        border-radius: 6px;
+        border: 1px solid #333;
+        background: #111;
+        color: white;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
 
-        button {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
+      button {
+        background: var(--accent);
+        color: white;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
 
-        .tagline {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--accent);
-            margin-bottom: 1rem;
-            display: block;
-        }
+      .tagline {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--accent);
+        margin-bottom: 1rem;
+        display: block;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <span class="tagline">AT Protocol Verification</span>
-        <h1>Starrysky</h1>
-        <p>Decentralized cryptographic proof of your daily streaks and achievements.</p>
-        
-        <div class="login-box">
-            <input type="text" placeholder="your-handle.bsky.social" disabled>
-            <br>
-            <button disabled>Coming Soon</button>
-        </div>
-        
-        <p style="margin-top: 2rem; font-size: 0.8rem;">
-            Powered by ATProto &bull; Built for the Atmosphere
-        </p>
+      <span class="tagline">AT Protocol Based Streaks</span>
+      <h1>Starrysky</h1>
+      <p>
+        Your daily streaks and achievements, powered by ATProto
+      </p>
+
+      <div class="login-box">
+        <input type="text" placeholder="your-handle.bsky.social" disabled />
+        <br />
+        <button disabled>Coming Soon</button>
+      </div>
+
+      <p style="margin-top: 2rem; font-size: 0.8rem">
+        Built for the Atmosphere
+      </p>
     </div>
-</body>
+  </body>
 </html>
