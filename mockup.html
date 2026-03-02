@@ -138,6 +138,8 @@ h6 {
   --color-victory-panel-background: var(--color-interactive-muted);
   --color-victory-panel-border: hsl(var(--hue-primary), 50%, 80%);
   --color-victory-panel-highlight: hsl(var(--hue-primary), 100%, 50%);
+  --color-card-background: var(--color-background-intense);
+  --color-star-bg: var(--color-background-secondary);
   --color-success: hsl(var(--hue-primary), 80%, 38%);
   --color-danger: hsl(var(--hue-danger), 100%, 50%);
   --color-warning: hsl(var(--hue-warning), 78%, 50%);
@@ -178,6 +180,8 @@ h6 {
     --color-victory-panel-background: var(--color-interactive-secondary);
     --color-victory-panel-border: hsl(var(--hue-primary), 50%, 30%);
     --color-victory-panel-highlight: hsl(var(--hue-primary), 100%, 60%);
+    --color-card-background: var(--slate-800);
+    --color-star-bg: var(--slate-700);
     --color-success: hsl(var(--hue-primary), 80%, 62%);
     --color-danger: hsl(var(--hue-danger), 100%, 50%);
     --color-warning: hsl(var(--hue-warning), 78%, 50%);
@@ -226,6 +230,8 @@ html.force-light-mode {
   --color-victory-panel-background: var(--color-interactive-muted);
   --color-victory-panel-border: hsl(var(--hue-primary), 50%, 80%);
   --color-victory-panel-highlight: hsl(var(--hue-primary), 100%, 50%);
+  --color-card-background: var(--color-background-intense);
+  --color-star-bg: var(--color-background-secondary);
   --color-success: hsl(var(--hue-primary), 80%, 38%);
   --color-danger: hsl(var(--hue-danger), 100%, 50%);
   --color-warning: hsl(var(--hue-warning), 78%, 50%);
@@ -263,26 +269,48 @@ html.force-dark-mode {
   --shadow-opacity: 0.4;
   --color-grid-background: hsl(var(--hue-primary), 50%, 35%);
   --color-cell-background: hsl(var(--hue-primary), 100%, 15%);
-  --color-victory-panel-background: var(--color-interactive-secondary);
-  --color-victory-panel-border: hsl(var(--hue-primary), 50%, 30%);
-  --color-victory-panel-highlight: hsl(var(--hue-primary), 100%, 60%);
-  --color-success: hsl(var(--hue-primary), 80%, 62%);
-  --color-danger: hsl(var(--hue-danger), 100%, 50%);
+      --color-victory-panel-background: var(--color-interactive-secondary);
+      --color-victory-panel-border: hsl(var(--hue-primary), 50%, 30%);
+      --color-victory-panel-highlight: hsl(var(--hue-primary), 100%, 60%);
+      --color-card-background: var(--slate-800);
+      --color-star-bg: var(--slate-700);
+      --color-success: hsl(var(--hue-primary), 80%, 62%);  --color-danger: hsl(var(--hue-danger), 100%, 50%);
   --color-warning: hsl(var(--hue-warning), 78%, 50%);
 }
 
-.inner {
-  align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
+/* THE NEW UNIFIED CARD CLASS */
+.card {
+  background-color: var(--color-card-background);
   border-radius: 0.5rem;
+  padding: 1rem;
+  
+  max-width: 500px;
+  margin: 1.5rem auto;
   display: flex;
-  place-content: center;
-  position: relative;
-  z-index: 2;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  color: var(--color-text);
+  overflow: hidden;
 
   @media (width < 600px) {
     flex-direction: column;
+    text-align: center;
+  }
+}
+
+.card h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  text-align: left;
+  color: var(--color-text-heading);
+}
+
+@media (width < 600px) {
+  .card h2 {
+    text-align: center;
   }
 }
 
@@ -293,89 +321,6 @@ html.force-dark-mode {
   z-index: 1;
 }
 
-h3 {
-  font-size: var(--fluid-sizing-l);
-  font-family: var(--font-sans);
-}
-
-/* https://web.dev/articles/css-border-animations */
-.rainbow {
-  width: 100%;
-  --color-1: var(--color-victory-panel-border);
-  --color-2: var(--color-victory-panel-border);
-  --color-3: var(--color-victory-panel-border);
-  --color-4: var(--color-victory-panel-highlight);
-
-  background-color: var(--color-victory-panel-border);
-  position: relative;
-  z-index: 0;
-  border-radius: 0.5rem;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    width: 150%;
-    aspect-ratio: 1;
-    background-color: var(--color-victory-panel-highlight);
-    background-image: linear-gradient(
-      90deg,
-      var(--color-victory-panel-border),
-      var(--color-victory-panel-highlight) 5%,
-      var(--color-victory-panel-highlight) 25%,
-      var(--color-victory-panel-border) 50%,
-
-      var(--color-victory-panel-border)
-    );
-    top: 50%;
-    left: -25%;
-    z-index: -2;
-    transform-origin: top;
-    animation:
-      rotate 3s linear infinite,
-      opacityChange 1s infinite alternate;
-  }
-
-  &::after {
-    --offset: 3px;
-    content: '';
-    position: absolute;
-    z-index: -1;
-    left: var(--offset);
-    top: var(--offset);
-    width: calc(100% - var(--offset) * 2);
-    height: calc(100% - var(--offset) * 2);
-    background: var(--color-victory-panel-background);
-    border-radius: 5px;
-    z-index: 1;
-  }
-}
-
-@keyframes rotate {
-  100% {
-    transform: rotate(1turn);
-  }
-}
-
-@keyframes opacityChange {
-  100% {
-    opacity: 0.65;
-  }
-}
-
-@media (width < 600px) {
-  .inner {
-    text-align: center;
-  }
-}
-
-@media (width >= 800px) {
-  .victory-panel,
-  .inner {
-    width: fit-content;
-    max-width: 100%;
-  }
-}
 .star-display {
   display: grid;
   grid-template-areas: 'center';
@@ -471,7 +416,7 @@ h3 {
 }
 
 .star-bg {
-  color: var(--color-victory-panel-background);
+  color: var(--color-star-bg);
   font-variation-settings: 'FILL' 0;
 }
 
@@ -625,8 +570,7 @@ function panelMarkup(count) {
   }
   
   return `
-    <div class="victory-panel rainbow">
-      <div class="inner">
+    <div class="card">
         <div
           class="star-display ${variantClasses.join(' ')} count-${count}"
           style="--count: ${count}"
@@ -635,13 +579,12 @@ function panelMarkup(count) {
         </div> 
 
         <div class="victory-text">
-          <h3>${count} day streak!</h3>
+          <h2>${count} day streak!</h2>
 
           <p>
             Come back tomorrow to continue your streak!
           </p>
         </div>
-    </div>
   </div>`
 }
 
