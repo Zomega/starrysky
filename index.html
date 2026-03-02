@@ -10,43 +10,7 @@
   <body>
     <div class="sky-container">
       <div class="night">
-        <script>
-          const nightSky = document.querySelector(".night");
-          const randomStart = Math.random() * -240;
-          nightSky.style.setProperty("--sky-delay", `${randomStart}s`);
-
-          // TODO: Need to base the durations on screen sizing.
-          // TODO: Can probably reduce the star count and decrease the dark time.
-          const starCount = 20;
-
-          function animateStar(star) {
-            star.classList.remove("is-shooting");
-
-            star.style.top = `${Math.random() * 100}%`;
-            star.style.left = `${Math.random() * 100}%`;
-
-            setTimeout(() => {
-              star.classList.add("is-shooting");
-            }, 50);
-
-            // 4. Calculate the "Dark Time" (e.g., between 2s and 15s of waiting)
-            const darkTime = 2000 + Math.random() * 13000;
-            setTimeout(() => {
-              animateStar(star);
-            }, 3000 + darkTime);
-          }
-
-          for (let i = 0; i < starCount; i++) {
-            const star = document.createElement("div");
-            star.className = "shooting_star";
-            nightSky.appendChild(star);
-
-            const initialDelay = Math.random() * 15000;
-            setTimeout(() => {
-              animateStar(star);
-            }, initialDelay);
-          }
-        </script>
+        <script src="shooting_stars.js"></script>
       </div>
     </div>
 
