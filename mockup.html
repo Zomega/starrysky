@@ -537,6 +537,122 @@
     text-align: center;
   }
 
+  /* Multi-streak Card Styles */
+  .multi-streak-grid {
+    display: grid;
+    gap: 1.25rem;
+    margin-top: 1rem;
+  }
+
+  .streak-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+  }
+
+  .streak-name {
+    flex: 0 0 90px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .streak-total {
+    flex: 0 0 45px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-align: right;
+    color: var(--orange-500);
+  }
+
+  .streak-days-container {
+    position: relative;
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0;
+  }
+
+  .streak-pill {
+    position: absolute;
+    height: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(to right, var(--orange-400), var(--orange-500));
+    border-radius: 9999px;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .day-cell {
+    aspect-ratio: 1.618 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    position: relative;
+    z-index: 2;
+  }
+
+  .day-cell.active {
+    color: var(--white);
+  }
+
+  .day-cell.frozen {
+    color: var(--slate-900);
+  }
+
+  .day-cell.prev-month {
+    opacity: 0.5;
+  }
+
+  .streak-pill.frozen {
+    background: var(--sky-400);
+  }
+
+  .multi-streak-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .month-labels {
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-align: center;
+  }
+
+  .month-label.prev {
+    grid-column: span 1;
+  }
+
+  .month-label.current {
+    grid-column: span 7;
+  }
+
+  .day-labels {
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-align: center;
+    opacity: 0.8;
+  }
+
+
   /* Layout and Utils */
   .theme-toggle {
     appearance: none;
@@ -625,6 +741,62 @@
   </div>
 `;
 
+  function renderStreakRow(name, days, activeDays, freezeDays = [], totalStreak = 0) {
+    const dayCells = days.map((day, index) => {
+      const isActive = activeDays.includes(index);
+      const isFrozen = freezeDays.includes(index);
+      const isPrevMonth = day > 20 && index < 2; 
+      
+      let extraClass = '';
+      if (isActive) extraClass = 'active';
+      else if (isFrozen) extraClass = 'frozen';
+
+      return `<div class="day-cell ${extraClass} ${isPrevMonth ? 'prev-month' : ''}">${day}</div>`;
+    }).join('');
+
+    // Logic to find continuous segments of active/frozen days for pills
+    const pills = [];
+    const allMarked = [...activeDays, ...freezeDays].sort((a, b) => a - b);
+    
+    if (allMarked.length > 0) {
+      let start = allMarked[0];
+      let end = allMarked[0];
+      let isCurrentFrozen = freezeDays.includes(start);
+      
+      for (let i = 1; i <= allMarked.length; i++) {
+        const current = allMarked[i];
+        const isNextFrozen = freezeDays.includes(current);
+
+        // If continuous AND the type (active/frozen) hasn't changed
+        if (i < allMarked.length && current === end + 1 && isNextFrozen === isCurrentFrozen) {
+          end = current;
+        } else {
+          // End of a segment
+          const left = (start / 8) * 100;
+          const width = ((end - start + 1) / 8) * 100;
+          pills.push(`<div class="streak-pill ${isCurrentFrozen ? 'frozen' : ''}" style="left: ${left}%; width: ${width}%;"></div>`);
+          
+          if (i < allMarked.length) {
+            start = current;
+            end = current;
+            isCurrentFrozen = isNextFrozen;
+          }
+        }
+      }
+    }
+
+    return `
+      <div class="streak-row">
+        <div class="streak-name">${name}</div>
+        <div class="streak-days-container">
+          ${pills.join('')}
+          ${dayCells}
+        </div>
+        <div class="streak-total">${totalStreak}d</div>
+      </div>
+    `;
+  }
+
   function renderStreakCards(count) {
     const variantClasses = getVariantClasses(count);
     let starElements = [];
@@ -690,6 +862,33 @@
           <div class="freeze-day">24</div>
         </div>
         <span class="active-day">25</span><span class="active-day">26</span><span class="active-day">27</span><span class="active-day">28</span>
+      </div>
+    </div>
+
+    <div class="card" id="multi-streak-card">
+      <h2>Multiple Streaks</h2>
+      
+      <div class="multi-streak-header">
+        <div class="streak-name"></div>
+        <div class="month-labels">
+          <div class="month-label prev">Mar</div>
+          <div class="month-label current">Apr</div>
+        </div>
+        <div class="streak-total"></div>
+      </div>
+      <div class="multi-streak-header">
+        <div class="streak-name"></div>
+        <div class="day-labels">
+          <span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span><span>Mo</span><span>Tu</span>
+        </div>
+        <div class="streak-total"></div>
+      </div>
+
+      <div class="multi-streak-grid">
+        ${renderStreakRow("Wordle", [31, 1, 2, 3, 4, 5, 6, 7], [0, 1, 2, 4, 5, 6, 7], [3], 500)}
+        ${renderStreakRow("Tiled Words", [31, 1, 2, 3, 4, 5, 6, 7], [1, 2, 3, 5, 6, 7], [4], 6)}
+        ${renderStreakRow("Connections", [31, 1, 2, 3, 4, 5, 6, 7], [1, 2, 4, 5, 6, 7], [], 4)}
+        ${renderStreakRow("Crossword", [31, 1, 2, 3, 4, 5, 6, 7], [1, 3, 5, 7], [2, 4, 6], 4)}
       </div>
     </div>
 
