@@ -1,0 +1,49 @@
+{
+  "lexicon": 1,
+  "id": "app.starrysky.streak.inventory",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A ledger record tracking the accumulation and expenditure of streak freezes.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": [
+          "service",
+          "action",
+          "balance",
+          "createdAt"
+        ],
+        "properties": {
+          "service": {
+            "type": "string",
+            "description": "The NSID of the service this inventory applies to."
+          },
+          "prev": {
+            "type": "string",
+            "format": "cid",
+            "description": "Link to the previous inventory record. Null if initializing the ledger."
+          },
+          "action": {
+            "type": "string",
+            "knownValues": ["earn", "spend", "initialize"],
+            "description": "The transaction type occurring in this ledger entry."
+          },
+          "balance": {
+            "type": "integer",
+            "description": "The total number of freezes available *after* this action is applied."
+          },
+          "reasonRef": {
+            "type": "string",
+            "format": "cid",
+            "description": "The CID of the checkin record that either earned this freeze (milestone) or spent it (gap bridging)."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

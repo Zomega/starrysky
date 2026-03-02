@@ -1,0 +1,53 @@
+{
+  "lexicon": 1,
+  "id": "app.starrysky.streak.policy",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "The authority record defining the rules for a Starrysky verified streak.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": [
+          "service",
+          "verificationType",
+          "windowSeconds",
+          "freezeGrantRate"
+        ],
+        "properties": {
+          "service": {
+            "type": "string",
+            "description": "The NSID of the service being tracked (e.g., app.bsky.feed.post)."
+          },
+          "verificationType": {
+            "type": "string",
+            "knownValues": ["self-reported", "witnessed"],
+            "description": "Whether this streak requires a third-party cryptographic signature."
+          },
+          "allowedWitnesses": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "did"
+            },
+            "description": "An array of DIDs authorized to sign attestations for this policy. Required if witnessed."
+          },
+          "windowSeconds": {
+            "type": "integer",
+            "default": 86400,
+            "description": "Maximum time allowed between check-ins to maintain the streak."
+          },
+          "freezeGrantRate": {
+            "type": "integer",
+            "description": "Number of consecutive check-ins required to earn 1 freeze."
+          },
+          "maxFreezes": {
+            "type": "integer",
+            "default": 3,
+            "description": "The maximum number of freezes a user can bank at one time."
+          }
+        }
+      }
+    }
+  }
+}
