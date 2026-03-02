@@ -9,50 +9,37 @@
   </head>
   <body>
     <div class="night">
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
-      <div class="shooting_star"></div>
+      <script>
+        // 1. Initialize the global sky
+        const nightSky = document.querySelector(".night");
+        const randomStart = Math.random() * -240;
+        nightSky.style.setProperty("--sky-delay", `${randomStart}s`);
+
+        // 2. Calculate density based on screen width
+        // Desktop (~1920px) gets ~19 stars. Mobile (~400px) gets ~4 stars.
+        const starCount = Math.max(3, Math.floor(window.innerWidth / 100)); // Minimum of 3 stars
+
+        // 3. Generate stars dynamically
+        for (let i = 0; i < starCount; i++) {
+          // Create the div
+          const star = document.createElement("div");
+          star.className = "shooting_star";
+
+          // Randomize data
+          const top = Math.random() * 100;
+          const left = Math.random() * 100;
+          const delay = Math.random() * 10000;
+
+          // Apply styles
+          star.style.top = `${top}%`;
+          star.style.left = `${left}%`;
+          star.style.setProperty("--star-delay", `${delay}ms`);
+
+          // Inject into the DOM
+          nightSky.appendChild(star);
+        }
+      </script>
     </div>
-    <script>
-      const nightSky = document.querySelector(".night");
-      const randomStart = Math.random() * -240;
-      nightSky.style.animationDelay = `${randomStart}s`;
-      nightSky.style.setProperty("--sky-delay", `${randomStart}s`);
-
-      // 2. Initialize each individual star
-      const stars = document.querySelectorAll(".shooting_star");
-
-      stars.forEach((star) => {
-        // Random position between 0% and 100%
-        const top = Math.random() * 100;
-        const left = Math.random() * 100;
-
-        // Random delay between 0 and 10000 milliseconds
-        const delay = Math.random() * 10000;
-
-        // Apply styles directly to the element
-        star.style.top = `${top}%`;
-        star.style.left = `${left}%`;
-        star.style.setProperty("--star-delay", `${delay}ms`);
-      });
-    </script>
 
     <div class="container">
       <span class="tagline">AT Protocol Based Streaks</span>
