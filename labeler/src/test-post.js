@@ -27,7 +27,7 @@ async function sendTestStreak() {
   });
 
   console.log("✅ Record created!");
-  console.log("URI:", res.uri);
+  console.log("URI:", res.uri || res.data?.uri);
 }
 
 sendTestStreak().catch(console.error);

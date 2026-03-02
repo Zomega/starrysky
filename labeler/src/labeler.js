@@ -17,7 +17,10 @@ const jetstream = new Jetstream({
 });
 
 jetstream.onCreate("app.starrysky.streak", async (event) => {
-  const { did, record } = event.commit;
+  // Use event.did for the user's DID
+  const did = event.did;
+  const record = event.commit.record;
+
   const today = new Date().toISOString().split("T")[0];
   const recordDate = record.createdAt.split("T")[0];
 
@@ -25,20 +28,20 @@ jetstream.onCreate("app.starrysky.streak", async (event) => {
     console.log(`✅ Valid streak: ${did}. Issuing label...`);
 
     try {
-      // Apply label to the specific record URI
-      await agent.com.atproto.label.queryLabels({
-        // TODO: Implement. There's a lot to do here.
-        // In a real production bot, you'd use a dedicated
-        // labeling endpoint, but for small volume,
-        // we can push a 'Self-Label' or use the moderation API.
-      });
+      const label = {
+        src: agent.did,
+        uri: event.commit.uri, // This is the AT-URI of the post
+        cid: event.commit.cid,
+        val: "verifiedstreak",
+        cts: new Date().toISOString(),
+      };
 
-      // For now, let's log the success!
-      console.log(
-        `Label 'verifiedstreak' would be applied to ${event.commit.uri}`,
-      );
+      console.log("🚀 Label ready to emit:", JSON.stringify(label, null, 2));
+
+      // We will implement the actual WebSocket emit once
+      // the Lexicon and "catching" logic are 100% solid.
     } catch (err) {
-      console.error("Failed to label:", err.message);
+      console.error("❌ Failed to process label:", err.message);
     }
   }
 });

@@ -1,0 +1,35 @@
+{
+  "lexicon": 1,
+  "id": "app.starrysky.streak",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A daily proof of consistency for the Starrysky protocol.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["subject", "sequence", "createdAt"],
+        "properties": {
+          "subject": {
+            "type": "string",
+            "description": "The name of the habit (e.g., 'Daily Coding', 'Morning Run').",
+            "maxLength": 100
+          },
+          "sequence": {
+            "type": "integer",
+            "description": "The current day number of this specific streak.",
+            "minimum": 1
+          },
+          "prevHash": {
+            "type": "string",
+            "description": "The CID (content identifier) of the previous day's streak record."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}
