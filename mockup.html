@@ -1,555 +1,396 @@
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap"
+  rel="stylesheet"
+/>
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+/>
 <style>
   :root {
     --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --font-sans: "Source Sans 3", sans-serif;
 
-    --slate-200: #e2e8f0;
-    --slate-400: #94a3b8;
-    --slate-500: #64748b;
     --slate-700: #334155;
     --slate-800: #1e293b;
-    --slate-900: #0f172a;
-    --yellow-400: #facc15;
-    --orange-400: #fb923c;
     --orange-500: #f97316;
-    --red-500: #ef4444;
-    --sky-200: #bae6fd;
-    --sky-400: #38bdf8;
-    --sky-500: #0ea5e9;
     --white: #ffffff;
-}
 
-main {
-  display: grid;
-  place-content: center;
-  padding: 2rem;
-  min-height: 100svh;
-  box-sizing: border-box;
-  gap: 2em;
-}
+    --color-white: #fff;
+    --hue-blue: 200;
+    --hue-primary: var(--hue-blue);
+    --color-text: hsl(var(--hue-primary), 100%, 10%);
+    --color-text-heading: hsl(var(--hue-primary), 100%, 20%);
+    --color-background-secondary: hsl(var(--hue-primary), 20%, 90%);
+    --color-background-intense: hsl(var(--hue-primary), 0%, 100%);
+    --color-background-alt: hsl(var(--hue-primary), 30%, 97%);
+    --color-interactive: hsl(var(--hue-primary), 100%, 40%);
+    --color-success: hsl(var(--hue-primary), 80%, 38%);
 
-label {
-  font-size: 1.25rem;
-  display: inline-flex;
-  margin-inline: auto;
-  gap: 0.5em;
-  align-items: center;
-  
-  span {
-    font-weight: 600;
+    --color-card-background: var(--color-background-intense);
+    --color-star-bg: var(--color-background-secondary);
   }
-  
-  input {
-    font: inherit;
-    padding: 0.25em;
-    width: 5rem;
-    border-radius: 0.25em;
-    background: var(--color-white);
-    border: 2px solid hsl(210, 50%, 80%);
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --hue-primary: 205;
+      --color-text: hsl(var(--hue-primary), 30%, 80%);
+      --color-text-heading: hsl(var(--hue-primary), 50%, 90%);
+      --color-background-secondary: hsl(var(--hue-primary), 20%, 40%);
+      --color-background-alt: hsl(var(--hue-primary), 30%, 10%);
+      --color-interactive: hsl(var(--hue-primary), 100%, 60%);
+      --color-success: hsl(var(--hue-primary), 80%, 62%);
+
+      --color-card-background: var(--slate-800);
+      --color-star-bg: var(--slate-700);
+    }
   }
-}
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  font-weight: normal;
-}
+  html.force-light-mode {
+    --hue-primary: 200;
+    --color-text: hsl(var(--hue-primary), 100%, 10%);
+    --color-text-heading: hsl(var(--hue-primary), 100%, 20%);
+    --color-background-secondary: hsl(var(--hue-primary), 20%, 90%);
+    --color-background-alt: hsl(var(--hue-primary), 30%, 97%);
+    --color-interactive: hsl(var(--hue-primary), 100%, 40%);
+    --color-success: hsl(var(--hue-primary), 80%, 38%);
 
-:root {
-  --font-sans: 'Source Sans 3', sans-serif;
-  --font-serif: 'Source Serif 4', serif;
+    --color-card-background: var(--color-background-intense);
+    --color-star-bg: var(--color-background-secondary);
+  }
 
-  --fluid-sizing-xxl: clamp(2rem, calc(1rem + 5vw), 5rem);
-  --fluid-sizing-xl: clamp(1.75rem, calc(1rem + 2vw), 3rem);
-  --fluid-sizing-l: clamp(1.5rem, calc(1rem + 1vw), 2rem);
-  --fluid-sizing-m: clamp(1.125rem, calc(0.75rem + 0.5vw), 1.5rem);
+  html.force-dark-mode {
+    --hue-primary: 205;
+    --color-text: hsl(var(--hue-primary), 30%, 80%);
+    --color-text-heading: hsl(var(--hue-primary), 50%, 90%);
+    --color-background-secondary: hsl(var(--hue-primary), 20%, 40%);
+    --color-background-alt: hsl(var(--hue-primary), 30%, 10%);
+    --color-interactive: hsl(var(--hue-primary), 100%, 60%);
+    --color-success: hsl(var(--hue-primary), 80%, 62%);
 
-  font-optical-sizing: auto;
-  font-synthesis: font-weight;
-}
+    --color-card-background: var(--slate-800);
+    --color-star-bg: var(--slate-700);
+  }
 
-html {
-  line-height: 1.4;
-  font-family: var(--font-sans);
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: var(--color-text);
-  background: var(--color-background-alt);
-}
+  html {
+    line-height: 1.4;
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: var(--color-text);
+    background: var(--color-background-alt);
+  }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  line-height: 1.2;
-  font-family: var(--font-serif);
-  font-weight: 900;
-  margin: 0;
-  color: var(--color-text-heading);
-} 
+  main {
+    display: grid;
+    place-content: center;
+    padding: 2rem;
+    min-height: 100svh;
+    box-sizing: border-box;
+    gap: 2em;
+  }
 
-:root {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    font-weight: normal;
+  }
+
+  h1,
+  h2 {
+    line-height: 1.2;
+    font-weight: 900;
+    margin: 0;
+    color: var(--color-text-heading);
+  }
+
   .moon {
     display: block;
   }
   .sun {
     display: none;
   }
-   --color-white: #fff;
-  --hue-blue: 200;
-  --hue-greenish: 100;
-  --hue-red: 0;
-  --hue-orange: 30;
-  --hue-primary: var(--hue-blue);
-  --hue-alt: var(--hue-greenish);
-  --hue-danger: var(--hue-red);
-  --hue-warning: var(--hue-orange);
-  --color-text: hsl(var(--hue-primary), 100%, 10%);
-  --color-text-heading: hsl(var(--hue-primary), 100%, 20%);
-  --color-text-muted: hsl(var(--hue-alt), 10%, 40%);
-  --color-background: hsl(var(--hue-primary), 30%, 99%);
-  --color-background-secondary: hsl(var(--hue-primary), 20%, 90%);
-  --color-background-tertiary: hsl(var(--hue-primary), 20%, 98%);
-  --color-background-intense: hsl(var(--hue-primary), 0%, 100%);
-  --color-background-alt: hsl(var(--hue-alt), 30%, 97%);
-  --color-interactive: hsl(var(--hue-primary), 100%, 40%);
-  --color-interactive-secondary: hsl(var(--hue-primary), 50%, 70%);
-  --color-interactive-muted: hsl(var(--hue-primary), 50%, 95%);
-  --color-button-outer-background: var(--color-interactive-secondary);
-  --color-button-inner-background: var(--color-background);
-  --color-button-text: var(--color-interactive);
-  --color-tile-text: var(--color-text);
-  --color-tile-success: var(--color-success);
-  --color-tile-background: var(--color-background);
-  --color-tile-border: hsl(var(--hue-primary), 20%, 50%);
-  --color-tile-cell-divider: var(--color-background-secondary);
-  --color-tile-shadow: var(--color-text);
-  --shadow-opacity: 0.2;
-  --color-grid-background: hsl(var(--hue-primary), 40%, 80%);
-  --color-cell-background: var(--color-interactive-muted);
-  --color-victory-panel-background: var(--color-interactive-muted);
-  --color-victory-panel-border: hsl(var(--hue-primary), 50%, 80%);
-  --color-victory-panel-highlight: hsl(var(--hue-primary), 100%, 50%);
-  --color-card-background: var(--color-background-intense);
-  --color-star-bg: var(--color-background-secondary);
-  --color-success: hsl(var(--hue-primary), 80%, 38%);
-  --color-danger: hsl(var(--hue-danger), 100%, 50%);
-  --color-warning: hsl(var(--hue-warning), 78%, 50%);
-}
-@media (prefers-color-scheme: dark) {
-  :root {
+
+  @media (prefers-color-scheme: dark) {
     .moon {
       display: none;
     }
     .sun {
       display: block;
     }
-    --hue-primary: 205;
-    --hue-alt: 260;
-    --color-text: hsl(var(--hue-primary), 30%, 80%);
-    --color-text-heading: hsl(var(--hue-primary), 50%, 90%);
-    --color-text-muted: hsl(var(--hue-alt), 10%, 60%);
-    --color-background: hsl(var(--hue-primary), 30%, 15%);
-    --color-background-secondary: hsl(var(--hue-primary), 20%, 40%);
-    --color-background-tertiary: hsl(var(--hue-primary), 40%, 20%);
-    --color-background-intense: hsl(var(--hue-primary), 0%, 0%);
-    --color-background-alt: hsl(var(--hue-primary), 30%, 10%);
-    --color-interactive: hsl(var(--hue-primary), 100%, 60%);
-    --color-interactive-secondary: hsl(var(--hue-primary), 50%, 30%);
-    --color-interactive-muted: hsl(var(--hue-primary), 40%, 10%);
-    --color-button-outer-background: hsl(var(--hue-primary), 50%, 40%);
-    --color-button-inner-background: hsl(var(--hue-primary), 10%, 90%);
-    --color-button-text: hsl(var(--hue-primary), 100%, 30%);
-    --color-tile-text: var(--color-background);
-    --color-tile-success: hsl(var(--hue-primary), 100%, 40%);
-    --color-tile-background: hsl(var(--hue-alt), 20%, 90%);
-    --color-tile-border: hsl(var(--hue-primary), 30%, 40%);
-    --color-tile-cell-divider: hsl(var(--hue-primary), 5%, 70%);
-    --color-tile-shadow: #000;
-    --shadow-opacity: 0.4;
-    --color-grid-background: hsl(var(--hue-primary), 50%, 35%);
-    --color-cell-background: hsl(var(--hue-primary), 100%, 15%);
-    --color-victory-panel-background: var(--color-interactive-secondary);
-    --color-victory-panel-border: hsl(var(--hue-primary), 50%, 30%);
-    --color-victory-panel-highlight: hsl(var(--hue-primary), 100%, 60%);
-    --color-card-background: var(--slate-800);
-    --color-star-bg: var(--slate-700);
-    --color-success: hsl(var(--hue-primary), 80%, 62%);
-    --color-danger: hsl(var(--hue-danger), 100%, 50%);
-    --color-warning: hsl(var(--hue-warning), 78%, 50%);
   }
-}
 
-html.force-light-mode {
-  .moon {
+  html.force-light-mode .moon {
     display: block;
   }
-  .sun {
+  html.force-light-mode .sun {
     display: none;
   }
-  
-  --hue-blue: 200;
-  --hue-greenish: 100;
-  --hue-red: 0;
-  --hue-orange: 30;
-  --hue-primary: var(--hue-blue);
-  --hue-alt: var(--hue-greenish);
-  --hue-danger: var(--hue-red);
-  --hue-warning: var(--hue-orange);
-  --color-text: hsl(var(--hue-primary), 100%, 10%);
-  --color-text-heading: hsl(var(--hue-primary), 100%, 20%);
-  --color-text-muted: hsl(var(--hue-alt), 10%, 40%);
-  --color-background: hsl(var(--hue-primary), 30%, 99%);
-  --color-background-secondary: hsl(var(--hue-primary), 20%, 90%);
-  --color-background-tertiary: hsl(var(--hue-primary), 20%, 98%);
-  --color-background-intense: hsl(var(--hue-primary), 0%, 100%);
-  --color-background-alt: hsl(var(--hue-alt), 30%, 97%);
-  --color-interactive: hsl(var(--hue-primary), 100%, 40%);
-  --color-interactive-secondary: hsl(var(--hue-primary), 50%, 70%);
-  --color-interactive-muted: hsl(var(--hue-primary), 50%, 95%);
-  --color-button-outer-background: var(--color-interactive-secondary);
-  --color-button-inner-background: var(--color-background);
-  --color-button-text: var(--color-interactive);
-  --color-tile-text: var(--color-text);
-  --color-tile-success: var(--color-success);
-  --color-tile-background: var(--color-background);
-  --color-tile-border: hsl(var(--hue-primary), 20%, 50%);
-  --color-tile-cell-divider: var(--color-background-secondary);
-  --color-tile-shadow: var(--color-text);
-  --shadow-opacity: 0.2;
-  --color-grid-background: hsl(var(--hue-primary), 40%, 80%);
-  --color-cell-background: var(--color-interactive-muted);
-  --color-victory-panel-background: var(--color-interactive-muted);
-  --color-victory-panel-border: hsl(var(--hue-primary), 50%, 80%);
-  --color-victory-panel-highlight: hsl(var(--hue-primary), 100%, 50%);
-  --color-card-background: var(--color-background-intense);
-  --color-star-bg: var(--color-background-secondary);
-  --color-success: hsl(var(--hue-primary), 80%, 38%);
-  --color-danger: hsl(var(--hue-danger), 100%, 50%);
-  --color-warning: hsl(var(--hue-warning), 78%, 50%);
-}
-
-html.force-dark-mode {
-  .moon {
+  html.force-dark-mode .moon {
     display: none;
   }
-  .sun {
+  html.force-dark-mode .sun {
     display: block;
   }
-  --hue-primary: 205;
-  --hue-alt: 260;
-  --color-text: hsl(var(--hue-primary), 30%, 80%);
-  --color-text-heading: hsl(var(--hue-primary), 50%, 90%);
-  --color-text-muted: hsl(var(--hue-alt), 10%, 60%);
-  --color-background: hsl(var(--hue-primary), 30%, 15%);
-  --color-background-secondary: hsl(var(--hue-primary), 20%, 40%);
-  --color-background-tertiary: hsl(var(--hue-primary), 40%, 20%);
-  --color-background-intense: hsl(var(--hue-primary), 0%, 0%);
-  --color-background-alt: hsl(var(--hue-primary), 30%, 10%);
-  --color-interactive: hsl(var(--hue-primary), 100%, 60%);
-  --color-interactive-secondary: hsl(var(--hue-primary), 50%, 30%);
-  --color-interactive-muted: hsl(var(--hue-primary), 40%, 10%);
-  --color-button-outer-background: hsl(var(--hue-primary), 50%, 40%);
-  --color-button-inner-background: hsl(var(--hue-primary), 10%, 90%);
-  --color-button-text: hsl(var(--hue-primary), 100%, 30%);
-  --color-tile-text: var(--color-background);
-  --color-tile-success: hsl(var(--hue-primary), 100%, 40%);
-  --color-tile-background: hsl(var(--hue-alt), 20%, 90%);
-  --color-tile-border: hsl(var(--hue-primary), 30%, 40%);
-  --color-tile-cell-divider: hsl(var(--hue-primary), 5%, 70%);
-  --color-tile-shadow: #000;
-  --shadow-opacity: 0.4;
-  --color-grid-background: hsl(var(--hue-primary), 50%, 35%);
-  --color-cell-background: hsl(var(--hue-primary), 100%, 15%);
-      --color-victory-panel-background: var(--color-interactive-secondary);
-      --color-victory-panel-border: hsl(var(--hue-primary), 50%, 30%);
-      --color-victory-panel-highlight: hsl(var(--hue-primary), 100%, 60%);
-      --color-card-background: var(--slate-800);
-      --color-star-bg: var(--slate-700);
-      --color-success: hsl(var(--hue-primary), 80%, 62%);  --color-danger: hsl(var(--hue-danger), 100%, 50%);
-  --color-warning: hsl(var(--hue-warning), 78%, 50%);
-}
 
-/* THE NEW UNIFIED CARD CLASS */
-.card {
-  background-color: var(--color-card-background);
-  border-radius: 0.5rem;
-  padding: 1rem;
-  
-  max-width: 500px;
-  margin: 1.5rem auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
-  color: var(--color-text);
-  overflow: hidden;
+  .card {
+    background-color: var(--color-card-background);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    max-width: 500px;
+    margin: 1.5rem auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    color: var(--color-text);
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 
-  @media (width < 600px) {
-    flex-direction: column;
-    text-align: center;
+    @media (width < 600px) {
+      flex-direction: column;
+      text-align: center;
+    }
   }
-}
 
-.card h2 {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  text-align: left;
-  color: var(--color-text-heading);
-}
-
-@media (width < 600px) {
   .card h2 {
-    text-align: center;
-  }
-}
-
-.victory-text {
-  display: grid;
-  gap: 0.5rem;
-  position: relative;
-  z-index: 1;
-}
-
-.star-display {
-  display: grid;
-  grid-template-areas: 'center';
-  place-content: center;
-  width: 5rem;
-  height: 5rem;
-
-  --star-size: 2.2rem;
-}
-
-.single {
-  --star-size: 3.3rem;
-}
-
-.double {
-  --star-size: 2.75rem;
-  --distance: calc(var(--star-size) * 1 / 2);
-
-  :first-child {
-    --angle: 180deg;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-heading);
   }
 
-  :last-child {
-    --angle: 0deg;
+  .victory-text {
+    display: grid;
+    gap: 0.5rem;
   }
-}
 
-.confetti-blaster,
-.circle {
-  --distance: calc(var(--star-size) * 3 / 4);
+  .star-display {
+    display: grid;
+    grid-template-areas: "center";
+    place-content: center;
+    width: 5rem;
+    height: 5rem;
+    --star-size: 2.2rem;
+  }
+
+  .single {
+    --star-size: 3.3rem;
+  }
+  .double {
+    --star-size: 2.75rem;
+    --distance: calc(var(--star-size) * 1 / 2);
+    :first-child {
+      --angle: 180deg;
+    }
+    :last-child {
+      --angle: 0deg;
+    }
+  }
+
+  .confetti-blaster,
+  .circle {
+    --distance: calc(var(--star-size) * 3 / 4);
+    .star {
+      --angle: 90deg + calc(var(--index) * 360deg / var(--count));
+    }
+  }
+
+  .count-5 {
+    --distance: calc(var(--star-size) * 4 / 5);
+  }
+  .over-five {
+    --star-size: 1.65rem;
+    --distance: calc(var(--star-size) * 1.25);
+  }
+
+  .confetti-blaster {
+    --distance: 10em;
+    .star:not(:first-child) {
+      --duration: 3s;
+      animation:
+        star-move var(--duration) ease-out both,
+        fade-in-out 1.5s ease-out both;
+      animation-delay: calc(var(--delay-multiplier) * 3s);
+      --count: 10;
+      --angle: 90deg + calc(var(--index) * 355deg / var(--count));
+    }
+    .star:first-child {
+      --distance: 0;
+      --star-size: 3.3rem;
+      z-index: 1;
+    }
+  }
 
   .star {
-    --angle: 90deg + calc(var(--index) * 360deg / var(--count));
-  }
-}
-
-.count-5 {
-  --distance: calc(var(--star-size) * 4 / 5);
-}
-
-.over-five {
-  --star-size: 1.65rem;
-  --distance: calc(var(--star-size) * 1.25);
-}
-
-.confetti-blaster {
-  --distance: 10em;
-
-  .star:not(:first-child) {
-    --duration: 3s;
+    --star-color: var(--color-success);
+    --delay: calc(var(--delay-multiplier) * 10s);
+    --duration: 0.5s;
+    grid-area: center;
+    transform-origin: center;
     animation:
-      star-move var(--duration) ease-out both,
-      fade-in-out 1.5s ease-out both;
-    animation-delay: calc(var(--delay-multiplier) * 3s);
-    --count: 10;
-    
-    --angle: 90deg + calc(var(--index) * 355deg / var(--count));
+      star-move var(--duration) var(--ease-out-back) both,
+      fade-in var(--duration) ease-out both;
+    animation-delay: var(--delay);
+    display: grid;
+    grid-template-areas: "center";
+    position: relative;
   }
 
-  .star:first-child {
-    --distance: 0;
-    --star-size: 3.3rem;
-    z-index: 1;
-  }
-}
-
-.star {
-  --star-color: var(--color-success);
-  --delay: calc(var(--delay-multiplier) * 10s);
-  --duration: 0.5s;
-
-  grid-area: center;
-  transform-origin: center;
-  animation:
-    star-move var(--duration) var(--ease-out-back) both,
-    fade-in var(--duration) ease-out both;
-  /* TODO... use easing... */
-  animation-delay: var(--delay);
-  display: grid;
-  grid-template-areas: 'center';
-  position: relative;
-}
-
-.material-symbols-outlined {
-  display: block;
-  line-height: 1;
-}
-
-.star-icon {
-  font-size: var(--star-size);
-  grid-area: center;
-  place-self: center;
-}
-
-.star-bg {
-  color: var(--color-star-bg);
-  font-variation-settings: 'FILL' 0;
-}
-
-.star-front {
-  color: var(--star-color);
-  font-variation-settings: 'FILL' 1;
-  scale: 0.9;
-}
-
-@keyframes star-move {
-  from {
-    rotate: -180deg;
-    scale: 0.5;
+  .material-symbols-outlined {
+    display: block;
+    line-height: 1;
   }
 
-  to {
-    translate: calc(cos(var(--angle)) * var(--distance))
-      calc(sin(var(--angle)) * var(--distance));
+  .star-icon {
+    font-size: var(--star-size);
+    grid-area: center;
+    place-self: center;
   }
-}
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
+  .star-bg {
+    color: var(--color-star-bg);
+    font-variation-settings: "FILL" 0;
   }
-}
 
-.star-sparkles {
-  --size: 90%;
-
-  display: block;
-  line-height: 1;
-  position: absolute;
-  font-size: var(--size);
-  color: var(--color-white);
-  top: 25%;
-  right: 25%;
-  animation: star-sparkles 3.5s ease-out both infinite;
-  animation-delay: calc(var(--delay) + var(--duration) + 0.2s);
-}
-
-@keyframes star-sparkles {
-  0% {
-    opacity: 0;
-    scale: 0;
+  .star-front {
+    color: var(--star-color);
+    font-variation-settings: "FILL" 1;
+    scale: 0.9;
   }
-  15% {
-    opacity: 1;
-    scale: 1;
-  }
-  30% {
-    opacity: 0;
-    scale: 0;
-  }
-  100% {
-    opacity: 0;
-    scale: 0;
-  }
-}
 
-@keyframes fade-in-out {
-  0% {
-    opacity: 0;
+  @keyframes star-move {
+    from {
+      rotate: -180deg;
+      scale: 0.5;
+    }
+    to {
+      translate: calc(cos(var(--angle)) * var(--distance))
+        calc(sin(var(--angle)) * var(--distance));
+    }
   }
-  50% {
-    opacity: 1;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
   }
-  100% {
-    opacity: 0;
+
+  .star-sparkles {
+    --size: 90%;
+    display: block;
+    line-height: 1;
+    position: absolute;
+    font-size: var(--size);
+    color: var(--color-white);
+    top: 25%;
+    right: 25%;
+    animation: star-sparkles 3.5s ease-out both infinite;
+    animation-delay: calc(var(--delay) + var(--duration) + 0.2s);
   }
-}
 
-.theme-toggle {
-  appearance: none;
-  background: none;
-  border: none;
-  padding: 1em;
-  color: var(--color-text);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-  font-weight: 600;
-}
+  @keyframes star-sparkles {
+    0%,
+    30%,
+    100% {
+      opacity: 0;
+      scale: 0;
+    }
+    15% {
+      opacity: 1;
+      scale: 1;
+    }
+  }
 
-.sr-only {
-  border: 0; 
-  clip: rect(0 0 0 0); 
-  clip-path: polygon(0px 0px, 0px 0px, 0px 0px);
-  -webkit-clip-path: polygon(0px 0px, 0px 0px, 0px 0px);
-  height: 1px; 
-  margin: -1px;
-  overflow: hidden;
-  padding: 0;
-  position: absolute;
-  width: 1px;
-  white-space: nowrap;
-}
+  @keyframes fade-in-out {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
 
-header {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 0.5em;
-}
+  .theme-toggle {
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 1em;
+    color: var(--color-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-weight: 600;
+  }
 
-hr {
-  border: none;
-  height: 1px;
-  background-color: var(--color-background-secondary);
-}
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
 
-p {
-  text-align: center;
-  
-  a {
+  header {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0.5em;
+  }
+  hr {
+    border: none;
+    height: 1px;
+    background-color: var(--color-background-secondary);
+    margin: 1em 0;
+  }
+  label {
+    font-size: 1.25rem;
+    display: inline-flex;
+    margin-inline: auto;
+    gap: 0.5em;
+    align-items: center;
+  }
+  label span {
+    font-weight: 600;
+  }
+  label input {
+    font: inherit;
+    padding: 0.25em;
+    width: 5rem;
+    border-radius: 0.25em;
+    background: var(--color-white);
+    border: 2px solid var(--color-background-secondary);
+  }
+
+  p {
+    text-align: center;
+  }
+  p a {
     color: var(--color-interactive);
+    text-decoration: none;
+    font-weight: 600;
   }
-}
 
-b {
-  font-weight: 600;
-  font-style: italic;
-}
-
-.game-info {
-  display: grid;
-  gap: 0.75em;
-  font-size: 1.25rem;
-}
+  .game-info {
+    display: grid;
+    gap: 0.75em;
+    font-size: 1.25rem;
+  }
 </style>
+
 <script>
-const starMarkup = (index) => `
+  const starMarkup = (index) => `
   <div
     class="star"
     style="--index: ${index}; --delay-multiplier: ${0.01 * index}"
@@ -558,110 +399,100 @@ const starMarkup = (index) => `
     <span class="material-symbols-outlined star-icon star-front">star</span>
     <span class="star-sparkles">&#x2726;</span>
   </div>
-`
+`;
 
-function panelMarkup(count) {
-  const variantClasses = getVariantClasses(count);
-  
-  let starElements = [];
-  
-  for(let i = 0; i < count; i++) {
-    starElements.push(starMarkup(i));
-  }
-  
-  return `
+  function panelMarkup(count) {
+    const variantClasses = getVariantClasses(count);
+    let starElements = [];
+    for (let i = 0; i < count; i++) {
+      starElements.push(starMarkup(i));
+    }
+
+    return `
     <div class="card">
         <div
-          class="star-display ${variantClasses.join(' ')} count-${count}"
+          class="star-display ${variantClasses.join(" ")} count-${count}"
           style="--count: ${count}"
         >
-          ${starElements.join(' ')}
+          ${starElements.join(" ")}
         </div> 
 
         <div class="victory-text">
           <h2>${count} day streak!</h2>
-
-          <p>
-            Come back tomorrow to continue your streak!
-          </p>
+          <p>Come back tomorrow to continue your streak!</p>
         </div>
-  </div>`
-}
+  </div>`;
+  }
 
-function getVariantClasses(count) {
-  const classes = [];
-  
-  if (count === 1) {
-    classes.push('single');
+  function getVariantClasses(count) {
+    if (count === 1) return ["single"];
+    if (count === 2) return ["double"];
+    const classes = [];
+    if (count > 5) classes.push("over-five");
+    if (count <= 10) classes.push("circle");
+    else classes.push("confetti-blaster");
     return classes;
   }
 
-  if (count === 2) {
-    classes.push('double');
-    return classes;
-  }
+  window.addEventListener("DOMContentLoaded", (event) => {
+    const container = document.querySelector(".container");
+    container.innerHTML = panelMarkup(1);
 
-  if (count > 5) {
-    classes.push('over-five');
-  }
+    document.querySelector(".theme-toggle").addEventListener("click", () => {
+      const isLight =
+        document.documentElement.classList.contains("force-light-mode");
+      const isDark =
+        document.documentElement.classList.contains("force-dark-mode");
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      ).matches;
 
-  if (count <= 10) {
-    classes.push('circle');
-    return classes;
-  }
+      document.documentElement.classList.remove(
+        "force-light-mode",
+        "force-dark-mode",
+      );
 
-  classes.push('confetti-blaster');
+      if (isLight) document.documentElement.classList.add("force-dark-mode");
+      else if (isDark)
+        document.documentElement.classList.add("force-light-mode");
+      else if (prefersDark)
+        document.documentElement.classList.add("force-light-mode");
+      else document.documentElement.classList.add("force-dark-mode");
+    });
 
-  return classes;
-}
-
-window.addEventListener('DOMContentLoaded', (event) => {
-  const container = document.querySelector('.container');
-  container.innerHTML = panelMarkup(1);
-
-  document.querySelector('.theme-toggle').addEventListener('click', () => {
-    if(document.documentElement.classList.contains('force-light-mode')) {
-      document.documentElement.classList.remove('force-light-mode');
-      document.documentElement.classList.add('force-dark-mode');
-      return;
-    }
-    if(document.documentElement.classList.contains('force-dark-mode')) {
-      document.documentElement.classList.remove('force-dark-mode');
-      document.documentElement.classList.add('force-light-mode');
-      return;
-    }
-    if(window.matchMedia('(prefers-color-scheme: dark)')) {
-      document.documentElement.classList.add('force-light-mode');
-      return;
-    }
-    document.documentElement.classList.add('force-dark-mode');
-  })
-
-  document.querySelector('input').addEventListener('input', (e) => {
-    container.innerHTML = panelMarkup(parseInt(e.target.value));
-  })
-});
+    document.querySelector("input").addEventListener("input", (e) => {
+      container.innerHTML = panelMarkup(parseInt(e.target.value) || 0);
+    });
+  });
 </script>
+
 <main>
   <header>
     <button class="theme-toggle">
-      <span class="material-symbols-outlined sun" aria-hidden="true">light_mode</span>
-      <span class="material-symbols-outlined moon" aria-hidden="true">dark_mode</span>
+      <span class="material-symbols-outlined sun" aria-hidden="true"
+        >light_mode</span
+      >
+      <span class="material-symbols-outlined moon" aria-hidden="true"
+        >dark_mode</span
+      >
       <span class="sr-only">Toggle Color Theme</span>
     </button>
   </header>
-  
-  <div class="container">
-  </div>
-  
+
+  <div class="container"></div>
+
   <label>
     <span>Streak count:</span>
-    <input type="number" value="1" max="1000" min="0"/>
+    <input type="number" value="1" max="1000" min="0" />
   </label>
-  
+
   <hr />
-  
+
   <div class="game-info">
-    <p><a href="https://codepen.io/phebert/pen/LEpMQKm" target="_BLANK">Many thanks to Paul Herbert for the original code this is based on.</a></p>
+    <p>
+      <a href="https://codepen.io/phebert/pen/LEpMQKm" target="_BLANK"
+        >Many thanks to Paul Herbert for the original code this is based on.</a
+      >
+    </p>
   </div>
 </main>
