@@ -1,15 +1,64 @@
 :root {
-  /* Default: Dark Mode */
+  /* Animation Easings */
+  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --font-sans:
+    "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+
+  /* Corner Radii */
+  --radius-s: 4px;
+  --radius-m: 6px;
+  --radius-l: 12px;
+  --radius-xl: 0.5rem; /* For cards */
+  --radius-pill: 9999px;
+
+  /* Spacing Gaps */
+  --gap-s: 0.25rem;
+  --gap-m: 0.5rem;
+  --gap-l: 0.75rem;
+  --gap-xl: 1rem;
+  --gap-2xl: 1.5rem;
+
+  /* Base Palette */
+  --slate-200: #e2e8f0;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --yellow-400: #facc15;
+  --orange-400: #fb923c;
+  --orange-500: #f97316;
+  --red-500: #ef4444;
+  --sky-200: #bae6fd;
+  --sky-400: #38bdf8;
+  --sky-500: #0ea5e9;
+  --white: #ffffff;
+
+  /* Default Theme: Dark Mode */
   --bg-gradient: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
   --bg-color: #090a0f;
   --text-main: #f0f0f2;
-  --text-muted: #64748b;
+  --text-muted: var(--slate-400);
+  --text-heading: #ffffff;
   --accent: #3b82f6;
-  --card-bg: rgba(255, 255, 255, 0.05);
-  --card-border: rgba(255, 255, 255, 0.1);
+  --h1-start: #ffffff;
+
+  --card-bg: var(--slate-800);
+  --card-bg-frosted: rgba(255, 255, 255, 0.05);
+  --card-border: transparent;
+  --card-border-frosted: rgba(255, 255, 255, 0.1);
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
   --input-bg: #111;
   --input-border: #333;
-  --h1-start: #fff;
+
+  /* Streak specific shared vars */
+  --color-success: hsl(200, 80%, 62%);
+  --color-star-bg: var(--slate-700);
+  --color-freeze-icon: var(--white);
+  --color-background-alt: var(--slate-900);
+  --color-background-secondary: var(--slate-700);
 }
 
 /* Light Mode Overrides */
@@ -17,118 +66,126 @@ html.force-light-mode {
   --bg-gradient: none;
   --bg-color: #ffffff;
   --text-main: #0f172a;
-  --text-muted: #475569;
-  --card-bg: rgba(15, 23, 42, 0.05);
-  --card-border: rgba(15, 23, 42, 0.1);
+  --text-muted: var(--slate-500);
+  --text-heading: #0f172a;
+  --h1-start: #1e293b;
+
+  --card-bg: var(--white);
+  --card-bg-frosted: rgba(15, 23, 42, 0.05);
+  --card-border: var(--slate-200);
+  --card-border-frosted: rgba(15, 23, 42, 0.1);
+
   --input-bg: #f1f5f9;
   --input-border: #cbd5e1;
-  --h1-start: #1e293b;
+
+  --color-success: hsl(200, 80%, 38%);
+  --color-star-bg: var(--slate-200);
+  --color-freeze-icon: var(--sky-200);
+  --color-background-alt: hsl(200, 30%, 97%);
+  --color-background-secondary: hsl(200, 20%, 90%);
 }
 
-/* Ensure prefers-color-scheme works if no force class is set */
+/* System Preference Support */
 @media (prefers-color-scheme: light) {
   :root:not(.force-dark-mode) {
     --bg-gradient: none;
     --bg-color: #ffffff;
     --text-main: #0f172a;
-    --text-muted: #475569;
-    --card-bg: rgba(15, 23, 42, 0.05);
-    --card-border: rgba(15, 23, 42, 0.1);
+    --text-muted: var(--slate-500);
+    --text-heading: #0f172a;
+    --h1-start: #1e293b;
+
+    --card-bg: var(--white);
+    --card-bg-frosted: rgba(15, 23, 42, 0.05);
+    --card-border: var(--slate-200);
+    --card-border-frosted: rgba(15, 23, 42, 0.1);
+
     --input-bg: #f1f5f9;
     --input-border: #cbd5e1;
-    --h1-start: #1e293b;
+
+    --color-success: hsl(200, 80%, 38%);
+    --color-star-bg: var(--slate-200);
+    --color-freeze-icon: var(--sky-200);
+    --color-background-alt: hsl(200, 30%, 97%);
+    --color-background-secondary: hsl(200, 20%, 90%);
   }
 }
 
-html,
-body {
+/* Global Reset & Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
   margin: 0;
-  padding: 0;
-  width: 100vw;
-  height: 100dvh;
-  overflow: hidden;
+  font-weight: normal;
+}
+
+html {
+  line-height: 1.4;
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--text-main);
+  background: var(--bg-color);
 }
 
 body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100svh;
   background-color: var(--bg-color);
   background-image: var(--bg-gradient);
-  color: var(--text-main);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
 }
 
-.container {
-  text-align: center;
-  padding: 2rem;
-  max-width: 500px;
-  z-index: 10;
-  position: relative;
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  font-weight: 900;
+  margin: 0;
+  color: var(--text-heading);
 }
 
-h1 {
-  font-size: 3rem;
-  margin-bottom: 0.5rem;
-  letter-spacing: -1px;
-  background: linear-gradient(to right, var(--h1-start), var(--accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-p {
-  color: var(--text-muted);
-  font-size: 1.1rem;
-  line-height: 1.6;
-  margin-bottom: 2rem;
-}
-
-.login-box {
-  background: var(--card-bg);
-  padding: 1.5rem;
-  border-radius: 12px;
+/* Shared Components: Cards */
+.card {
+  background-color: var(--card-bg);
   border: 1px solid var(--card-border);
+  border-radius: var(--radius-l);
+  padding: 1.5rem;
+  color: var(--text-main);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  width: 60%;
+  max-width: 500px;
+  margin: 0 auto var(--gap-xl) auto;
+}
+
+.card.frosted {
+  background-color: var(--card-bg-frosted);
+  border-color: var(--card-border-frosted);
   backdrop-filter: blur(10px);
 }
 
-input {
-  width: 80%;
-  padding: 0.8rem;
-  border-radius: 6px;
-  border: 1px solid var(--input-border);
-  background: var(--input-bg);
-  color: var(--text-main);
-  margin-bottom: 1rem;
-  text-align: center;
+/* Icons */
+.material-symbols-outlined {
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
-button {
-  background: var(--accent);
-  color: white;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.tagline {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--accent);
-  margin-bottom: 1rem;
-  display: block;
-}
-
-/* Theme Toggle */
+/* Theme Toggle Component */
 .top-nav {
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 0;
   padding: 1rem;
@@ -139,7 +196,7 @@ button {
   appearance: none;
   background: none;
   border: none;
-  color: var(--text);
+  color: var(--text-main);
   cursor: pointer;
   padding: 0.5rem;
   display: flex;
@@ -147,26 +204,15 @@ button {
   justify-content: center;
 }
 
-.material-symbols-outlined {
-  font-variation-settings:
-    "FILL" 0,
-    "wght" 400,
-    "GRAD" 0,
-    "opsz" 24;
-  display: inline-block; /* Reset to inline-block base */
-}
-
-/* Theme Icon Visibility - Logic to ensure only one shows at a time */
 .theme-toggle .sun,
 .theme-toggle .moon {
   display: none;
 }
 
-/* Default state: show moon (dark mode is default for this site usually) */
+/* Initial display logic */
 .theme-toggle .moon {
   display: flex;
 }
-
 @media (prefers-color-scheme: dark) {
   .theme-toggle .moon {
     display: none;
@@ -175,7 +221,6 @@ button {
     display: flex;
   }
 }
-
 html.force-light-mode .theme-toggle .moon {
   display: flex;
 }
@@ -189,22 +234,7 @@ html.force-dark-mode .theme-toggle .sun {
   display: flex;
 }
 
-/* Badges */
-.bottom-badges {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  padding: 1rem;
-  display: flex;
-  gap: 0.75rem;
-  z-index: 100;
-}
-
-.bottom-badges img {
-  height: 28px;
-  border-radius: 6px;
-}
-
+/* Utilities */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -215,4 +245,59 @@ html.force-dark-mode .theme-toggle .sun {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* Global Element Defaults */
+a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+a:hover {
+  opacity: 0.8;
+}
+
+input {
+  font: inherit;
+  padding: 0.8rem;
+  border-radius: var(--radius-m);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-main);
+  transition: border-color 0.2s ease;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+button {
+  font: inherit;
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--radius-m);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    filter 0.2s ease,
+    transform 0.1s ease;
+}
+
+button:hover {
+  filter: brightness(1.1);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  filter: none;
 }

@@ -1,207 +1,28 @@
-:root {
-  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --font-sans: "Source Sans 3", sans-serif;
-
-  /* Base Palette */
-  --slate-200: #e2e8f0;
-  --slate-400: #94a3b8;
-  --slate-500: #64748b;
-  --slate-700: #334155;
-  --slate-800: #1e293b;
-  --slate-900: #0f172a;
-  --yellow-400: #facc15;
-  --orange-400: #fb923c;
-  --orange-500: #f97316;
-  --red-500: #ef4444;
-  --sky-200: #bae6fd;
-  --sky-400: #38bdf8;
-  --sky-500: #0ea5e9;
-  --white: #ffffff;
-
-  --hue-blue: 200;
-  --hue-primary: var(--hue-blue);
-
-  /* Semantic Colors - Light Mode Default */
-  --color-text: hsl(var(--hue-primary), 100%, 10%);
-  --color-text-heading: hsl(var(--hue-primary), 100%, 20%);
-  --color-text-muted: var(--slate-500);
-  --color-background: hsl(var(--hue-primary), 30%, 99%);
-  --color-background-secondary: hsl(var(--hue-primary), 20%, 90%);
-  --color-background-alt: hsl(var(--hue-primary), 30%, 97%);
-  --color-interactive: hsl(var(--hue-primary), 100%, 40%);
-  --color-success: hsl(var(--hue-primary), 80%, 38%);
-
-  --color-card-background: var(--white);
-  --color-card-border: var(--slate-200);
-  --color-star-bg: var(--slate-200);
-  --color-freeze-icon: var(--sky-200);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --hue-primary: 205;
-    --color-text: hsl(var(--hue-primary), 30%, 80%);
-    --color-text-heading: hsl(var(--hue-primary), 50%, 90%);
-    --color-text-muted: var(--slate-400);
-    --color-background: var(--slate-900);
-    --color-background-secondary: var(--slate-700);
-    --color-background-alt: var(--slate-900);
-    --color-interactive: hsl(var(--hue-primary), 100%, 60%);
-    --color-success: hsl(var(--hue-primary), 80%, 62%);
-
-    --color-card-background: var(--slate-800);
-    --color-card-border: transparent;
-    --color-star-bg: var(--slate-700);
-    --color-freeze-icon: var(--white);
-  }
-}
-
-html.force-light-mode {
-  --hue-primary: 200;
-  --color-text: hsl(var(--hue-primary), 100%, 10%);
-  --color-text-heading: hsl(var(--hue-primary), 100%, 20%);
-  --color-text-muted: var(--slate-500);
-  --color-background: hsl(var(--hue-primary), 30%, 99%);
-  --color-background-secondary: hsl(var(--hue-primary), 20%, 90%);
-  --color-background-alt: hsl(var(--hue-primary), 30%, 97%);
-  --color-interactive: hsl(var(--hue-primary), 100%, 40%);
-  --color-success: hsl(var(--hue-primary), 80%, 38%);
-
-  --color-card-background: var(--white);
-  --color-card-border: var(--slate-200);
-  --color-star-bg: var(--slate-200);
-  --color-freeze-icon: var(--sky-200);
-}
-
-html.force-dark-mode {
-  --hue-primary: 205;
-  --color-text: hsl(var(--hue-primary), 30%, 80%);
-  --color-text-heading: hsl(var(--hue-primary), 50%, 90%);
-  --color-text-muted: var(--slate-400);
-  --color-background: var(--slate-900);
-  --color-background-secondary: var(--slate-700);
-  --color-background-alt: var(--slate-900);
-  --color-interactive: hsl(var(--hue-primary), 100%, 60%);
-  --color-success: hsl(var(--hue-primary), 80%, 62%);
-
-  --color-card-background: var(--slate-800);
-  --color-card-border: transparent;
-  --color-star-bg: var(--slate-700);
-  --color-freeze-icon: var(--white);
-}
-
-html {
-  line-height: 1.4;
-  font-family: var(--font-sans);
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: var(--color-text);
-  background: var(--color-background-alt);
-}
-
 main {
-  display: grid;
-  place-content: center;
-  padding: 2rem;
+  display: block;
+  padding: 4rem 2rem;
   min-height: 100svh;
-  box-sizing: border-box;
-  gap: 2em;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  font-weight: normal;
-}
-
-h1,
-h2,
-h3 {
-  line-height: 1.2;
-  font-weight: 900;
-  margin: 0;
-  color: var(--color-text-heading);
-}
-
-.material-symbols-outlined {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
-/* Theme Icon Visibility */
-.moon {
-  display: flex;
-}
-.sun {
-  display: none;
-}
-@media (prefers-color-scheme: dark) {
-  .moon {
-    display: none;
-  }
-  .sun {
-    display: flex;
-  }
-}
-html.force-light-mode .moon {
-  display: flex;
-}
-html.force-light-mode .sun {
-  display: none;
-}
-html.force-dark-mode .moon {
-  display: none;
-}
-html.force-dark-mode .sun {
-  display: flex;
-}
-
-/* THE UNIFIED CARD CLASS */
-.card {
-  background-color: var(--color-card-background);
-  border: 1px solid var(--color-card-border);
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  max-width: 500px;
+.container {
+  margin: 0 auto;
   width: 100%;
-  margin: 0 auto 1.5rem auto;
-  color: var(--color-text);
-  overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.flex-row {
+.controls-card {
+  padding: 1rem;
+}
+
+.controls-card label {
   display: flex;
-  align-items: center;
+  justify-content: center;
+  margin: 0;
 }
 
-.card h2 {
-  font-size: 1.25rem;
-  font-weight: bold;
-  margin-bottom: 1.25rem;
-  text-align: left;
-  color: var(--color-text-heading);
-}
-
-.streak-association {
-  font-size: 0.75rem; /* Smaller for badge look */
-  font-weight: 700;
-  color: var(--color-text-muted);
-  position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
-  z-index: 0;
-  background-color: var(--color-background-alt);
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  pointer-events: none;
+@media (width < 600px) {
+  .card {
+    width: 90%;
+  }
 }
 
 /* Shared Streak/Grid Components */
@@ -210,7 +31,7 @@ html.force-dark-mode .sun {
   display: grid;
   grid-template-columns: repeat(var(--grid-cols, 7), 1fr);
   text-align: center;
-  row-gap: 0.5rem;
+  row-gap: var(--gap-m);
   font-weight: 700;
   align-items: center;
   flex-grow: 1;
@@ -222,7 +43,7 @@ html.force-dark-mode .sun {
   top: 50%;
   transform: translateY(-50%);
   background: linear-gradient(to right, var(--orange-400), var(--orange-500));
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   z-index: 1;
   pointer-events: none;
 }
@@ -238,7 +59,7 @@ html.force-dark-mode .sun {
   justify-content: center;
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--color-text-muted);
+  color: var(--text-muted);
   position: relative;
   z-index: 2;
   line-height: 1;
@@ -268,13 +89,29 @@ html.force-dark-mode .sun {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.5rem;
+  gap: var(--gap-2xl);
   position: relative; /* Anchor for absolute children */
   padding-top: 2.5rem; /* Extra room for the association badge */
   @media (width < 600px) {
     flex-direction: column;
     text-align: center;
   }
+}
+
+.streak-association {
+  font-size: 0.75rem; /* Smaller for badge look */
+  font-weight: 700;
+  color: var(--text-muted);
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 0;
+  background-color: var(--color-background-alt);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-pill);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  pointer-events: none;
 }
 
 .star-display {
@@ -386,7 +223,7 @@ html.force-dark-mode .sun {
   line-height: 1;
   position: absolute;
   font-size: var(--size);
-  color: var(--color-white);
+  color: var(--white);
   top: 25%;
   right: 25%;
   animation: star-sparkles 3.5s ease-out both infinite;
@@ -419,13 +256,13 @@ html.force-dark-mode .sun {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: var(--gap-xl);
 }
 
 .nav-arrow {
   font-size: 1.75rem;
   cursor: pointer;
-  color: var(--color-interactive);
+  color: var(--accent);
 }
 
 .calendar-days-header {
@@ -433,31 +270,31 @@ html.force-dark-mode .sun {
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
   font-size: 0.875rem;
-  color: var(--color-text-muted);
-  margin-bottom: 0.5rem;
+  color: var(--text-muted);
+  margin-bottom: var(--gap-m);
 }
 
 .calendar-weeks {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--gap-l);
 }
 
 /* Multi-streak Specifics */
 .multi-streak-grid {
   display: grid;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  gap: var(--gap-l);
+  margin-top: var(--gap-xl);
 }
 .streak-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--gap-xl);
 }
 .streak-name {
   flex: 0 0 90px;
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--color-text-muted);
+  color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -472,8 +309,8 @@ html.force-dark-mode .sun {
 .multi-streak-header {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 0.25rem;
+  gap: var(--gap-xl);
+  margin-bottom: var(--gap-s);
 }
 .month-labels,
 .day-labels {
@@ -482,7 +319,7 @@ html.force-dark-mode .sun {
   grid-template-columns: repeat(8, 1fr);
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--color-text-muted);
+  color: var(--text-muted);
   text-align: center;
 }
 .month-label.prev {
@@ -502,7 +339,7 @@ html.force-dark-mode .sun {
   height: 3rem;
   background-color: var(--sky-400);
   border-radius: 50%;
-  margin-right: 1rem;
+  margin-right: var(--gap-xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -515,7 +352,7 @@ html.force-dark-mode .sun {
 }
 .freeze-info p {
   font-weight: bold;
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 var(--gap-s) 0;
 }
 .freeze-info a {
   font-weight: bold;
@@ -526,7 +363,7 @@ html.force-dark-mode .sun {
 .progress-container {
   position: relative;
   height: 3.5rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--gap-s);
 }
 .progress-track {
   position: absolute;
@@ -538,13 +375,13 @@ html.force-dark-mode .sun {
   width: 100%;
   background-color: var(--color-background-secondary);
   height: 0.75rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   overflow: hidden;
 }
 .progress-fill {
   background-color: var(--orange-500);
   height: 100%;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
 }
 .checkpoint-layer {
   position: absolute;
@@ -558,12 +395,12 @@ html.force-dark-mode .sun {
   background-color: var(--orange-400);
   width: 2.25rem;
   height: 2.25rem;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-m);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--slate-900);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--card-shadow);
   position: absolute;
 }
 .checkpoint .material-symbols-outlined {
@@ -583,85 +420,50 @@ html.force-dark-mode .sun {
   color: var(--white);
   font-weight: bold;
   padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-m);
 }
 .goal-text {
-  color: var(--color-text-muted);
+  color: var(--text-muted);
   font-size: 0.875rem;
   font-weight: 600;
   text-align: center;
-}
-
-/* Layout and Utils */
-.theme-toggle {
-  appearance: none;
-  background: none;
-  border: none;
-  padding: 1em;
-  color: var(--color-text);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-  font-weight: 600;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
 }
 
 header {
   position: absolute;
   top: 0;
   right: 0;
-  padding: 0.5em;
+  padding: var(--gap-m);
 }
 hr {
   border: none;
   height: 1px;
   background-color: var(--color-background-secondary);
-  margin: 1em 0;
+  margin: var(--gap-xl) 0;
 }
 
 label {
   font-size: 1.25rem;
   display: inline-flex;
   margin-inline: auto;
-  gap: 0.5em;
+  gap: var(--gap-m);
   align-items: center;
 }
 label span {
   font-weight: 600;
 }
 label input {
-  font: inherit;
-  padding: 0.25em;
+  padding: var(--gap-s);
   width: 5rem;
-  border-radius: 0.25em;
-  background: var(--color-card-background);
-  color: var(--color-text);
-  border: 2px solid var(--color-background-secondary);
 }
 
 p {
   text-align: center;
 }
-p a {
-  color: var(--color-interactive);
-  text-decoration: none;
-  font-weight: 600;
-}
+
 .game-info {
   display: grid;
-  gap: 0.75em;
+  gap: var(--gap-l);
   font-size: 1rem;
-  margin-top: 1rem;
+  margin-top: var(--gap-xl);
 }

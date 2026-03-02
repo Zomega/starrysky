@@ -14,10 +14,35 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
     />
+    <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="mockup.css" />
   </head>
   <body>
     <main>
+      <header class="top-nav">
+        <button class="theme-toggle">
+          <span class="material-symbols-outlined sun" aria-hidden="true"
+            >light_mode</span
+          >
+          <span class="material-symbols-outlined moon" aria-hidden="true"
+            >dark_mode</span
+          >
+          <span class="sr-only">Toggle Color Theme</span>
+        </button>
+      </header>
+
+      <div class="container">
+        <div class="card controls-card">
+          <label>
+            <span>Streak count:</span>
+            <input type="number" value="1" max="1000" min="0" />
+          </label>
+        </div>
+        <div class="card-container">
+          <!-- JS will inject templates here -->
+        </div>
+      </div>
+
       <template id="tpl-star">
         <div class="star">
           <span class="material-symbols-outlined star-icon star-bg">star</span>
@@ -141,22 +166,6 @@
         </div>
       </template>
 
-      <header>
-        <button class="theme-toggle">
-          <span class="material-symbols-outlined sun" aria-hidden="true"
-            >light_mode</span
-          >
-          <span class="material-symbols-outlined moon" aria-hidden="true"
-            >dark_mode</span
-          >
-          <span class="sr-only">Toggle Color Theme</span>
-        </button>
-      </header>
-      <label>
-        <span>Streak count:</span>
-        <input type="number" value="1" max="1000" min="0" />
-      </label>
-      <div class="container"></div>
       <hr />
       <div class="game-info">
         <p>

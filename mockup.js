@@ -210,9 +210,9 @@ function getVariantClasses(count) {
 }
 
 window.addEventListener("DOMContentLoaded", (event) => {
-  const container = document.querySelector(".container");
-  container.innerHTML = "";
-  container.appendChild(renderStreakCards(1));
+  const cardContainer = document.querySelector(".card-container");
+  cardContainer.innerHTML = "";
+  cardContainer.appendChild(renderStreakCards(1));
 
   document.querySelector(".theme-toggle").addEventListener("click", () => {
     const isLight =
@@ -234,7 +234,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
   });
 
   document.querySelector("input").addEventListener("input", (e) => {
-    container.innerHTML = "";
-    container.appendChild(renderStreakCards(parseInt(e.target.value) || 0));
+    cardContainer.innerHTML = "";
+    cardContainer.appendChild(renderStreakCards(parseInt(e.target.value) || 0));
   });
 });
