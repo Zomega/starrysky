@@ -1,19 +1,54 @@
+/* Tells the browser this variable is a real angle, allowing smooth math */
+@property --sky-angle {
+  syntax: "<angle>";
+  initial-value: 45deg;
+  inherits: true;
+}
+
 :root {
   --star-tail-color: rgba(0, 0, 255, 0);
 }
 
+/* 1. THE CAGE: Completely locks out mobile scrollbars */
+.sky-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* 2. THE ROTATION: The sky slowly rocks back and forth */
 .night {
   position: absolute;
   top: -50%;
   left: -50%;
   width: 200%;
   height: 200%;
-  z-index: 1;
-  pointer-events: none;
   animation: driftSky 240s ease-in-out infinite;
   animation-delay: var(--sky-delay, 0s);
 }
 
+@keyframes driftSky {
+  /* We sync the physical rotation AND the variable for the flare math */
+  0% {
+    transform: rotate(45deg);
+    --sky-angle: 45deg;
+  }
+  50% {
+    transform: rotate(135deg);
+    --sky-angle: 135deg;
+  }
+  100% {
+    transform: rotate(45deg);
+    --sky-angle: 45deg;
+  }
+}
+
+/* 3. THE MOVEMENT: Flies perfectly straight across the rotated sky */
 .shooting_star {
   position: absolute;
   height: 2px;
@@ -23,10 +58,10 @@
   animation:
     tail 3000ms ease-in-out infinite,
     shooting 3000ms ease-in-out infinite;
-  /* Applies the star's unique delay to both animations */
   animation-delay: var(--star-delay), var(--star-delay);
 }
 
+/* 4. THE FLARES: Pinned to the tip of the star */
 .shooting_star::before,
 .shooting_star::after {
   content: "";
@@ -41,21 +76,20 @@
     var(--star-tail-color)
   );
   border-radius: 100%;
+  animation: shining 3000ms ease-in-out infinite;
+  animation-delay: var(--star-delay);
 }
 
+/* 5. THE MATH LOCK: 
+   Subtracting the current sky angle perfectly negates the container's 
+   rotation, pinning the flares strictly vertical (90deg) and horizontal (0deg) to the screen. 
+*/
 .shooting_star::before {
-  animation:
-    shining 3000ms ease-in-out infinite,
-    counterDriftBefore 240s ease-in-out infinite;
-  /* Syncs the shine delay with the star, and the drift delay with the sky */
-  animation-delay: var(--star-delay), var(--sky-delay, 0s);
+  transform: translateX(50%) rotate(calc(90deg - var(--sky-angle)));
 }
 
 .shooting_star::after {
-  animation:
-    shining 3000ms ease-in-out infinite,
-    counterDriftAfter 240s ease-in-out infinite;
-  animation-delay: var(--star-delay), var(--sky-delay, 0s);
+  transform: translateX(50%) rotate(calc(0deg - var(--sky-angle)));
 }
 
 @keyframes tail {
@@ -83,47 +117,11 @@
 }
 
 @keyframes shooting {
+  /* Simple, smooth, straight line. No weaving! */
   0% {
     transform: translateX(0);
   }
   100% {
     transform: translateX(1000px);
-  }
-}
-
-@keyframes driftSky {
-  0% {
-    transform: rotateZ(45deg);
-  }
-  50% {
-    transform: rotateZ(135deg);
-  }
-  100% {
-    transform: rotateZ(45deg);
-  }
-}
-
-/* Counter-rotates the flares to remain screen-aligned */
-@keyframes counterDriftBefore {
-  0% {
-    transform: translateX(50%) rotateZ(0deg);
-  }
-  50% {
-    transform: translateX(50%) rotateZ(-90deg);
-  }
-  100% {
-    transform: translateX(50%) rotateZ(0deg);
-  }
-}
-
-@keyframes counterDriftAfter {
-  0% {
-    transform: translateX(50%) rotateZ(-90deg);
-  }
-  50% {
-    transform: translateX(50%) rotateZ(-180deg);
-  }
-  100% {
-    transform: translateX(50%) rotateZ(-90deg);
   }
 }
