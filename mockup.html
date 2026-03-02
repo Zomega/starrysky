@@ -45,6 +45,7 @@
     --color-card-background: var(--white);
     --color-card-border: var(--slate-200);
     --color-star-bg: var(--slate-200);
+    --color-freeze-icon: var(--sky-200);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -62,6 +63,7 @@
       --color-card-background: var(--slate-800);
       --color-card-border: transparent;
       --color-star-bg: var(--slate-700);
+      --color-freeze-icon: var(--white);
     }
   }
 
@@ -79,6 +81,7 @@
     --color-card-background: var(--white);
     --color-card-border: var(--slate-200);
     --color-star-bg: var(--slate-200);
+    --color-freeze-icon: var(--sky-200);
   }
 
   html.force-dark-mode {
@@ -95,6 +98,7 @@
     --color-card-background: var(--slate-800);
     --color-card-border: transparent;
     --color-star-bg: var(--slate-700);
+    --color-freeze-icon: var(--white);
   }
 
   html {
@@ -241,17 +245,14 @@
   .day-cell.frozen {
     color: var(--white);
   }
-  .day-cell.frozen .freeze-icon-mini {
+  .freeze-icon-mini {
     font-size: 0.75rem;
     position: absolute;
-    bottom: -0.3rem; /* Push it down past the cell bottom */
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 0;
     z-index: 3;
     pointer-events: none;
-    color: var(
-      --sky-200
-    ); /* Use a lighter color for better contrast on the blue pill */
+    color: var(--color-freeze-icon);
+    transform: translateX(-50%) translateY(50%);
   }
   .day-cell.prev-month {
     opacity: 0.4;
@@ -678,20 +679,15 @@
         const isPrevMonth = day > 20 && index < 2;
 
         let extraClass = "";
-        let freezeIcon = "";
         if (isActive) extraClass = "active";
-        else if (isFrozen) {
-          extraClass = "frozen";
-          freezeIcon =
-            '<span class="material-symbols-outlined freeze-icon-mini">ac_unit</span>';
-        }
+        else if (isFrozen) extraClass = "frozen";
 
-        return `<div class="day-cell ${extraClass} ${isPrevMonth ? "prev-month" : ""}">${day}${freezeIcon}</div>`;
+        return `<div class="day-cell ${extraClass} ${isPrevMonth ? "prev-month" : ""}">${day}</div>`;
       })
       .join("");
 
     // Logic to find continuous segments of active/frozen days for pills
-    const pills = [];
+    const elements = [];
     const allMarked = [...activeDays, ...freezeDays].sort((a, b) => a - b);
 
     if (allMarked.length > 0) {
@@ -710,11 +706,20 @@
         ) {
           end = current;
         } else {
+          // End of a segment
           const left = (start / cols) * 100;
           const width = ((end - start + 1) / cols) * 100;
-          pills.push(
+          elements.push(
             `<div class="streak-pill ${isCurrentFrozen ? "frozen" : ""}" style="left: ${left}%; width: ${width}%;"></div>`,
           );
+
+          if (isCurrentFrozen) {
+            // Add a single icon centered on the segment
+            const centerLeft = ((start + (end - start) / 2 + 0.5) / cols) * 100;
+            elements.push(
+              `<span class="material-symbols-outlined freeze-icon-mini" style="left: ${centerLeft}%;">ac_unit</span>`,
+            );
+          }
 
           if (i < allMarked.length) {
             start = current;
@@ -727,7 +732,7 @@
 
     return `
       <div class="streak-grid-container" style="--grid-cols: ${cols}">
-        ${pills.join("")}
+        ${elements.join("")}
         ${dayCells}
       </div>
     `;
@@ -762,10 +767,10 @@
       22, 23, 24, 25, 26, 27, 28,
     ];
     const calActive = [
-      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 20, 21,
-      22, 24, 25, 26, 27,
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19, 20, 21, 22,
+      24, 25, 26, 27,
     ];
-    const calFrozen = [15, 23];
+    const calFrozen = [15, 16, 23];
 
     let calGridHtml = "";
     for (let i = 0; i < calDays.length; i += 7) {
