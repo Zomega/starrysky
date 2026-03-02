@@ -1,4 +1,3 @@
-/* Tells the browser this variable is a real angle, allowing smooth math */
 @property --sky-angle {
   syntax: "<angle>";
   initial-value: 45deg;
@@ -9,7 +8,6 @@
   --star-tail-color: rgba(0, 0, 255, 0);
 }
 
-/* 1. THE CAGE: Completely locks out mobile scrollbars */
 .sky-container {
   position: fixed;
   top: 0;
@@ -21,7 +19,6 @@
   pointer-events: none;
 }
 
-/* 2. THE ROTATION: The sky slowly rocks back and forth */
 .night {
   position: absolute;
   top: -50%;
@@ -33,7 +30,6 @@
 }
 
 @keyframes driftSky {
-  /* We sync the physical rotation AND the variable for the flare math */
   0% {
     transform: rotate(45deg);
     --sky-angle: 45deg;
@@ -48,20 +44,22 @@
   }
 }
 
-/* 3. THE MOVEMENT: Flies perfectly straight across the rotated sky */
 .shooting_star {
   position: absolute;
   height: 2px;
   background: linear-gradient(-45deg, var(--accent), var(--star-tail-color));
   border-radius: 999px;
   filter: drop-shadow(0 0 6px var(--accent));
-  animation:
-    tail 3000ms ease-in-out infinite,
-    shooting 3000ms ease-in-out infinite;
-  animation-delay: var(--star-delay), var(--star-delay);
+  opacity: 0; /* Invisible while resting */
 }
 
-/* 4. THE FLARES: Pinned to the tip of the star */
+.shooting_star.is-shooting {
+  opacity: 1;
+  animation:
+    tail 3000ms ease-in-out forwards,
+    shooting 3000ms ease-in-out forwards;
+}
+
 .shooting_star::before,
 .shooting_star::after {
   content: "";
@@ -76,18 +74,16 @@
     var(--star-tail-color)
   );
   border-radius: 100%;
-  animation: shining 3000ms ease-in-out infinite;
-  animation-delay: var(--star-delay);
 }
 
-/* 5. THE MATH LOCK: 
-   Subtracting the current sky angle perfectly negates the container's 
-   rotation, pinning the flares strictly vertical (90deg) and horizontal (0deg) to the screen. 
-*/
+.shooting_star.is-shooting::before,
+.shooting_star.is-shooting::after {
+  animation: shining 3000ms ease-in-out forwards;
+}
+
 .shooting_star::before {
   transform: translateX(50%) rotate(calc(90deg - var(--sky-angle)));
 }
-
 .shooting_star::after {
   transform: translateX(50%) rotate(calc(0deg - var(--sky-angle)));
 }
@@ -96,7 +92,7 @@
   0% {
     width: 0;
   }
-  30% {
+  50% {
     width: 100px;
   }
   100% {
@@ -117,7 +113,6 @@
 }
 
 @keyframes shooting {
-  /* Simple, smooth, straight line. No weaving! */
   0% {
     transform: translateX(0);
   }

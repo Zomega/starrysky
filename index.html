@@ -15,28 +15,36 @@
           const randomStart = Math.random() * -240;
           nightSky.style.setProperty("--sky-delay", `${randomStart}s`);
 
-          // 1. Always generate a healthy pool of stars
+          // TODO: Need to base the durations on screen sizing.
+          // TODO: Can probably reduce the star count and decrease the dark time.
           const starCount = 20;
 
-          // 2. Determine the time window based on screen width
-          // Mobile screens spread stars over 30s. Desktop over 10s.
-          const maxDelay = window.innerWidth < 600 ? 30000 : 10000;
+          function animateStar(star) {
+            star.classList.remove("is-shooting");
+
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.left = `${Math.random() * 100}%`;
+
+            setTimeout(() => {
+              star.classList.add("is-shooting");
+            }, 50);
+
+            // 4. Calculate the "Dark Time" (e.g., between 2s and 15s of waiting)
+            const darkTime = 2000 + Math.random() * 13000;
+            setTimeout(() => {
+              animateStar(star);
+            }, 3000 + darkTime);
+          }
 
           for (let i = 0; i < starCount; i++) {
             const star = document.createElement("div");
             star.className = "shooting_star";
-
-            const top = Math.random() * 100;
-            const left = Math.random() * 100;
-
-            // Stars get a random delay inside the designated time window
-            const delay = Math.random() * maxDelay;
-
-            star.style.top = `${top}%`;
-            star.style.left = `${left}%`;
-            star.style.setProperty("--star-delay", `${delay}ms`);
-
             nightSky.appendChild(star);
+
+            const initialDelay = Math.random() * 15000;
+            setTimeout(() => {
+              animateStar(star);
+            }, initialDelay);
           }
         </script>
       </div>
