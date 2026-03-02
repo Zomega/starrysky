@@ -1,8 +1,43 @@
 :root {
-  --bg: #090a0f;
-  --text: #f0f0f2;
+  /* Default: Dark Mode */
+  --bg-gradient: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+  --bg-color: #090a0f;
+  --text-main: #f0f0f2;
+  --text-muted: #64748b;
   --accent: #3b82f6;
-  --secondary: #64748b;
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --input-bg: #111;
+  --input-border: #333;
+  --h1-start: #fff;
+}
+
+/* Light Mode Overrides */
+html.force-light-mode {
+  --bg-gradient: none;
+  --bg-color: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --card-bg: rgba(15, 23, 42, 0.05);
+  --card-border: rgba(15, 23, 42, 0.1);
+  --input-bg: #f1f5f9;
+  --input-border: #cbd5e1;
+  --h1-start: #1e293b;
+}
+
+/* Ensure prefers-color-scheme works if no force class is set */
+@media (prefers-color-scheme: light) {
+  :root:not(.force-dark-mode) {
+    --bg-gradient: none;
+    --bg-color: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --card-bg: rgba(15, 23, 42, 0.05);
+    --card-border: rgba(15, 23, 42, 0.1);
+    --input-bg: #f1f5f9;
+    --input-border: #cbd5e1;
+    --h1-start: #1e293b;
+  }
 }
 
 html,
@@ -15,20 +50,21 @@ body {
 }
 
 body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
-  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-color);
+  background-image: var(--bg-gradient);
+  color: var(--text-main);
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .container {
   text-align: center;
   padding: 2rem;
   max-width: 500px;
-  z-index: 10; /* Ensures content is above the stars */
+  z-index: 10;
   position: relative;
 }
 
@@ -36,23 +72,23 @@ h1 {
   font-size: 3rem;
   margin-bottom: 0.5rem;
   letter-spacing: -1px;
-  background: linear-gradient(to right, #fff, #3b82f6);
+  background: linear-gradient(to right, var(--h1-start), var(--accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 p {
-  color: var(--secondary);
+  color: var(--text-muted);
   font-size: 1.1rem;
   line-height: 1.6;
   margin-bottom: 2rem;
 }
 
 .login-box {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--card-bg);
   padding: 1.5rem;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--card-border);
   backdrop-filter: blur(10px);
 }
 
@@ -60,9 +96,9 @@ input {
   width: 80%;
   padding: 0.8rem;
   border-radius: 6px;
-  border: 1px solid #333;
-  background: #111;
-  color: white;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-main);
   margin-bottom: 1rem;
   text-align: center;
 }
