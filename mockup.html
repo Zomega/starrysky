@@ -765,9 +765,11 @@
     // 1. Fancy Streak Card
     const fancyCard = cloneTemplate("tpl-fancy-streak-card");
     const display = fancyCard.querySelector(".star-display");
+    const displayCount = Math.min(count, 100);
+
     display.className = `star-display ${variantClasses.join(" ")} count-${count}`;
-    display.style.setProperty("--count", count);
-    for (let i = 0; i < count; i++) {
+    display.style.setProperty("--count", displayCount);
+    for (let i = 0; i < displayCount; i++) {
       display.appendChild(createStar(i));
     }
     fancyCard.querySelector(".streak-title").textContent =
