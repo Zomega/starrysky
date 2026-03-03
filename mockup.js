@@ -268,21 +268,62 @@ function renderStreakCards(countOverride = null) {
   // 4. Multi-streak Card
   const multiCard = cloneTemplate("tpl-multi-streak-card");
   const multiGrid = multiCard.querySelector(".multi-streak-grid");
+  const monthLabelsEl = multiCard.querySelector(".month-labels");
+  const dayLabelsEl = multiCard.querySelector(".day-labels");
   
-  const subjects = [...new Set(MOCK_CHECKINS.map(c => c.subject))];
-  const windowStart = "2026-02-21";
-  const windowEnd = "2026-02-28";
-  const windowDays = [21, 22, 23, 24, 25, 26, 27, 28];
+  const windowStart = new Date("2026-02-21T12:00:00Z");
+  const windowEnd = new Date("2026-02-28T12:00:00Z");
+  const windowDaysNum = [];
+  const windowColCount = 8;
+  
+  multiCard.style.setProperty("--grid-cols", windowColCount);
+  
+  const months = []; // { name, span }
+  let currentMonth = "";
+  let currentSpan = 0;
 
+  for (let i = 0; i < windowColCount; i++) {
+    const d = new Date(windowStart.getTime() + i * 24 * 60 * 60 * 1000);
+    windowDaysNum.push(d.getUTCDate());
+    
+    // Day labels
+    const dayName = d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' }).substring(0, 2);
+    const daySpan = document.createElement("span");
+    daySpan.textContent = dayName;
+    dayLabelsEl.appendChild(daySpan);
+    
+    // Month labels logic
+    const monthName = d.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' });
+    if (monthName !== currentMonth) {
+      if (currentMonth !== "") {
+        months.push({ name: currentMonth, span: currentSpan });
+      }
+      currentMonth = monthName;
+      currentSpan = 1;
+    } else {
+      currentSpan++;
+    }
+  }
+  months.push({ name: currentMonth, span: currentSpan });
+  
+  months.forEach(m => {
+    const mSpan = document.createElement("div");
+    mSpan.className = "month-label";
+    mSpan.style.setProperty("--span", m.span);
+    mSpan.textContent = m.name;
+    monthLabelsEl.appendChild(mSpan);
+  });
+
+  const subjects = [...new Set(MOCK_CHECKINS.map(c => c.subject))];
   subjects.forEach(sub => {
     const subCheckins = MOCK_CHECKINS.filter(c => c.subject === sub);
     const subLatest = subCheckins.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-    const { activeIndices, frozenIndices } = getGridDataForRange(MOCK_CHECKINS, sub, windowStart, windowEnd);
+    const { activeIndices, frozenIndices } = getGridDataForRange(MOCK_CHECKINS, sub, "2026-02-21", "2026-02-28");
     
     multiGrid.appendChild(
       renderStreakRow(
         sub,
-        windowDays,
+        windowDaysNum,
         activeIndices,
         frozenIndices,
         subLatest ? subLatest.sequence : 0

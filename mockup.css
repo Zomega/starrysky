@@ -306,31 +306,43 @@ main {
   text-align: right;
   color: var(--orange-500);
 }
-.multi-streak-header {
+
+.multi-streak-labels-container {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: var(--gap-xl);
-  margin-bottom: var(--gap-s);
+  margin-top: var(--gap-xl);
 }
-.month-labels,
-.day-labels {
+.streak-name-placeholder {
+  flex: 0 0 90px;
+}
+.streak-total-placeholder {
+  flex: 0 0 45px;
+}
+.labels-column {
   flex-grow: 1;
+}
+
+.month-labels {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(var(--grid-cols, 8), 1fr);
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--text-muted);
-  text-align: center;
-}
-.month-label.prev {
-  grid-column: span 1;
-}
-.month-label.current {
-  grid-column: span 7;
+  text-align: left;
+  margin-bottom: var(--gap-s);
 }
 .day-labels {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols, 8), 1fr);
   font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: center;
   opacity: 0.8;
+}
+.month-label {
+  grid-column: span var(--span, 1);
 }
 
 /* Freeze & Goal Cards */
