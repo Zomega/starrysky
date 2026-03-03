@@ -84,18 +84,10 @@ main {
   opacity: 0.4;
 }
 
-/* Star Animation Components */
-.fancy-streak {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--gap-2xl);
-  position: relative; /* Anchor for absolute children */
-  padding-top: 2.5rem; /* Extra room for the association badge */
-  @media (width < 600px) {
-    flex-direction: column;
-    text-align: center;
-  }
+/* Card Badge Helper */
+.card-with-badge {
+  position: relative;
+  padding-top: 2.5rem;
 }
 
 .streak-association {
@@ -114,6 +106,20 @@ main {
   pointer-events: none;
 }
 
+/* Star Animation Components */
+.fancy-streak {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-2xl);
+  position: relative; /* Anchor for absolute children */
+  padding-top: 2.5rem; /* Extra room for the association badge */
+  @media (width < 600px) {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
 .star-display {
   display: grid;
   grid-template-areas: "center";
@@ -129,20 +135,21 @@ main {
 .double {
   --star-size: 2.75rem;
   --distance: calc(var(--star-size) * 1 / 2);
-  :first-child {
-    --angle: 180deg;
-  }
-  :last-child {
-    --angle: 0deg;
-  }
+}
+.double :first-child {
+  --angle: 180deg;
+}
+.double :last-child {
+  --angle: 0deg;
 }
 
 .confetti-blaster,
 .circle {
   --distance: calc(var(--star-size) * 3 / 4);
-  .star {
-    --angle: 90deg + calc(var(--index) * 360deg / var(--count));
-  }
+}
+.confetti-blaster .star,
+.circle .star {
+  --angle: 90deg + calc(var(--index) * 360deg / var(--count));
 }
 
 .count-5 {
@@ -155,20 +162,20 @@ main {
 
 .confetti-blaster {
   --distance: 10em;
-  .star:not(:first-child) {
-    --duration: 3s;
-    animation:
-      star-move var(--duration) ease-out both,
-      fade-in-out 1.5s ease-out both;
-    animation-delay: calc(var(--delay-multiplier) * 3s);
-    --count: 10;
-    --angle: 90deg + calc(var(--index) * 355deg / var(--count));
-  }
-  .star:first-child {
-    --distance: 0;
-    --star-size: 3.3rem;
-    z-index: 1;
-  }
+}
+.confetti-blaster .star:not(:first-child) {
+  --duration: 3s;
+  animation:
+    star-move var(--duration) ease-out both,
+    fade-in-out 1.5s ease-out both;
+  animation-delay: calc(var(--delay-multiplier) * 3s);
+  --count: 10;
+  --angle: 90deg + calc(var(--index) * 355deg / var(--count));
+}
+.confetti-blaster .star:first-child {
+  --distance: 0;
+  --star-size: 3.3rem;
+  z-index: 1;
 }
 
 .star {
