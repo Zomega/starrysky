@@ -2,18 +2,23 @@ import { BrowserOAuthClient } from "https://esm.sh/@atproto/oauth-client-browser
 import { Agent } from "https://esm.sh/@atproto/api@0.18.20?bundle";
 
 const METADATA_URL =
-  "https://zomega.github.io/atproto-sandbox/client-metadata.json";
+  "https://starrysky.app/client-metadata.json";
 
 // We keep these global to access them for debugging
 let client;
 let agent;
+let oauthSession;
 
 async function init() {
   const statusEl = document.getElementById("status");
+  const loginBtn = document.getElementById("login-btn");
+  
   console.log("App initializing...");
+  statusEl.innerText = "Connecting to Bluesky...";
 
   try {
     const response = await fetch(METADATA_URL);
+    if (!response.ok) throw new Error(`Failed to fetch metadata: ${response.statusText}`);
     const metadata = await response.json();
 
     client = new BrowserOAuthClient({
@@ -24,7 +29,8 @@ async function init() {
     window.client = client;
     console.log("🛠️ window.client is ready");
 
-    // This handles the redirect return automatically
+    // The SDK should handle the redirect return automatically.
+    // We don't need to pass the URI here, it should be retrieved from storage.
     const result = await client.init();
 
     if (result?.session) {
@@ -32,23 +38,23 @@ async function init() {
     } else {
       console.log("No session found, waiting for user login.");
       statusEl.innerText = "Please log in to continue.";
+      if (loginBtn) loginBtn.disabled = false;
     }
   } catch (err) {
     console.error("Initialization failed:", err);
-    statusEl.innerText = "Error: " + err.message;
+    statusEl.innerText = "Connection Error: " + err.message;
+    statusEl.style.color = "var(--red-500)";
   }
 }
 
-async function setupGameUI(oauthSession) {
+async function setupGameUI(session) {
+  oauthSession = session;
   window.oauthSession = oauthSession;
   console.log("🛠️ window.oauthSession is ready");
 
   console.log("Initializing Agent with valid session...");
 
-  // 1. The Correct Way to Init:
-  // The Agent constructor in 0.18+ is smart enough to take the OAuth session directly.
   agent = new Agent(oauthSession);
-
   window.agent = agent;
   console.log("🛠️ window.agent is ready");
 
@@ -58,9 +64,8 @@ async function setupGameUI(oauthSession) {
   document.getElementById("user-info").innerText =
     "Authenticated. Loading profile...";
 
-  // 2. The Fix:
-  // The agent doesn't have 'agent.session', so we pass the DID from the oauthSession.
   await fetchMyProfile(oauthSession.sub);
+  await readCheckin();
 }
 
 async function fetchMyProfile(did) {
@@ -72,18 +77,15 @@ async function fetchMyProfile(did) {
 
     console.log("Profile fetched:", profile);
 
-    // FIX: Handle missing avatar and display name
-    // If profile.avatar is undefined, use a generic placeholder
     const avatarUrl =
       profile.avatar ||
       "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
 
-    // Some users might not have a display name set either
     const name = profile.displayName || profile.handle;
 
     document.getElementById("user-info").innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                <img src="${avatarUrl}" style="width:50px; height:50px; border-radius:50%; border: 2px solid var(--accent-color); object-fit: cover;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 1rem;">
+                <img src="${avatarUrl}" style="width:50px; height:50px; border-radius:50%; border: 2px solid var(--accent); object-fit: cover;">
                 <div style="text-align: left;">
                     <div style="font-weight: bold;">${name}</div>
                     <div style="font-size: 0.8em; opacity: 0.8;">@${profile.handle}</div>
@@ -97,14 +99,20 @@ async function fetchMyProfile(did) {
 }
 
 async function login() {
+  if (!client) return alert("Client not initialized. Please wait or refresh.");
+  
   const handle = document.getElementById("handle").value.trim();
   if (!handle) return alert("Enter your handle");
 
   try {
+    // Ensure we use the current origin as the redirect URI (with trailing slash)
+    const redirectUri = window.location.origin + "/";
+    console.log("Signing in with redirect:", redirectUri);
+
     const { url } = await client.signIn(handle, {
-      // TODO: Load this from the metadata.
       scope: "atproto transition:generic",
       ui_locales: "en",
+      redirect_uri: redirectUri,
     });
     window.location.href = url;
   } catch (err) {
@@ -113,65 +121,76 @@ async function login() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("login-btn").addEventListener("click", login);
-  init();
-});
-
-// 1. Write or Update a specific record
-async function saveTestData() {
+async function saveCheckin() {
+  if (!agent || !oauthSession) return;
+  
   try {
     const did = oauthSession.sub;
     const now = new Date().toISOString();
 
-    console.log("Saving test data...");
+    console.log("Saving check-in data...");
 
-    // 'putRecord' is the Upsert command
     await agent.com.atproto.repo.putRecord({
       repo: did,
-      collection: "com.zomega.test",
-      rkey: "singleton", // Using a fixed key prevents multiple entries
+      collection: "app.starrysky.streak.checkin",
+      rkey: "daily-checkin", 
       record: {
-        $type: "com.zomega.test",
-        message: "Hello from ATProto Wordle Sandbox!",
-        updatedAt: now,
-        developer: "Will Oursler",
+        $type: "app.starrysky.streak.checkin",
+        service: "app.starrysky",
+        policy: "at://did:plc:placeholder/app.starrysky.streak.policy/main",
+        subject: "Daily Streak",
+        sequence: 1,
+        createdAt: now,
+        note: "Checked in via Starrysky!",
       },
     });
 
-    alert("Record saved/updated successfully!");
-    await readTestData(); // Refresh the view
+    alert("Check-in saved successfully!");
+    await readCheckin();
   } catch (err) {
     console.error("Save failed:", err);
+    alert("Save failed: " + err.message);
   }
 }
 
-// 2. Read that specific record back
-async function readTestData() {
+async function readCheckin() {
+  if (!agent || !oauthSession) return;
+
   try {
     const did = oauthSession.sub;
 
     const response = await agent.com.atproto.repo.getRecord({
       repo: did,
-      collection: "com.zomega.test",
-      rkey: "singleton",
+      collection: "app.starrysky.streak.checkin",
+      rkey: "daily-checkin",
     });
 
-    console.log("Record retrieved:", response.data.value);
-
-    // Update the UI with the result
     const val = response.data.value;
     document.getElementById("status").innerText =
-      `Last updated: ${new Date(val.updatedAt).toLocaleTimeString()}`;
+      `Last check-in: ${new Date(val.createdAt).toLocaleString()}`;
   } catch (err) {
     if (err.message.includes("Could not find record")) {
-      console.log("No record found yet.");
+      document.getElementById("status").innerText = "No check-in found for today.";
     } else {
       console.error("Read failed:", err);
     }
   }
 }
 
-// Expose the test functions for console access during development.
-window.saveTestData = saveTestData;
-window.readTestData = readTestData;
+window.saveCheckin = saveCheckin;
+window.readCheckin = readCheckin;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const loginBtn = document.getElementById("login-btn");
+  if (loginBtn) {
+    loginBtn.disabled = true; // Disable initially
+    loginBtn.addEventListener("click", login);
+  }
+  
+  const saveBtn = document.getElementById("save-checkin-btn");
+  if (saveBtn) {
+    saveBtn.addEventListener("click", saveCheckin);
+  }
+  
+  init();
+});
