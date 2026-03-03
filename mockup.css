@@ -74,7 +74,7 @@ main {
 .freeze-icon-mini {
   font-size: 0.75rem;
   position: absolute;
-  bottom: 0.15rem; /* Center vertically on the pill */
+  bottom: -0.2rem; /* Center vertically on the pill */
   z-index: 3;
   pointer-events: none;
   color: var(--color-freeze-icon);
