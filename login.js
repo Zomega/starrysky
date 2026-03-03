@@ -13,6 +13,15 @@ async function init() {
   const loginBtn = document.getElementById("login-btn");
   const logoutBtn = document.getElementById("logout-btn");
 
+  // Security/Config Check: ATProto OAuth requires 127.0.0.1 for local dev, not localhost.
+  if (window.location.hostname === "localhost") {
+    console.warn(
+      "Redirecting to 127.0.0.1 to comply with OAuth requirements...",
+    );
+    window.location.hostname = "127.0.0.1";
+    return;
+  }
+
   console.log("App initializing...");
   if (statusEl) statusEl.innerText = "Connecting to Bluesky...";
 
@@ -31,10 +40,13 @@ async function init() {
     console.log("🛠️ window.client is ready");
 
     // The SDK should handle the redirect return automatically.
+    // It looks for 'code' and 'state' in the URL.
     const result = await client.init();
+    console.log("Client init result:", result);
 
     if (result?.session) {
-      setupGameUI(result.session);
+      console.log("Session found in init result");
+      await setupGameUI(result.session);
     } else {
       console.log("No session found, waiting for user login.");
       if (statusEl) statusEl.innerText = "Please log in to continue.";
@@ -47,27 +59,32 @@ async function init() {
       statusEl.innerText = "Connection Error: " + err.message;
       statusEl.style.color = "var(--red-500)";
     }
+    // Even if init fails (e.g. invalid code), try to show logout if we have an old session
+    // But usually init is the only way to get the session.
   }
 }
 
 async function setupGameUI(session) {
   oauthSession = session;
   window.oauthSession = oauthSession;
-  console.log("🛠️ window.oauthSession is ready");
+  console.log("Setting up UI for session:", session.sub);
+
+  // IMMEDIATELY show logout button
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.style.display = "flex";
+    console.log("Logout button display set to flex");
+  }
 
   agent = new Agent(oauthSession);
   window.agent = agent;
-  console.log("🛠️ window.agent is ready");
 
-  // Toggle UI elements if they exist
+  // Toggle other UI elements if they exist
   const loginSection = document.getElementById("login-section");
   if (loginSection) loginSection.style.display = "none";
 
   const gameSection = document.getElementById("game-section");
   if (gameSection) gameSection.style.display = "block";
-
-  const logoutBtn = document.getElementById("logout-btn");
-  if (logoutBtn) logoutBtn.style.display = "flex";
 
   const userInfo = document.getElementById("user-info");
   if (userInfo) userInfo.innerText = "Authenticated. Loading profile...";
@@ -114,7 +131,10 @@ async function login() {
   if (!handle) return alert("Enter your handle");
 
   try {
+    // Standardizing the redirect URI: must match metadata exactly.
     const redirectUri = window.location.origin + "/";
+    console.log("signIn initiating with redirect_uri:", redirectUri);
+
     const { url } = await client.signIn(handle, {
       scope: "atproto transition:generic",
       ui_locales: "en",
@@ -128,6 +148,7 @@ async function login() {
 }
 
 async function logout() {
+  console.log("Logging out...");
   if (oauthSession) {
     try {
       await oauthSession.signOut();
