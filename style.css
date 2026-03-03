@@ -59,6 +59,7 @@
   --color-freeze-icon: var(--white);
   --color-background-alt: var(--slate-900);
   --color-background-secondary: var(--slate-700);
+  --color-checkpoint-icon: var(--slate-900);
 }
 
 /* Light Mode Overrides */
@@ -83,6 +84,7 @@ html.force-light-mode {
   --color-freeze-icon: var(--sky-200);
   --color-background-alt: hsl(200, 30%, 97%);
   --color-background-secondary: hsl(200, 20%, 90%);
+  --color-checkpoint-icon: var(--white);
 }
 
 /* System Preference Support */
@@ -108,6 +110,7 @@ html.force-light-mode {
     --color-freeze-icon: var(--sky-200);
     --color-background-alt: hsl(200, 30%, 97%);
     --color-background-secondary: hsl(200, 20%, 90%);
+    --color-checkpoint-icon: var(--white);
   }
 }
 

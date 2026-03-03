@@ -399,7 +399,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--slate-900);
+  color: var(--color-checkpoint-icon);
   box-shadow: var(--card-shadow);
   position: absolute;
 }
@@ -417,7 +417,7 @@ main {
 }
 .goal-badge {
   background-color: var(--orange-500);
-  color: var(--white);
+  color: var(--color-checkpoint-icon);
   font-weight: bold;
   padding: 0.5rem 1rem;
   border-radius: var(--radius-m);
