@@ -379,68 +379,82 @@ main {
   text-decoration: none;
 }
 
-.progress-container {
+.goal-visual-container {
+  display: flex;
+  align-items: flex-start; /* Align nodes to top */
+  justify-content: space-between;
+  gap: 0;
+  margin: 2rem 0 var(--gap-xl) 0;
+  height: 5rem; /* Taller to fit labels */
+}
+
+.goal-checkpoint-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-s);
   position: relative;
-  height: 3.5rem;
-  margin-bottom: var(--gap-s);
+  z-index: 2;
 }
-.progress-track {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-}
-.progress-bg {
-  width: 100%;
-  background-color: var(--color-background-secondary);
-  height: 0.75rem;
-  border-radius: var(--radius-pill);
-  overflow: hidden;
-}
-.progress-fill {
-  background-color: var(--orange-500);
-  height: 100%;
-  border-radius: var(--radius-pill);
-}
-.checkpoint-layer {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding-right: 4rem;
-}
-.checkpoint {
-  background-color: var(--orange-400);
+
+.goal-checkpoint {
   width: 2.25rem;
   height: 2.25rem;
+  background-color: var(--color-background-secondary);
   border-radius: var(--radius-m);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-checkpoint-icon);
+  color: var(--text-muted);
+  flex-shrink: 0;
   box-shadow: var(--card-shadow);
-  position: absolute;
-}
-.checkpoint .material-symbols-outlined {
-  font-size: 1.25rem;
   font-weight: 900;
+  font-size: 0.75rem;
 }
-.goal-target {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
+
+.goal-checkpoint.reached {
+  background-color: var(--orange-400);
+  color: var(--color-checkpoint-icon);
 }
-.goal-badge {
+
+.goal-checkpoint.is-goal {
+  width: auto;
+  min-width: 3.5rem;
+  height: 2.5rem;
+  padding: 0 0.75rem;
+  background-color: var(--color-background-secondary);
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.goal-checkpoint.is-goal.reached {
   background-color: var(--orange-500);
   color: var(--color-checkpoint-icon);
-  font-weight: bold;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-m);
 }
+
+.goal-checkpoint-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.goal-segment {
+  flex-grow: 1;
+  height: 0.75rem;
+  background-color: var(--color-background-secondary);
+  position: relative;
+  margin: 0 -2px; /* Overlap slightly to prevent gaps */
+  margin-top: 0.75rem; /* Align with middle of checkpoint */
+  z-index: 1;
+}
+
+.goal-segment-fill {
+  height: 100%;
+  background-color: var(--orange-500);
+  width: var(--progress, 0%);
+}
+
 .goal-text {
   color: var(--text-muted);
   font-size: 0.875rem;
