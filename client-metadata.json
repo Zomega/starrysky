@@ -3,8 +3,8 @@
   "client_name": "Starrysky",
   "client_uri": "https://starrysky.app/",
   "redirect_uris": [
-    "https://starrysky.app/callback",
-    "http://127.0.0.1:8004/callback"
+    "https://starrysky.app/",
+    "http://127.0.0.1:8004/"
   ],
   "scope": "atproto transition:generic",
   "grant_types": ["authorization_code", "refresh_token"],
