@@ -8,7 +8,14 @@
       "key": "tid",
       "record": {
         "type": "object",
-        "required": ["service", "policy", "subject", "action", "balance", "createdAt"],
+        "required": [
+          "service",
+          "policy",
+          "subject",
+          "action",
+          "balance",
+          "createdAt"
+        ],
         "properties": {
           "service": {
             "type": "string",

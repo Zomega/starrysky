@@ -10,8 +10,15 @@
         "type": "object",
         "required": ["service", "policy", "subject", "sequence", "createdAt"],
         "properties": {
-          "service": { "type": "string", "description": "The NSID of the service where the streak event occurred." },
-          "policy": { "type": "string", "format": "at-uri", "description": "The URI of the policy governing this streak." },
+          "service": {
+            "type": "string",
+            "description": "The NSID of the service where the streak event occurred."
+          },
+          "policy": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "The URI of the policy governing this streak."
+          },
           "subject": {
             "type": "string",
             "description": "The name of the habit (e.g., 'Daily Coding', 'Morning Run').",
@@ -31,15 +38,31 @@
             "type": "integer",
             "description": "An optional numeric metric associated with this check-in (e.g. distance, weight, count)."
           },
-          "prev": { "type": "string", "format": "cid", "description": "CID of the previous check-in record in the sequence." },
-          "inventoryRef": { "type": "string", "format": "cid", "description": "CID of the inventory record associated with this check-in." },
-          "freezesClaimed": { "type": "integer", "default": 0, "description": "Number of freezes consumed to bridge gaps for this check-in." },
+          "prev": {
+            "type": "string",
+            "format": "cid",
+            "description": "CID of the previous check-in record in the sequence."
+          },
+          "inventoryRef": {
+            "type": "string",
+            "format": "cid",
+            "description": "CID of the inventory record associated with this check-in."
+          },
+          "freezesClaimed": {
+            "type": "integer",
+            "default": 0,
+            "description": "Number of freezes consumed to bridge gaps for this check-in."
+          },
           "witness": {
             "type": "ref",
             "ref": "lex:app.starrysky.streak.checkin#witness",
             "description": "Optional third-party attestation of the event."
           },
-          "createdAt": { "type": "string", "format": "datetime", "description": "Timestamp when this check-in record was created." }
+          "createdAt": {
+            "type": "string",
+            "format": "datetime",
+            "description": "Timestamp when this check-in record was created."
+          }
         }
       }
     },
@@ -48,9 +71,20 @@
       "description": "A cryptographic attestation from a third-party service.",
       "required": ["did", "sig", "subject"],
       "properties": {
-        "did": { "type": "string", "format": "did", "description": "The DID of the witness service." },
-        "sig": { "type": "bytes", "description": "The cryptographic signature of the witness." },
-        "subject": { "type": "string", "format": "cid", "description": "The CID of the record being witnessed." }
+        "did": {
+          "type": "string",
+          "format": "did",
+          "description": "The DID of the witness service."
+        },
+        "sig": {
+          "type": "bytes",
+          "description": "The cryptographic signature of the witness."
+        },
+        "subject": {
+          "type": "string",
+          "format": "cid",
+          "description": "The CID of the record being witnessed."
+        }
       }
     }
   }
