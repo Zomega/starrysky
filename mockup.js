@@ -1,3 +1,16 @@
+import JSConfetti from 'https://esm.sh/js-confetti@0.12.0';
+
+const jsConfetti = new JSConfetti();
+let lastCelebratedCount = -1;
+
+const BASE_MILESTONES = [1, 3, 7, 10, 25, 50, 75, 100, 200, 300];
+
+function isMilestone(count) {
+  if (count <= 0) return false;
+  if (BASE_MILESTONES.includes(count)) return true;
+  return count > 300 && count % 100 === 0;
+}
+
 // Mock Data Structure based on app.starrysky.streak.checkin lexicon
 const MOCK_CHECKINS = [
   // Wordle Streak - January 2026 (Full month with some gaps)
@@ -63,6 +76,7 @@ const MOCK_CHECKINS = [
   { subject: "Tiled Words", createdAt: "2026-02-22T12:00:00Z", sequence: 1, freezesClaimed: 0 },
   { subject: "Tiled Words", createdAt: "2026-02-23T12:00:00Z", sequence: 2, freezesClaimed: 0 },
   { subject: "Tiled Words", createdAt: "2026-02-24T12:00:00Z", sequence: 3, freezesClaimed: 0 },
+  // Gap on 25 - bridged by 1 freeze
   { subject: "Tiled Words", createdAt: "2026-02-26T12:00:00Z", sequence: 5, freezesClaimed: 1 },
   { subject: "Tiled Words", createdAt: "2026-02-27T12:00:00Z", sequence: 6, freezesClaimed: 0 },
   { subject: "Tiled Words", createdAt: "2026-02-28T12:00:00Z", sequence: 7, freezesClaimed: 0 },
@@ -97,7 +111,7 @@ function createStar(index) {
   return star;
 }
 
-function getGridDataForRange(checkins, subject, startDateStr, endDateStr) {
+export function getGridDataForRange(checkins, subject, startDateStr, endDateStr) {
   const activeIndices = [];
   const frozenIndices = [];
   const dayMs = 24 * 60 * 60 * 1000;
@@ -217,7 +231,7 @@ function renderStreakRow(name, days, activeDays, freezeDays = [], totalStreak = 
   return row;
 }
 
-function getDaysInMonth(year, month) {
+export function getDaysInMonth(year, month) {
   const date = new Date(Date.UTC(year, month, 1));
   const days = [];
   while (date.getUTCMonth() === month) {
@@ -296,8 +310,7 @@ function renderCalendarCard() {
 }
 
 function getMilestones(currentCount) {
-  const basic = [1, 3, 7, 10, 25, 50, 75, 100, 200, 300];
-  let milestones = [0, ...basic]; // Prepend 0 as the absolute starting point
+  let milestones = [0, ...BASE_MILESTONES];
   let last = milestones[milestones.length - 1];
   while (last <= currentCount + 100) {
     last += 100;
@@ -318,11 +331,9 @@ function renderGoalCard(count) {
   const nextGoal = milestones[milestones.length - 1];
   
   milestones.forEach((m, idx) => {
-    // 1. Create Wrapper
     const wrap = document.createElement("div");
     wrap.className = "goal-checkpoint-wrap";
 
-    // 2. Create Checkpoint Node
     const node = document.createElement("div");
     node.className = "goal-checkpoint";
     if (m === nextGoal) node.classList.add("is-goal");
@@ -334,7 +345,6 @@ function renderGoalCard(count) {
     }
     wrap.appendChild(node);
 
-    // 3. Create Label (Only if not the main goal node)
     if (m !== nextGoal) {
       const label = document.createElement("div");
       label.className = "goal-checkpoint-label";
@@ -344,7 +354,6 @@ function renderGoalCard(count) {
 
     visualContainer.appendChild(wrap);
     
-    // 4. Create Segment (if not the last node)
     if (idx < milestones.length - 1) {
       const nextM = milestones[idx + 1];
       const segment = document.createElement("div");
@@ -461,13 +470,33 @@ function getVariantClasses(count) {
   return classes;
 }
 
+function celebrateGoal(count) {
+  if (isMilestone(count) && count > lastCelebratedCount) {
+    jsConfetti.addConfetti({
+      confettiColors: [
+        '#fb923c', '#f97316', // Oranges
+        '#38bdf8', '#0ea5e9', // Blues
+        '#ffffff'            // White for sparkle
+      ],
+      confettiNumber: 100,
+    });
+    lastCelebratedCount = count;
+  }
+}
+
 function refreshUI() {
   const cardContainer = document.querySelector(".card-container");
   if (!cardContainer) return;
   const inputEl = document.querySelector("input");
-  const overrideCount = inputEl ? (parseInt(inputEl.value)) : null;
+  
+  const overrideCount = inputEl ? (parseInt(inputEl.value)) : 0;
+  
   cardContainer.innerHTML = "";
   cardContainer.appendChild(renderStreakCards(overrideCount));
+  
+  if (overrideCount > 0) {
+    celebrateGoal(overrideCount);
+  }
 }
 
 if (typeof document !== "undefined") {
@@ -493,8 +522,4 @@ if (typeof document !== "undefined") {
       inputEl.addEventListener("input", refreshUI);
     }
   });
-}
-
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = { getGridDataForRange, getDaysInMonth };
 }
