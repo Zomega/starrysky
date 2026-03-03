@@ -12,7 +12,8 @@
           "service",
           "verificationType",
           "windowSeconds",
-          "freezeGrantRate"
+          "freezeGrantRate",
+          "createdAt"
         ],
         "properties": {
           "service": {
@@ -45,6 +46,11 @@
             "type": "integer",
             "default": 3,
             "description": "The maximum number of freezes a user can bank at one time."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime",
+            "description": "Timestamp when this policy record was created."
           }
         }
       }

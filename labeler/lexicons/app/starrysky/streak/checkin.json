@@ -8,61 +8,49 @@
       "key": "tid",
       "record": {
         "type": "object",
-        "required": [
-          "service",
-          "policy",
-          "createdAt"
-        ],
+        "required": ["service", "policy", "subject", "sequence", "createdAt"],
         "properties": {
-          "service": {
+          "service": { "type": "string", "description": "The NSID of the service where the streak event occurred." },
+          "policy": { "type": "string", "format": "at-uri", "description": "The URI of the policy governing this streak." },
+          "subject": {
             "type": "string",
-            "description": "The NSID of the service (must match the policy)."
+            "description": "The name of the habit (e.g., 'Daily Coding', 'Morning Run').",
+            "maxLength": 100
           },
-          "policy": {
-            "type": "string",
-            "format": "at-uri",
-            "description": "The AT-URI of the app.starrysky.streak.policy record dictating the rules."
-          },
-          "prev": {
-            "type": "string",
-            "format": "cid",
-            "description": "Link to the user's previous check-in record for this service. Null if this is the first day."
-          },
-          "inventoryRef": {
-            "type": "string",
-            "format": "cid",
-            "description": "Link to the latest freeze inventory state used/updated to bridge a gap."
-          },
-          "freezesClaimed": {
+          "sequence": {
             "type": "integer",
-            "default": 0,
-            "description": "Number of freezes spent to bridge the temporal gap from the 'prev' record."
+            "description": "The current day number of this specific streak.",
+            "minimum": 1
           },
-          "witness": {
-            "type": "object",
-            "description": "A cryptographic attestation from a third-party service (Required if policy is 'witnessed').",
-            "required": ["did", "sig"],
-            "properties": {
-              "did": {
-                "type": "string",
-                "format": "did"
-              },
-              "sig": {
-                "type": "bytes",
-                "description": "Cryptographic signature of the record or action CID."
-              },
-              "subject": {
-                "type": "string",
-                "format": "cid",
-                "description": "Optional CID of a specific external resource (e.g., a git commit) being attested to."
-              }
-            }
-          },
-          "createdAt": {
+          "note": {
             "type": "string",
-            "format": "datetime"
-          }
+            "description": "A short note or comment about this check-in (e.g. 'Ran 5km').",
+            "maxLength": 300
+          },
+          "value": {
+            "type": "integer",
+            "description": "An optional numeric metric associated with this check-in (e.g. distance, weight, count)."
+          },
+          "prev": { "type": "string", "format": "cid", "description": "CID of the previous check-in record in the sequence." },
+          "inventoryRef": { "type": "string", "format": "cid", "description": "CID of the inventory record associated with this check-in." },
+          "freezesClaimed": { "type": "integer", "default": 0, "description": "Number of freezes consumed to bridge gaps for this check-in." },
+          "witness": {
+            "type": "ref",
+            "ref": "lex:app.starrysky.streak.checkin#witness",
+            "description": "Optional third-party attestation of the event."
+          },
+          "createdAt": { "type": "string", "format": "datetime", "description": "Timestamp when this check-in record was created." }
         }
+      }
+    },
+    "witness": {
+      "type": "object",
+      "description": "A cryptographic attestation from a third-party service.",
+      "required": ["did", "sig", "subject"],
+      "properties": {
+        "did": { "type": "string", "format": "did", "description": "The DID of the witness service." },
+        "sig": { "type": "bytes", "description": "The cryptographic signature of the witness." },
+        "subject": { "type": "string", "format": "cid", "description": "The CID of the record being witnessed." }
       }
     }
   }

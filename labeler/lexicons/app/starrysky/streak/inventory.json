@@ -8,16 +8,20 @@
       "key": "tid",
       "record": {
         "type": "object",
-        "required": [
-          "service",
-          "action",
-          "balance",
-          "createdAt"
-        ],
+        "required": ["service", "policy", "subject", "action", "balance", "createdAt"],
         "properties": {
           "service": {
             "type": "string",
             "description": "The NSID of the service this inventory applies to."
+          },
+          "policy": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "The URI of the policy governing this streak's rules."
+          },
+          "subject": {
+            "type": "string",
+            "description": "The name of the habit this inventory ledger belongs to (e.g., 'Daily Coding')."
           },
           "prev": {
             "type": "string",
@@ -40,7 +44,8 @@
           },
           "createdAt": {
             "type": "string",
-            "format": "datetime"
+            "format": "datetime",
+            "description": "Timestamp of when this inventory ledger entry was created."
           }
         }
       }
