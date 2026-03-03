@@ -12,8 +12,9 @@ function isMilestone(count) {
 }
 
 // Mock Data Structure based on app.starrysky.streak.checkin lexicon
+// Note: sequence increments ONLY on actual check-ins. Freezes maintain but do not increment sequence.
 const MOCK_CHECKINS = [
-  // Wordle Streak - January 2026 (Full month with some gaps)
+  // Wordle Streak - January 2026
   { subject: "Wordle", createdAt: "2026-01-01T12:00:00Z", sequence: 449, freezesClaimed: 0 },
   { subject: "Wordle", createdAt: "2026-01-02T12:00:00Z", sequence: 450, freezesClaimed: 0 },
   { subject: "Wordle", createdAt: "2026-01-03T12:00:00Z", sequence: 451, freezesClaimed: 0 },
@@ -34,66 +35,67 @@ const MOCK_CHECKINS = [
   { subject: "Wordle", createdAt: "2026-01-18T12:00:00Z", sequence: 466, freezesClaimed: 0 },
   { subject: "Wordle", createdAt: "2026-01-19T12:00:00Z", sequence: 467, freezesClaimed: 0 },
   { subject: "Wordle", createdAt: "2026-01-20T12:00:00Z", sequence: 468, freezesClaimed: 0 },
-  // Gap 21, 22 - 2 freezes
-  { subject: "Wordle", createdAt: "2026-01-23T12:00:00Z", sequence: 471, freezesClaimed: 2 },
-  { subject: "Wordle", createdAt: "2026-01-24T12:00:00Z", sequence: 472, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-25T12:00:00Z", sequence: 473, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-26T12:00:00Z", sequence: 474, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-27T12:00:00Z", sequence: 475, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-28T12:00:00Z", sequence: 476, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-29T12:00:00Z", sequence: 477, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-30T12:00:00Z", sequence: 478, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-31T12:00:00Z", sequence: 479, freezesClaimed: 0 },
+  // Jan 21, 22: Frozen
+  { subject: "Wordle", createdAt: "2026-01-23T12:00:00Z", sequence: 469, freezesClaimed: 2 },
+  { subject: "Wordle", createdAt: "2026-01-24T12:00:00Z", sequence: 470, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-01-25T12:00:00Z", sequence: 471, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-01-26T12:00:00Z", sequence: 472, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-01-27T12:00:00Z", sequence: 473, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-01-28T12:00:00Z", sequence: 474, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-01-29T12:00:00Z", sequence: 475, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-01-30T12:00:00Z", sequence: 476, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-01-31T12:00:00Z", sequence: 477, freezesClaimed: 0 },
 
   // Wordle Streak - February 2026
-  { subject: "Wordle", createdAt: "2026-02-01T12:00:00Z", sequence: 480, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-02T12:00:00Z", sequence: 481, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-03T12:00:00Z", sequence: 482, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-04T12:00:00Z", sequence: 483, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-05T12:00:00Z", sequence: 484, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-06T12:00:00Z", sequence: 485, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-07T12:00:00Z", sequence: 486, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-08T12:00:00Z", sequence: 487, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-09T12:00:00Z", sequence: 488, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-10T12:00:00Z", sequence: 489, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-11T12:00:00Z", sequence: 490, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-12T12:00:00Z", sequence: 491, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-13T12:00:00Z", sequence: 492, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-14T12:00:00Z", sequence: 493, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-15T12:00:00Z", sequence: 494, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-18T12:00:00Z", sequence: 497, freezesClaimed: 2 },
-  { subject: "Wordle", createdAt: "2026-02-19T12:00:00Z", sequence: 498, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-20T12:00:00Z", sequence: 499, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-21T12:00:00Z", sequence: 500, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-22T12:00:00Z", sequence: 501, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-23T12:00:00Z", sequence: 502, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-25T12:00:00Z", sequence: 504, freezesClaimed: 1 },
-  { subject: "Wordle", createdAt: "2026-02-26T12:00:00Z", sequence: 505, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-27T12:00:00Z", sequence: 506, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-28T12:00:00Z", sequence: 507, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-01T12:00:00Z", sequence: 478, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-02T12:00:00Z", sequence: 479, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-03T12:00:00Z", sequence: 480, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-04T12:00:00Z", sequence: 481, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-05T12:00:00Z", sequence: 482, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-06T12:00:00Z", sequence: 483, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-07T12:00:00Z", sequence: 484, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-08T12:00:00Z", sequence: 485, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-09T12:00:00Z", sequence: 486, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-10T12:00:00Z", sequence: 487, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-11T12:00:00Z", sequence: 488, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-12T12:00:00Z", sequence: 489, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-13T12:00:00Z", sequence: 490, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-14T12:00:00Z", sequence: 491, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-15T12:00:00Z", sequence: 492, freezesClaimed: 0 },
+  // Feb 16, 17: Frozen
+  { subject: "Wordle", createdAt: "2026-02-18T12:00:00Z", sequence: 493, freezesClaimed: 2 },
+  { subject: "Wordle", createdAt: "2026-02-19T12:00:00Z", sequence: 494, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-20T12:00:00Z", sequence: 495, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-21T12:00:00Z", sequence: 496, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-22T12:00:00Z", sequence: 497, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-23T12:00:00Z", sequence: 498, freezesClaimed: 0 },
+  // Feb 24: Frozen
+  { subject: "Wordle", createdAt: "2026-02-25T12:00:00Z", sequence: 499, freezesClaimed: 1 },
+  { subject: "Wordle", createdAt: "2026-02-26T12:00:00Z", sequence: 500, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-27T12:00:00Z", sequence: 501, freezesClaimed: 0 },
+  { subject: "Wordle", createdAt: "2026-02-28T12:00:00Z", sequence: 502, freezesClaimed: 0 },
 
   // Tiled Words
   { subject: "Tiled Words", createdAt: "2026-02-22T12:00:00Z", sequence: 1, freezesClaimed: 0 },
   { subject: "Tiled Words", createdAt: "2026-02-23T12:00:00Z", sequence: 2, freezesClaimed: 0 },
   { subject: "Tiled Words", createdAt: "2026-02-24T12:00:00Z", sequence: 3, freezesClaimed: 0 },
-  // Gap on 25 - bridged by 1 freeze
-  { subject: "Tiled Words", createdAt: "2026-02-26T12:00:00Z", sequence: 5, freezesClaimed: 1 },
-  { subject: "Tiled Words", createdAt: "2026-02-27T12:00:00Z", sequence: 6, freezesClaimed: 0 },
-  { subject: "Tiled Words", createdAt: "2026-02-28T12:00:00Z", sequence: 7, freezesClaimed: 0 },
+  { subject: "Tiled Words", createdAt: "2026-02-26T12:00:00Z", sequence: 4, freezesClaimed: 1 },
+  { subject: "Tiled Words", createdAt: "2026-02-27T12:00:00Z", sequence: 5, freezesClaimed: 0 },
+  { subject: "Tiled Words", createdAt: "2026-02-28T12:00:00Z", sequence: 6, freezesClaimed: 0 },
 
   // Connections
   { subject: "Connections", createdAt: "2026-02-22T12:00:00Z", sequence: 1, freezesClaimed: 0 },
   { subject: "Connections", createdAt: "2026-02-23T12:00:00Z", sequence: 2, freezesClaimed: 0 },
-  { subject: "Connections", createdAt: "2026-02-25T12:00:00Z", sequence: 4, freezesClaimed: 1 },
-  { subject: "Connections", createdAt: "2026-02-26T12:00:00Z", sequence: 5, freezesClaimed: 0 },
-  { subject: "Connections", createdAt: "2026-02-27T12:00:00Z", sequence: 6, freezesClaimed: 0 },
-  { subject: "Connections", createdAt: "2026-02-28T12:00:00Z", sequence: 7, freezesClaimed: 0 },
+  { subject: "Connections", createdAt: "2026-02-25T12:00:00Z", sequence: 3, freezesClaimed: 1 },
+  { subject: "Connections", createdAt: "2026-02-26T12:00:00Z", sequence: 4, freezesClaimed: 0 },
+  { subject: "Connections", createdAt: "2026-02-27T12:00:00Z", sequence: 5, freezesClaimed: 0 },
+  { subject: "Connections", createdAt: "2026-02-28T12:00:00Z", sequence: 6, freezesClaimed: 0 },
 
   // Crossword
   { subject: "Crossword", createdAt: "2026-02-21T12:00:00Z", sequence: 1, freezesClaimed: 0 },
-  { subject: "Crossword", createdAt: "2026-02-23T12:00:00Z", sequence: 3, freezesClaimed: 1 },
-  { subject: "Crossword", createdAt: "2026-02-25T12:00:00Z", sequence: 5, freezesClaimed: 1 },
-  { subject: "Crossword", createdAt: "2026-02-27T12:00:00Z", sequence: 7, freezesClaimed: 1 },
+  { subject: "Crossword", createdAt: "2026-02-23T12:00:00Z", sequence: 2, freezesClaimed: 1 },
+  { subject: "Crossword", createdAt: "2026-02-25T12:00:00Z", sequence: 3, freezesClaimed: 1 },
+  { subject: "Crossword", createdAt: "2026-02-27T12:00:00Z", sequence: 4, freezesClaimed: 1 },
 ];
 
 let currentYear = 2026;

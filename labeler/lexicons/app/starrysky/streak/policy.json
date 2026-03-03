@@ -47,6 +47,11 @@
             "default": 3,
             "description": "The maximum number of freezes a user can bank at one time."
           },
+          "includeFreezesInStreak": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, frozen days are included in the streak sequence count."
+          },
           "createdAt": {
             "type": "string",
             "format": "datetime",
