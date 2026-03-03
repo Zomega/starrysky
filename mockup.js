@@ -1,101 +1,494 @@
-import JSConfetti from 'https://esm.sh/js-confetti@0.12.0';
+import JSConfetti from "https://esm.sh/js-confetti@0.12.0";
 
 const jsConfetti = new JSConfetti();
 let lastCelebratedCount = -1;
 
-const BASE_MILESTONES = [1, 3, 7, 10, 25, 50, 75, 100, 200, 300];
+const MOCK_POLICIES = {
+  Wordle: {
+    service: "app.starrysky",
+    milestones: [1, 3, 7, 10, 25, 50, 75, 100, 200, 300],
+    recurringMilestoneInterval: 100,
+    grantFreezeAtMilestone: true,
+    freezeGrantRate: 0, // 0 means only milestones grant freezes
+    includeFreezesInStreak: false,
+    maxFreezes: 3,
+  },
+  "Tiled Words": {
+    service: "app.starrysky",
+    milestones: [5, 10, 25, 50],
+    recurringMilestoneInterval: 50,
+    grantFreezeAtMilestone: false,
+    freezeGrantRate: 7, // Every 7 days
+    includeFreezesInStreak: true,
+    maxFreezes: 5,
+  },
+  Connections: {
+    service: "app.starrysky",
+    milestones: [7, 14, 21, 28],
+    recurringMilestoneInterval: 28,
+    grantFreezeAtMilestone: true,
+    freezeGrantRate: 0,
+    includeFreezesInStreak: false,
+    maxFreezes: 2,
+  },
+  Crossword: {
+    service: "app.starrysky",
+    milestones: [1, 5, 10, 25, 50, 100],
+    recurringMilestoneInterval: 100,
+    grantFreezeAtMilestone: true,
+    freezeGrantRate: 10,
+    includeFreezesInStreak: false,
+    maxFreezes: 3,
+  },
+};
 
-function isMilestone(count) {
-  if (count <= 0) return false;
-  if (BASE_MILESTONES.includes(count)) return true;
-  return count > 300 && count % 100 === 0;
+function getPolicyForSubject(subject) {
+  return MOCK_POLICIES[subject] || MOCK_POLICIES["Wordle"];
 }
 
-// Mock Data Structure based on app.starrysky.streak.checkin lexicon
-// Note: sequence increments ONLY on actual check-ins. Freezes maintain but do not increment sequence.
+function isMilestone(count, policy) {
+  if (count <= 0) return false;
+  if (policy.milestones && policy.milestones.includes(count)) return true;
+  if (policy.recurringMilestoneInterval) {
+    const lastExplicit = policy.milestones ? Math.max(...policy.milestones) : 0;
+    if (count > lastExplicit) {
+      return (count - lastExplicit) % policy.recurringMilestoneInterval === 0;
+    }
+  }
+  return false;
+}
+
+// Mock Data Structure
 const MOCK_CHECKINS = [
   // Wordle Streak - January 2026
-  { subject: "Wordle", createdAt: "2026-01-01T12:00:00Z", sequence: 449, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-02T12:00:00Z", sequence: 450, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-03T12:00:00Z", sequence: 451, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-04T12:00:00Z", sequence: 452, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-05T12:00:00Z", sequence: 453, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-06T12:00:00Z", sequence: 454, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-07T12:00:00Z", sequence: 455, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-08T12:00:00Z", sequence: 456, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-09T12:00:00Z", sequence: 457, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-10T12:00:00Z", sequence: 458, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-11T12:00:00Z", sequence: 459, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-12T12:00:00Z", sequence: 460, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-13T12:00:00Z", sequence: 461, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-14T12:00:00Z", sequence: 462, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-15T12:00:00Z", sequence: 463, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-16T12:00:00Z", sequence: 464, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-17T12:00:00Z", sequence: 465, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-18T12:00:00Z", sequence: 466, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-19T12:00:00Z", sequence: 467, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-20T12:00:00Z", sequence: 468, freezesClaimed: 0 },
-  // Jan 21, 22: Frozen
-  { subject: "Wordle", createdAt: "2026-01-23T12:00:00Z", sequence: 469, freezesClaimed: 2 },
-  { subject: "Wordle", createdAt: "2026-01-24T12:00:00Z", sequence: 470, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-25T12:00:00Z", sequence: 471, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-26T12:00:00Z", sequence: 472, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-27T12:00:00Z", sequence: 473, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-28T12:00:00Z", sequence: 474, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-29T12:00:00Z", sequence: 475, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-30T12:00:00Z", sequence: 476, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-01-31T12:00:00Z", sequence: 477, freezesClaimed: 0 },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-01T12:00:00Z",
+    sequence: 449,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-02T12:00:00Z",
+    sequence: 450,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-03T12:00:00Z",
+    sequence: 451,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-04T12:00:00Z",
+    sequence: 452,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-05T12:00:00Z",
+    sequence: 453,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-06T12:00:00Z",
+    sequence: 454,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-07T12:00:00Z",
+    sequence: 455,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-08T12:00:00Z",
+    sequence: 456,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-09T12:00:00Z",
+    sequence: 457,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-10T12:00:00Z",
+    sequence: 458,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-11T12:00:00Z",
+    sequence: 459,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-12T12:00:00Z",
+    sequence: 460,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-13T12:00:00Z",
+    sequence: 461,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-14T12:00:00Z",
+    sequence: 462,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-15T12:00:00Z",
+    sequence: 463,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-16T12:00:00Z",
+    sequence: 464,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-17T12:00:00Z",
+    sequence: 465,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-18T12:00:00Z",
+    sequence: 466,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-19T12:00:00Z",
+    sequence: 467,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-20T12:00:00Z",
+    sequence: 468,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-23T12:00:00Z",
+    sequence: 469,
+    freezesClaimed: 2,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-24T12:00:00Z",
+    sequence: 470,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-25T12:00:00Z",
+    sequence: 471,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-26T12:00:00Z",
+    sequence: 472,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-27T12:00:00Z",
+    sequence: 473,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-28T12:00:00Z",
+    sequence: 474,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-29T12:00:00Z",
+    sequence: 475,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-30T12:00:00Z",
+    sequence: 476,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-01-31T12:00:00Z",
+    sequence: 477,
+    freezesClaimed: 0,
+  },
 
   // Wordle Streak - February 2026
-  { subject: "Wordle", createdAt: "2026-02-01T12:00:00Z", sequence: 478, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-02T12:00:00Z", sequence: 479, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-03T12:00:00Z", sequence: 480, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-04T12:00:00Z", sequence: 481, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-05T12:00:00Z", sequence: 482, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-06T12:00:00Z", sequence: 483, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-07T12:00:00Z", sequence: 484, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-08T12:00:00Z", sequence: 485, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-09T12:00:00Z", sequence: 486, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-10T12:00:00Z", sequence: 487, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-11T12:00:00Z", sequence: 488, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-12T12:00:00Z", sequence: 489, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-13T12:00:00Z", sequence: 490, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-14T12:00:00Z", sequence: 491, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-15T12:00:00Z", sequence: 492, freezesClaimed: 0 },
-  // Feb 16, 17: Frozen
-  { subject: "Wordle", createdAt: "2026-02-18T12:00:00Z", sequence: 493, freezesClaimed: 2 },
-  { subject: "Wordle", createdAt: "2026-02-19T12:00:00Z", sequence: 494, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-20T12:00:00Z", sequence: 495, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-21T12:00:00Z", sequence: 496, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-22T12:00:00Z", sequence: 497, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-23T12:00:00Z", sequence: 498, freezesClaimed: 0 },
-  // Feb 24: Frozen
-  { subject: "Wordle", createdAt: "2026-02-25T12:00:00Z", sequence: 499, freezesClaimed: 1 },
-  { subject: "Wordle", createdAt: "2026-02-26T12:00:00Z", sequence: 500, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-27T12:00:00Z", sequence: 501, freezesClaimed: 0 },
-  { subject: "Wordle", createdAt: "2026-02-28T12:00:00Z", sequence: 502, freezesClaimed: 0 },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-01T12:00:00Z",
+    sequence: 478,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-02T12:00:00Z",
+    sequence: 479,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-03T12:00:00Z",
+    sequence: 480,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-04T12:00:00Z",
+    sequence: 481,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-05T12:00:00Z",
+    sequence: 482,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-06T12:00:00Z",
+    sequence: 483,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-07T12:00:00Z",
+    sequence: 484,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-08T12:00:00Z",
+    sequence: 485,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-09T12:00:00Z",
+    sequence: 486,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-10T12:00:00Z",
+    sequence: 487,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-11T12:00:00Z",
+    sequence: 488,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-12T12:00:00Z",
+    sequence: 489,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-13T12:00:00Z",
+    sequence: 490,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-14T12:00:00Z",
+    sequence: 491,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-15T12:00:00Z",
+    sequence: 492,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-18T12:00:00Z",
+    sequence: 493,
+    freezesClaimed: 2,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-19T12:00:00Z",
+    sequence: 494,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-20T12:00:00Z",
+    sequence: 495,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-21T12:00:00Z",
+    sequence: 496,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-22T12:00:00Z",
+    sequence: 497,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-23T12:00:00Z",
+    sequence: 498,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-25T12:00:00Z",
+    sequence: 499,
+    freezesClaimed: 1,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-26T12:00:00Z",
+    sequence: 500,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-27T12:00:00Z",
+    sequence: 501,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Wordle",
+    createdAt: "2026-02-28T12:00:00Z",
+    sequence: 502,
+    freezesClaimed: 0,
+  },
 
   // Tiled Words
-  { subject: "Tiled Words", createdAt: "2026-02-22T12:00:00Z", sequence: 1, freezesClaimed: 0 },
-  { subject: "Tiled Words", createdAt: "2026-02-23T12:00:00Z", sequence: 2, freezesClaimed: 0 },
-  { subject: "Tiled Words", createdAt: "2026-02-24T12:00:00Z", sequence: 3, freezesClaimed: 0 },
-  { subject: "Tiled Words", createdAt: "2026-02-26T12:00:00Z", sequence: 4, freezesClaimed: 1 },
-  { subject: "Tiled Words", createdAt: "2026-02-27T12:00:00Z", sequence: 5, freezesClaimed: 0 },
-  { subject: "Tiled Words", createdAt: "2026-02-28T12:00:00Z", sequence: 6, freezesClaimed: 0 },
+  {
+    subject: "Tiled Words",
+    createdAt: "2026-02-22T12:00:00Z",
+    sequence: 1,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Tiled Words",
+    createdAt: "2026-02-23T12:00:00Z",
+    sequence: 2,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Tiled Words",
+    createdAt: "2026-02-24T12:00:00Z",
+    sequence: 3,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Tiled Words",
+    createdAt: "2026-02-26T12:00:00Z",
+    sequence: 4,
+    freezesClaimed: 1,
+  },
+  {
+    subject: "Tiled Words",
+    createdAt: "2026-02-27T12:00:00Z",
+    sequence: 5,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Tiled Words",
+    createdAt: "2026-02-28T12:00:00Z",
+    sequence: 6,
+    freezesClaimed: 0,
+  },
 
   // Connections
-  { subject: "Connections", createdAt: "2026-02-22T12:00:00Z", sequence: 1, freezesClaimed: 0 },
-  { subject: "Connections", createdAt: "2026-02-23T12:00:00Z", sequence: 2, freezesClaimed: 0 },
-  { subject: "Connections", createdAt: "2026-02-25T12:00:00Z", sequence: 3, freezesClaimed: 1 },
-  { subject: "Connections", createdAt: "2026-02-26T12:00:00Z", sequence: 4, freezesClaimed: 0 },
-  { subject: "Connections", createdAt: "2026-02-27T12:00:00Z", sequence: 5, freezesClaimed: 0 },
-  { subject: "Connections", createdAt: "2026-02-28T12:00:00Z", sequence: 6, freezesClaimed: 0 },
+  {
+    subject: "Connections",
+    createdAt: "2026-02-22T12:00:00Z",
+    sequence: 1,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Connections",
+    createdAt: "2026-02-23T12:00:00Z",
+    sequence: 2,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Connections",
+    createdAt: "2026-02-25T12:00:00Z",
+    sequence: 3,
+    freezesClaimed: 1,
+  },
+  {
+    subject: "Connections",
+    createdAt: "2026-02-26T12:00:00Z",
+    sequence: 4,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Connections",
+    createdAt: "2026-02-27T12:00:00Z",
+    sequence: 5,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Connections",
+    createdAt: "2026-02-28T12:00:00Z",
+    sequence: 6,
+    freezesClaimed: 0,
+  },
 
   // Crossword
-  { subject: "Crossword", createdAt: "2026-02-21T12:00:00Z", sequence: 1, freezesClaimed: 0 },
-  { subject: "Crossword", createdAt: "2026-02-23T12:00:00Z", sequence: 2, freezesClaimed: 1 },
-  { subject: "Crossword", createdAt: "2026-02-25T12:00:00Z", sequence: 3, freezesClaimed: 1 },
-  { subject: "Crossword", createdAt: "2026-02-27T12:00:00Z", sequence: 4, freezesClaimed: 1 },
+  {
+    subject: "Crossword",
+    createdAt: "2026-02-21T12:00:00Z",
+    sequence: 1,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Crossword",
+    createdAt: "2026-02-23T12:00:00Z",
+    sequence: 2,
+    freezesClaimed: 1,
+  },
+  {
+    subject: "Crossword",
+    createdAt: "2026-02-25T12:00:00Z",
+    sequence: 3,
+    freezesClaimed: 1,
+  },
+  {
+    subject: "Crossword",
+    createdAt: "2026-02-27T12:00:00Z",
+    sequence: 4,
+    freezesClaimed: 1,
+  },
 ];
 
 let currentYear = 2026;
@@ -113,34 +506,39 @@ function createStar(index) {
   return star;
 }
 
-export function getGridDataForRange(checkins, subject, startDateStr, endDateStr) {
+export function getGridDataForRange(
+  checkins,
+  subject,
+  startDateStr,
+  endDateStr,
+) {
   const activeIndices = [];
   const frozenIndices = [];
   const dayMs = 24 * 60 * 60 * 1000;
-  
+
   const start = new Date(startDateStr);
   start.setUTCHours(0, 0, 0, 0);
   const end = new Date(endDateStr);
   end.setUTCHours(0, 0, 0, 0);
 
-  const relevantCheckins = checkins.filter(c => c.subject === subject);
+  const relevantCheckins = checkins.filter((c) => c.subject === subject);
   const dayMap = new Map();
 
-  relevantCheckins.forEach(c => {
+  relevantCheckins.forEach((c) => {
     const checkinDate = new Date(c.createdAt);
     checkinDate.setUTCHours(0, 0, 0, 0);
     const ts = checkinDate.getTime();
-    
+
     if (ts >= start.getTime() && ts <= end.getTime()) {
-      dayMap.set(ts, 'active');
+      dayMap.set(ts, "active");
     }
-    
+
     if (c.freezesClaimed > 0) {
       for (let i = 1; i <= c.freezesClaimed; i++) {
         const frozenTs = ts - i * dayMs;
         if (frozenTs >= start.getTime() && frozenTs <= end.getTime()) {
-          if (dayMap.get(frozenTs) !== 'active') {
-            dayMap.set(frozenTs, 'frozen');
+          if (dayMap.get(frozenTs) !== "active") {
+            dayMap.set(frozenTs, "frozen");
           }
         }
       }
@@ -151,9 +549,9 @@ export function getGridDataForRange(checkins, subject, startDateStr, endDateStr)
   let idx = 0;
   while (currTs <= end.getTime()) {
     const status = dayMap.get(currTs);
-    if (status === 'active') activeIndices.push(idx);
-    else if (status === 'frozen') frozenIndices.push(idx);
-    
+    if (status === "active") activeIndices.push(idx);
+    else if (status === "frozen") frozenIndices.push(idx);
+
     currTs += dayMs;
     idx++;
   }
@@ -189,11 +587,13 @@ function renderStreakGrid(days, activeDays, freezeDays, cols = 8) {
       let startIdx = allMarked[i];
       let endIdx = startIdx;
       let isCurrentFrozen = freezeDays.includes(startIdx);
-      
+
       let j = i + 1;
-      while (j < allMarked.length && 
-             allMarked[j] === endIdx + 1 && 
-             freezeDays.includes(allMarked[j]) === isCurrentFrozen) {
+      while (
+        j < allMarked.length &&
+        allMarked[j] === endIdx + 1 &&
+        freezeDays.includes(allMarked[j]) === isCurrentFrozen
+      ) {
         endIdx = allMarked[j];
         j++;
       }
@@ -209,11 +609,12 @@ function renderStreakGrid(days, activeDays, freezeDays, cols = 8) {
 
       if (isCurrentFrozen) {
         const icon = cloneTemplate("tpl-freeze-icon");
-        const centerLeft = ((startIdx + (endIdx - startIdx) / 2 + 0.5) / cols) * 100;
+        const centerLeft =
+          ((startIdx + (endIdx - startIdx) / 2 + 0.5) / cols) * 100;
         icon.style.left = `${centerLeft}%`;
         elements.push(icon);
       }
-      
+
       i = j;
     }
   }
@@ -222,7 +623,13 @@ function renderStreakGrid(days, activeDays, freezeDays, cols = 8) {
   return container;
 }
 
-function renderStreakRow(name, days, activeDays, freezeDays = [], totalStreak = 0) {
+function renderStreakRow(
+  name,
+  days,
+  activeDays,
+  freezeDays = [],
+  totalStreak = 0,
+) {
   const row = cloneTemplate("tpl-streak-row");
   row.querySelector(".streak-name").textContent = name;
   row.querySelector(".streak-total").textContent = `${totalStreak}d`;
@@ -246,92 +653,116 @@ export function getDaysInMonth(year, month) {
 function renderCalendarCard() {
   const calCard = cloneTemplate("tpl-calendar-card");
   calCard.querySelector(".streak-association").textContent = primarySubject;
-  
-  const monthName = new Date(Date.UTC(currentYear, currentMonth, 1)).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+  const monthName = new Date(
+    Date.UTC(currentYear, currentMonth, 1),
+  ).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
   calCard.querySelector(".calendar-month-title").textContent = monthName;
-  
+
   const calWeeks = calCard.querySelector(".calendar-weeks");
   const monthDays = getDaysInMonth(currentYear, currentMonth);
-  
+
   const firstDay = new Date(Date.UTC(currentYear, currentMonth, 1)).getUTCDay();
-  const prevMonthLastDate = new Date(Date.UTC(currentYear, currentMonth, 0)).getUTCDate();
-  
+  const prevMonthLastDate = new Date(
+    Date.UTC(currentYear, currentMonth, 0),
+  ).getUTCDate();
+
   const fullGridDays = [];
   for (let i = firstDay - 1; i >= 0; i--) {
     fullGridDays.push(prevMonthLastDate - i);
   }
-  monthDays.forEach(d => fullGridDays.push(d));
+  monthDays.forEach((d) => fullGridDays.push(d));
   let nextDay = 1;
   while (fullGridDays.length % 7 !== 0) {
     fullGridDays.push(nextDay++);
   }
 
   const startDate = new Date(Date.UTC(currentYear, currentMonth, 1 - firstDay));
-  const endDate = new Date(Date.UTC(currentYear, currentMonth, 1 - firstDay + fullGridDays.length - 1));
-  
+  const endDate = new Date(
+    Date.UTC(currentYear, currentMonth, 1 - firstDay + fullGridDays.length - 1),
+  );
+
   const { activeIndices, frozenIndices } = getGridDataForRange(
-    MOCK_CHECKINS, 
-    primarySubject, 
-    startDate.toISOString(), 
-    endDate.toISOString()
+    MOCK_CHECKINS,
+    primarySubject,
+    startDate.toISOString(),
+    endDate.toISOString(),
   );
 
   for (let i = 0; i < fullGridDays.length; i += 7) {
     const weekDays = fullGridDays.slice(i, i + 7);
-    const weekActive = activeIndices.filter(idx => idx >= i && idx < i + 7).map(idx => idx - i);
-    const weekFrozen = frozenIndices.filter(idx => idx >= i && idx < i + 7).map(idx => idx - i);
-    
+    const weekActive = activeIndices
+      .filter((idx) => idx >= i && idx < i + 7)
+      .map((idx) => idx - i);
+    const weekFrozen = frozenIndices
+      .filter((idx) => idx >= i && idx < i + 7)
+      .map((idx) => idx - i);
+
     const grid = renderStreakGrid(weekDays, weekActive, weekFrozen, 7);
-    const cells = grid.querySelectorAll('.day-cell');
+    const cells = grid.querySelectorAll(".day-cell");
     weekDays.forEach((day, idx) => {
-      const isActualMonth = (i + idx >= firstDay) && (i + idx < firstDay + monthDays.length);
-      if (!isActualMonth) cells[idx].classList.add('prev-month');
+      const isActualMonth =
+        i + idx >= firstDay && i + idx < firstDay + monthDays.length;
+      if (!isActualMonth) cells[idx].classList.add("prev-month");
     });
-    
+
     calWeeks.appendChild(grid);
   }
 
-  calCard.querySelector(".nav-arrow:first-child").addEventListener("click", () => {
-    currentMonth--;
-    if (currentMonth < 0) {
-      currentMonth = 11;
-      currentYear--;
-    }
-    refreshUI();
-  });
-  calCard.querySelector(".nav-arrow:last-child").addEventListener("click", () => {
-    currentMonth++;
-    if (currentMonth > 11) {
-      currentMonth = 0;
-      currentYear++;
-    }
-    refreshUI();
-  });
+  calCard
+    .querySelector(".nav-arrow:first-child")
+    .addEventListener("click", () => {
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      refreshUI();
+    });
+  calCard
+    .querySelector(".nav-arrow:last-child")
+    .addEventListener("click", () => {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      refreshUI();
+    });
 
   return calCard;
 }
 
-function getMilestones(currentCount) {
-  let milestones = [0, ...BASE_MILESTONES];
-  let last = milestones[milestones.length - 1];
-  while (last <= currentCount + 100) {
-    last += 100;
-    milestones.push(last);
+function getMilestonesForPolicy(currentCount, policy) {
+  let milestones = [0, ...(policy.milestones || [])];
+
+  const lastExplicit = policy.milestones ? Math.max(...policy.milestones) : 0;
+  if (policy.recurringMilestoneInterval) {
+    let nextRecur = lastExplicit + policy.recurringMilestoneInterval;
+    while (nextRecur <= currentCount + policy.recurringMilestoneInterval) {
+      milestones.push(nextRecur);
+      nextRecur += policy.recurringMilestoneInterval;
+    }
   }
-  
-  const nextGoalIdx = milestones.findIndex(m => m > currentCount);
+
+  const nextGoalIdx = milestones.findIndex((m) => m > currentCount);
   const startIndex = Math.max(0, nextGoalIdx - 3);
   return milestones.slice(startIndex, nextGoalIdx + 1);
 }
 
 function renderGoalCard(count) {
   const goalCard = cloneTemplate("tpl-goal-card");
+  const policy = getPolicyForSubject(primarySubject);
   goalCard.querySelector(".streak-association").textContent = primarySubject;
-  
+
   const visualContainer = goalCard.querySelector(".goal-visual-container");
-  const milestones = getMilestones(count);
+  const milestones = getMilestonesForPolicy(count, policy);
   const nextGoal = milestones[milestones.length - 1];
-  
+
   milestones.forEach((m, idx) => {
     const wrap = document.createElement("div");
     wrap.className = "goal-checkpoint-wrap";
@@ -355,15 +786,15 @@ function renderGoalCard(count) {
     }
 
     visualContainer.appendChild(wrap);
-    
+
     if (idx < milestones.length - 1) {
       const nextM = milestones[idx + 1];
       const segment = document.createElement("div");
       segment.className = "goal-segment";
-      
+
       const fill = document.createElement("div");
       fill.className = "goal-segment-fill";
-      
+
       let progress = 0;
       if (count >= nextM) {
         progress = 100;
@@ -371,23 +802,33 @@ function renderGoalCard(count) {
         progress = ((count - m) / (nextM - m)) * 100;
       }
       fill.style.setProperty("--progress", `${progress}%`);
-      
+
       segment.appendChild(fill);
       visualContainer.appendChild(segment);
     }
   });
-  
-  goalCard.querySelector(".goal-text").textContent = `${count} / ${nextGoal} days`;
+
+  goalCard.querySelector(".goal-text").textContent =
+    `${count} / ${nextGoal} days`;
   return goalCard;
 }
 
 function renderStreakCards(countOverride = null) {
   const fragment = document.createDocumentFragment();
-  
-  const primaryCheckins = MOCK_CHECKINS.filter(c => c.subject === primarySubject);
-  const latestCheckin = primaryCheckins.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-  const count = countOverride !== null ? countOverride : (latestCheckin ? latestCheckin.sequence : 0);
-  
+
+  const primaryCheckins = MOCK_CHECKINS.filter(
+    (c) => c.subject === primarySubject,
+  );
+  const latestCheckin = primaryCheckins.sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+  )[0];
+  const count =
+    countOverride !== null
+      ? countOverride
+      : latestCheckin
+        ? latestCheckin.sequence
+        : 0;
+
   const variantClasses = getVariantClasses(count);
 
   const fancyCard = cloneTemplate("tpl-fancy-streak-card");
@@ -403,7 +844,8 @@ function renderStreakCards(countOverride = null) {
   fragment.appendChild(fancyCard);
 
   const freezeCard = cloneTemplate("tpl-freeze-card");
-  freezeCard.querySelector(".freeze-count-text").textContent = "You only have 1/2 Streak Freezes!";
+  freezeCard.querySelector(".freeze-count-text").textContent =
+    "You only have 1/2 Streak Freezes!";
   fragment.appendChild(freezeCard);
 
   fragment.appendChild(renderCalendarCard());
@@ -412,11 +854,11 @@ function renderStreakCards(countOverride = null) {
   const multiGrid = multiCard.querySelector(".multi-streak-grid");
   const monthLabelsEl = multiCard.querySelector(".month-labels");
   const dayLabelsEl = multiCard.querySelector(".day-labels");
-  
+
   const windowStart = new Date("2026-02-21T12:00:00Z");
   const windowColCount = 8;
   multiCard.style.setProperty("--grid-cols", windowColCount);
-  
+
   const months = [];
   let curM = "";
   let currentSpan = 0;
@@ -425,12 +867,17 @@ function renderStreakCards(countOverride = null) {
   for (let i = 0; i < windowColCount; i++) {
     const d = new Date(windowStart.getTime() + i * 24 * 60 * 60 * 1000);
     windowDaysNum.push(d.getUTCDate());
-    const dayName = d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' }).substring(0, 2);
+    const dayName = d
+      .toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" })
+      .substring(0, 2);
     const daySpan = document.createElement("span");
     daySpan.textContent = dayName;
     dayLabelsEl.appendChild(daySpan);
-    
-    const mName = d.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' });
+
+    const mName = d.toLocaleDateString("en-US", {
+      month: "short",
+      timeZone: "UTC",
+    });
     if (mName !== curM) {
       if (curM !== "") months.push({ name: curM, span: currentSpan });
       curM = mName;
@@ -440,7 +887,7 @@ function renderStreakCards(countOverride = null) {
     }
   }
   months.push({ name: curM, span: currentSpan });
-  months.forEach(m => {
+  months.forEach((m) => {
     const mSpan = document.createElement("div");
     mSpan.className = "month-label";
     mSpan.style.setProperty("--span", m.span);
@@ -448,12 +895,27 @@ function renderStreakCards(countOverride = null) {
     monthLabelsEl.appendChild(mSpan);
   });
 
-  const subjects = [...new Set(MOCK_CHECKINS.map(c => c.subject))];
-  subjects.forEach(sub => {
-    const subCheckins = MOCK_CHECKINS.filter(c => c.subject === sub);
-    const subLatest = subCheckins.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-    const { activeIndices, frozenIndices } = getGridDataForRange(MOCK_CHECKINS, sub, "2026-02-21", "2026-02-28");
-    multiGrid.appendChild(renderStreakRow(sub, windowDaysNum, activeIndices, frozenIndices, subLatest ? subLatest.sequence : 0));
+  const subjects = [...new Set(MOCK_CHECKINS.map((c) => c.subject))];
+  subjects.forEach((sub) => {
+    const subCheckins = MOCK_CHECKINS.filter((c) => c.subject === sub);
+    const subLatest = subCheckins.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+    )[0];
+    const { activeIndices, frozenIndices } = getGridDataForRange(
+      MOCK_CHECKINS,
+      sub,
+      "2026-02-21",
+      "2026-02-28",
+    );
+    multiGrid.appendChild(
+      renderStreakRow(
+        sub,
+        windowDaysNum,
+        activeIndices,
+        frozenIndices,
+        subLatest ? subLatest.sequence : 0,
+      ),
+    );
   });
   fragment.appendChild(multiCard);
 
@@ -473,12 +935,15 @@ function getVariantClasses(count) {
 }
 
 function celebrateGoal(count) {
-  if (isMilestone(count) && count > lastCelebratedCount) {
+  const policy = getPolicyForSubject(primarySubject);
+  if (isMilestone(count, policy) && count > lastCelebratedCount) {
     jsConfetti.addConfetti({
       confettiColors: [
-        '#fb923c', '#f97316', // Oranges
-        '#38bdf8', '#0ea5e9', // Blues
-        '#ffffff'            // White for sparkle
+        "#fb923c",
+        "#f97316", // Oranges
+        "#38bdf8",
+        "#0ea5e9", // Blues
+        "#ffffff", // White for sparkle
       ],
       confettiNumber: 100,
     });
@@ -490,12 +955,11 @@ function refreshUI() {
   const cardContainer = document.querySelector(".card-container");
   if (!cardContainer) return;
   const inputEl = document.querySelector("input");
-  
-  const overrideCount = inputEl ? (parseInt(inputEl.value)) : 0;
-  
+  const overrideCount = inputEl ? parseInt(inputEl.value) : 0;
+
   cardContainer.innerHTML = "";
   cardContainer.appendChild(renderStreakCards(overrideCount));
-  
+
   if (overrideCount > 0) {
     celebrateGoal(overrideCount);
   }
@@ -503,23 +967,40 @@ function refreshUI() {
 
 if (typeof document !== "undefined") {
   window.addEventListener("DOMContentLoaded", () => {
+    const inputEl = document.querySelector("input");
+    if (inputEl) {
+      // Find latest checkin sequence from data
+      const primaryCheckins = MOCK_CHECKINS.filter(c => c.subject === primarySubject);
+      const latestCheckin = primaryCheckins.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+      const latestSequence = latestCheckin ? latestCheckin.sequence : 0;
+      inputEl.value = latestSequence;
+    }
+
     refreshUI();
 
     const themeToggle = document.querySelector(".theme-toggle");
     if (themeToggle) {
       themeToggle.addEventListener("click", () => {
-        const isLight = document.documentElement.classList.contains("force-light-mode");
-        const isDark = document.documentElement.classList.contains("force-dark-mode");
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        document.documentElement.classList.remove("force-light-mode", "force-dark-mode");
+        const isLight =
+          document.documentElement.classList.contains("force-light-mode");
+        const isDark =
+          document.documentElement.classList.contains("force-dark-mode");
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
+        document.documentElement.classList.remove(
+          "force-light-mode",
+          "force-dark-mode",
+        );
         if (isLight) document.documentElement.classList.add("force-dark-mode");
-        else if (isDark) document.documentElement.classList.add("force-light-mode");
-        else if (prefersDark) document.documentElement.classList.add("force-light-mode");
+        else if (isDark)
+          document.documentElement.classList.add("force-light-mode");
+        else if (prefersDark)
+          document.documentElement.classList.add("force-light-mode");
         else document.documentElement.classList.add("force-dark-mode");
       });
     }
 
-    const inputEl = document.querySelector("input");
     if (inputEl) {
       inputEl.addEventListener("input", refreshUI);
     }

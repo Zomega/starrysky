@@ -52,6 +52,20 @@
             "default": false,
             "description": "If true, frozen days are included in the streak sequence count."
           },
+          "milestones": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "description": "Explicit streak counts that trigger a celebration or reward."
+          },
+          "recurringMilestoneInterval": {
+            "type": "integer",
+            "description": "Interval for repeating milestones (e.g., every 100 days) after explicit milestones are passed."
+          },
+          "grantFreezeAtMilestone": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, reaching a milestone (explicit or recurring) grants a streak freeze."
+          },
           "createdAt": {
             "type": "string",
             "format": "datetime",
