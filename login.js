@@ -1,8 +1,7 @@
 import { BrowserOAuthClient } from "https://esm.sh/@atproto/oauth-client-browser@0.3.0?bundle";
 import { Agent } from "https://esm.sh/@atproto/api@0.18.20?bundle";
 
-const METADATA_URL =
-  "https://starrysky.app/client-metadata.json";
+const METADATA_URL = "https://starrysky.app/client-metadata.json";
 
 // We keep these global to access them for debugging
 let client;
@@ -12,13 +11,15 @@ let oauthSession;
 async function init() {
   const statusEl = document.getElementById("status");
   const loginBtn = document.getElementById("login-btn");
-  
+  const logoutBtn = document.getElementById("logout-btn");
+
   console.log("App initializing...");
-  statusEl.innerText = "Connecting to Bluesky...";
+  if (statusEl) statusEl.innerText = "Connecting to Bluesky...";
 
   try {
     const response = await fetch(METADATA_URL);
-    if (!response.ok) throw new Error(`Failed to fetch metadata: ${response.statusText}`);
+    if (!response.ok)
+      throw new Error(`Failed to fetch metadata: ${response.statusText}`);
     const metadata = await response.json();
 
     client = new BrowserOAuthClient({
@@ -30,20 +31,22 @@ async function init() {
     console.log("🛠️ window.client is ready");
 
     // The SDK should handle the redirect return automatically.
-    // We don't need to pass the URI here, it should be retrieved from storage.
     const result = await client.init();
 
     if (result?.session) {
       setupGameUI(result.session);
     } else {
       console.log("No session found, waiting for user login.");
-      statusEl.innerText = "Please log in to continue.";
+      if (statusEl) statusEl.innerText = "Please log in to continue.";
       if (loginBtn) loginBtn.disabled = false;
+      if (logoutBtn) logoutBtn.style.display = "none";
     }
   } catch (err) {
     console.error("Initialization failed:", err);
-    statusEl.innerText = "Connection Error: " + err.message;
-    statusEl.style.color = "var(--red-500)";
+    if (statusEl) {
+      statusEl.innerText = "Connection Error: " + err.message;
+      statusEl.style.color = "var(--red-500)";
+    }
   }
 }
 
@@ -52,30 +55,34 @@ async function setupGameUI(session) {
   window.oauthSession = oauthSession;
   console.log("🛠️ window.oauthSession is ready");
 
-  console.log("Initializing Agent with valid session...");
-
   agent = new Agent(oauthSession);
   window.agent = agent;
   console.log("🛠️ window.agent is ready");
 
-  // Toggle UI
-  document.getElementById("login-section").style.display = "none";
-  document.getElementById("game-section").style.display = "block";
-  document.getElementById("user-info").innerText =
-    "Authenticated. Loading profile...";
+  // Toggle UI elements if they exist
+  const loginSection = document.getElementById("login-section");
+  if (loginSection) loginSection.style.display = "none";
+
+  const gameSection = document.getElementById("game-section");
+  if (gameSection) gameSection.style.display = "block";
+
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) logoutBtn.style.display = "flex";
+
+  const userInfo = document.getElementById("user-info");
+  if (userInfo) userInfo.innerText = "Authenticated. Loading profile...";
 
   await fetchMyProfile(oauthSession.sub);
   await readCheckin();
 }
 
 async function fetchMyProfile(did) {
-  try {
-    console.log("Fetching profile for:", did);
+  const userInfo = document.getElementById("user-info");
+  if (!userInfo) return;
 
+  try {
     const response = await agent.getProfile({ actor: did });
     const profile = response.data;
-
-    console.log("Profile fetched:", profile);
 
     const avatarUrl =
       profile.avatar ||
@@ -83,7 +90,7 @@ async function fetchMyProfile(did) {
 
     const name = profile.displayName || profile.handle;
 
-    document.getElementById("user-info").innerHTML = `
+    userInfo.innerHTML = `
             <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 1rem;">
                 <img src="${avatarUrl}" style="width:50px; height:50px; border-radius:50%; border: 2px solid var(--accent); object-fit: cover;">
                 <div style="text-align: left;">
@@ -94,21 +101,20 @@ async function fetchMyProfile(did) {
         `;
   } catch (err) {
     console.error("Failed to fetch profile:", err);
-    document.getElementById("user-info").innerText = "Error: " + err.message;
+    userInfo.innerText = "Error: " + err.message;
   }
 }
 
 async function login() {
   if (!client) return alert("Client not initialized. Please wait or refresh.");
-  
-  const handle = document.getElementById("handle").value.trim();
+
+  const handleEl = document.getElementById("handle");
+  if (!handleEl) return;
+  const handle = handleEl.value.trim();
   if (!handle) return alert("Enter your handle");
 
   try {
-    // Ensure we use the current origin as the redirect URI (with trailing slash)
     const redirectUri = window.location.origin + "/";
-    console.log("Signing in with redirect:", redirectUri);
-
     const { url } = await client.signIn(handle, {
       scope: "atproto transition:generic",
       ui_locales: "en",
@@ -121,19 +127,29 @@ async function login() {
   }
 }
 
+async function logout() {
+  if (oauthSession) {
+    try {
+      await oauthSession.signOut();
+    } catch (err) {
+      console.error("Sign out failed:", err);
+    }
+  }
+  // Redirect to home to clear state
+  window.location.href = window.location.origin + "/";
+}
+
 async function saveCheckin() {
   if (!agent || !oauthSession) return;
-  
+
   try {
     const did = oauthSession.sub;
     const now = new Date().toISOString();
 
-    console.log("Saving check-in data...");
-
     await agent.com.atproto.repo.putRecord({
       repo: did,
       collection: "app.starrysky.streak.checkin",
-      rkey: "daily-checkin", 
+      rkey: "daily-checkin",
       record: {
         $type: "app.starrysky.streak.checkin",
         service: "app.starrysky",
@@ -155,10 +171,11 @@ async function saveCheckin() {
 
 async function readCheckin() {
   if (!agent || !oauthSession) return;
+  const statusEl = document.getElementById("status");
+  if (!statusEl) return;
 
   try {
     const did = oauthSession.sub;
-
     const response = await agent.com.atproto.repo.getRecord({
       repo: did,
       collection: "app.starrysky.streak.checkin",
@@ -166,11 +183,10 @@ async function readCheckin() {
     });
 
     const val = response.data.value;
-    document.getElementById("status").innerText =
-      `Last check-in: ${new Date(val.createdAt).toLocaleString()}`;
+    statusEl.innerText = `Last check-in: ${new Date(val.createdAt).toLocaleString()}`;
   } catch (err) {
     if (err.message.includes("Could not find record")) {
-      document.getElementById("status").innerText = "No check-in found for today.";
+      statusEl.innerText = "No check-in found for today.";
     } else {
       console.error("Read failed:", err);
     }
@@ -179,18 +195,23 @@ async function readCheckin() {
 
 window.saveCheckin = saveCheckin;
 window.readCheckin = readCheckin;
+window.logout = logout;
 
 document.addEventListener("DOMContentLoaded", () => {
   const loginBtn = document.getElementById("login-btn");
   if (loginBtn) {
-    loginBtn.disabled = true; // Disable initially
     loginBtn.addEventListener("click", login);
   }
-  
+
   const saveBtn = document.getElementById("save-checkin-btn");
   if (saveBtn) {
     saveBtn.addEventListener("click", saveCheckin);
   }
-  
+
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", logout);
+  }
+
   init();
 });

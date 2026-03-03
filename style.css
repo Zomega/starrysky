@@ -193,9 +193,12 @@ h3 {
   right: 0;
   padding: 1rem;
   z-index: 100;
+  display: flex;
+  gap: 0.5rem;
 }
 
-.theme-toggle {
+.theme-toggle,
+#logout-btn {
   appearance: none;
   background: none;
   border: none;
