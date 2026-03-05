@@ -67,7 +67,7 @@ export function calculateNextCheckin(
       policy: policy.uri || "at://placeholder",
       subject: policy.subject || "Default",
       action: "initialize",
-      balance: 0,
+      balance: Math.min(policy.startingFreezes || 0, policy.maxFreezes || 3),
       createdAt: currentTime,
     };
 

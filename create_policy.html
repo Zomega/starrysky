@@ -242,18 +242,28 @@
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="freezesGrantedAtMilestone">Milestone Grant</label>
-              <input
-                type="number"
-                id="freezesGrantedAtMilestone"
-                name="freezesGrantedAtMilestone"
-                value="1"
-                min="0"
-              />
-              <p class="helper-text">
-                Number of freezes granted upon reaching any milestone.
-              </p>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="startingFreezes">Starting Freezes</label>
+                <input
+                  type="number"
+                  id="startingFreezes"
+                  name="startingFreezes"
+                  value="0"
+                  min="0"
+                />
+                <p class="helper-text">Freezes granted immediately on start.</p>
+              </div>
+              <div class="form-group">
+                <label for="freezesGrantedAtMilestone">Milestone Grant</label>
+                <input
+                  type="number"
+                  id="freezesGrantedAtMilestone"
+                  name="freezesGrantedAtMilestone"
+                  value="1"
+                  min="0"
+                />
+              </div>
             </div>
 
             <div class="form-group">
@@ -304,6 +314,7 @@
           },
           intervalsToEarnFreeze: parseInt(rawData.intervalsToEarnFreeze),
           maxFreezes: parseInt(rawData.maxFreezes),
+          startingFreezes: parseInt(rawData.startingFreezes),
           freezesGrantedAtMilestone: parseInt(
             rawData.freezesGrantedAtMilestone,
           ),
