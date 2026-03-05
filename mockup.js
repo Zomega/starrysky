@@ -87,540 +87,613 @@ const MOCK_CHECKINS = [
   // Wordle Streak - January 2026
   {
     subject: "Wordle",
+    streakDate: "2026-01-01",
     createdAt: "2026-01-01T12:00:00Z",
     streakSequence: 449,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-02",
     createdAt: "2026-01-02T12:00:00Z",
     streakSequence: 450,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-03",
     createdAt: "2026-01-03T12:00:00Z",
     streakSequence: 451,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-04",
     createdAt: "2026-01-04T12:00:00Z",
     streakSequence: 452,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-05",
     createdAt: "2026-01-05T12:00:00Z",
     streakSequence: 453,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-06",
     createdAt: "2026-01-06T12:00:00Z",
     streakSequence: 454,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-07",
     createdAt: "2026-01-07T12:00:00Z",
     streakSequence: 455,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-08",
     createdAt: "2026-01-08T12:00:00Z",
     streakSequence: 456,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-09",
     createdAt: "2026-01-09T12:00:00Z",
     streakSequence: 457,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-10",
     createdAt: "2026-01-10T12:00:00Z",
     streakSequence: 458,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-11",
     createdAt: "2026-01-11T12:00:00Z",
     streakSequence: 459,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-12",
     createdAt: "2026-01-12T12:00:00Z",
     streakSequence: 460,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-13",
     createdAt: "2026-01-13T12:00:00Z",
     streakSequence: 461,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-14",
     createdAt: "2026-01-14T12:00:00Z",
     streakSequence: 462,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-15",
     createdAt: "2026-01-15T12:00:00Z",
     streakSequence: 463,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-16",
     createdAt: "2026-01-16T12:00:00Z",
     streakSequence: 464,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-17",
     createdAt: "2026-01-17T12:00:00Z",
     streakSequence: 465,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-18",
     createdAt: "2026-01-18T12:00:00Z",
     streakSequence: 466,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-19",
     createdAt: "2026-01-19T12:00:00Z",
     streakSequence: 467,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-20",
     createdAt: "2026-01-20T12:00:00Z",
     streakSequence: 468,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-23",
     createdAt: "2026-01-23T12:00:00Z",
     streakSequence: 469,
     checkinsInInterval: 1,
-    freezesClaimed: 2,
+    freezeDates: ["2026-01-21", "2026-01-22"],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-24",
     createdAt: "2026-01-24T12:00:00Z",
     streakSequence: 470,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-25",
     createdAt: "2026-01-25T12:00:00Z",
     streakSequence: 471,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-26",
     createdAt: "2026-01-26T12:00:00Z",
     streakSequence: 472,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-27",
     createdAt: "2026-01-27T12:00:00Z",
     streakSequence: 473,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-28",
     createdAt: "2026-01-28T12:00:00Z",
     streakSequence: 474,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-29",
     createdAt: "2026-01-29T12:00:00Z",
     streakSequence: 475,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-30",
     createdAt: "2026-01-30T12:00:00Z",
     streakSequence: 476,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-01-31",
     createdAt: "2026-01-31T12:00:00Z",
     streakSequence: 477,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
 
   // Wordle Streak - February 2026
   {
     subject: "Wordle",
+    streakDate: "2026-02-01",
     createdAt: "2026-02-01T12:00:00Z",
     streakSequence: 478,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-02",
     createdAt: "2026-02-02T12:00:00Z",
     streakSequence: 479,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-03",
     createdAt: "2026-02-03T12:00:00Z",
     streakSequence: 480,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-04",
     createdAt: "2026-02-04T12:00:00Z",
     streakSequence: 481,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-05",
     createdAt: "2026-02-05T12:00:00Z",
     streakSequence: 482,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-06",
     createdAt: "2026-02-06T12:00:00Z",
     streakSequence: 483,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-07",
     createdAt: "2026-02-07T12:00:00Z",
     streakSequence: 484,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-08",
     createdAt: "2026-02-08T12:00:00Z",
     streakSequence: 485,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-09",
     createdAt: "2026-02-09T12:00:00Z",
     streakSequence: 486,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-10",
     createdAt: "2026-02-10T12:00:00Z",
     streakSequence: 487,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-11",
     createdAt: "2026-02-11T12:00:00Z",
     streakSequence: 488,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-12",
     createdAt: "2026-02-12T12:00:00Z",
     streakSequence: 489,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-13",
     createdAt: "2026-02-13T12:00:00Z",
     streakSequence: 490,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-14",
     createdAt: "2026-02-14T12:00:00Z",
     streakSequence: 491,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-15",
     createdAt: "2026-02-15T12:00:00Z",
     streakSequence: 492,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-18",
     createdAt: "2026-02-18T12:00:00Z",
     streakSequence: 493,
     checkinsInInterval: 1,
-    freezesClaimed: 2,
+    freezeDates: ["2026-02-16", "2026-02-17"],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-19",
     createdAt: "2026-02-19T12:00:00Z",
     streakSequence: 494,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-20",
     createdAt: "2026-02-20T12:00:00Z",
     streakSequence: 495,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-21",
     createdAt: "2026-02-21T12:00:00Z",
     streakSequence: 496,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-22",
     createdAt: "2026-02-22T12:00:00Z",
     streakSequence: 497,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-23",
     createdAt: "2026-02-23T12:00:00Z",
     streakSequence: 498,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-25",
     createdAt: "2026-02-25T12:00:00Z",
     streakSequence: 499,
     checkinsInInterval: 1,
-    freezesClaimed: 1,
+    freezeDates: ["2026-02-24"],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-26",
     createdAt: "2026-02-26T12:00:00Z",
     streakSequence: 500,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-27",
     createdAt: "2026-02-27T12:00:00Z",
     streakSequence: 501,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Wordle",
+    streakDate: "2026-02-28",
     createdAt: "2026-02-28T12:00:00Z",
     streakSequence: 502,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
 
   // Tiled Words
   {
     subject: "Tiled Words",
+    streakDate: "2026-02-22",
     createdAt: "2026-02-22T12:00:00Z",
     streakSequence: 1,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Tiled Words",
+    streakDate: "2026-02-23",
     createdAt: "2026-02-23T12:00:00Z",
     streakSequence: 2,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Tiled Words",
+    streakDate: "2026-02-24",
     createdAt: "2026-02-24T12:00:00Z",
     streakSequence: 3,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Tiled Words",
+    streakDate: "2026-02-26",
     createdAt: "2026-02-26T12:00:00Z",
     streakSequence: 5,
     checkinsInInterval: 1,
-    freezesClaimed: 1,
+    freezeDates: ["2026-02-25"],
   },
   {
     subject: "Tiled Words",
+    streakDate: "2026-02-27",
     createdAt: "2026-02-27T12:00:00Z",
     streakSequence: 6,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Tiled Words",
+    streakDate: "2026-02-28",
     createdAt: "2026-02-28T12:00:00Z",
     streakSequence: 7,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
 
   // Connections
   {
     subject: "Connections",
+    streakDate: "2026-02-22",
     createdAt: "2026-02-22T12:00:00Z",
     streakSequence: 1,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Connections",
+    streakDate: "2026-02-23",
     createdAt: "2026-02-23T12:00:00Z",
     streakSequence: 2,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Connections",
+    streakDate: "2026-02-25",
     createdAt: "2026-02-25T12:00:00Z",
     streakSequence: 3,
     checkinsInInterval: 1,
-    freezesClaimed: 1,
+    freezeDates: ["2026-02-24"],
   },
   {
     subject: "Connections",
+    streakDate: "2026-02-26",
     createdAt: "2026-02-26T12:00:00Z",
     streakSequence: 4,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Connections",
+    streakDate: "2026-02-27",
     createdAt: "2026-02-27T12:00:00Z",
     streakSequence: 5,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Connections",
+    streakDate: "2026-02-28",
     createdAt: "2026-02-28T12:00:00Z",
     streakSequence: 6,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
 
   // Crossword
   {
     subject: "Crossword",
+    streakDate: "2026-02-21",
     createdAt: "2026-02-21T12:00:00Z",
     streakSequence: 1,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Crossword",
+    streakDate: "2026-02-23",
     createdAt: "2026-02-23T12:00:00Z",
     streakSequence: 2,
     checkinsInInterval: 1,
-    freezesClaimed: 1,
+    freezeDates: ["2026-02-22"],
   },
   {
     subject: "Crossword",
+    streakDate: "2026-02-25",
     createdAt: "2026-02-25T12:00:00Z",
     streakSequence: 3,
     checkinsInInterval: 1,
-    freezesClaimed: 1,
+    freezeDates: ["2026-02-24"],
   },
   {
     subject: "Crossword",
+    streakDate: "2026-02-27",
     createdAt: "2026-02-27T12:00:00Z",
     streakSequence: 4,
     checkinsInInterval: 1,
-    freezesClaimed: 1,
+    freezeDates: ["2026-02-26"],
   },
 
-  // Chess - Grace Period Demonstration
+  // Chess
   {
     subject: "Chess",
+    streakDate: "2026-02-21",
     createdAt: "2026-02-21T12:00:00Z",
     streakSequence: 10,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
-  // 22, 23 are gaps covered by grace
   {
     subject: "Chess",
+    streakDate: "2026-02-24",
     createdAt: "2026-02-24T12:00:00Z",
     streakSequence: 11,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Chess",
+    streakDate: "2026-02-25",
     createdAt: "2026-02-25T12:00:00Z",
     streakSequence: 12,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
-  // 26 is gap covered by grace
   {
     subject: "Chess",
+    streakDate: "2026-02-27",
     createdAt: "2026-02-27T12:00:00Z",
     streakSequence: 13,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
   {
     subject: "Chess",
+    streakDate: "2026-02-28",
     createdAt: "2026-02-28T12:00:00Z",
     streakSequence: 14,
     checkinsInInterval: 1,
-    freezesClaimed: 0,
+    freezeDates: [],
   },
 ];
 
@@ -657,35 +730,34 @@ export function getGridDataForRange(
 
   const relevantCheckins = checkins
     .filter((c) => c.subject === subject)
-    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    .sort((a, b) => new Date(a.streakDate) - new Date(b.streakDate));
 
-  const dayMap = new Map(); // timestamp -> 'active' | 'frozen' | 'grace'
+  const dayMap = new Map();
 
-  let lastCheckinTs = null;
+  let lastCheckinDate = null;
 
   relevantCheckins.forEach((c) => {
-    const checkinDate = new Date(c.createdAt);
-    checkinDate.setUTCHours(0, 0, 0, 0);
-    const ts = checkinDate.getTime();
+    const ts = new Date(c.streakDate + "T00:00:00Z").getTime();
 
     if (ts >= start.getTime() && ts <= end.getTime()) {
       dayMap.set(ts, "active");
     }
 
-    if (c.freezesClaimed > 0) {
-      for (let i = 1; i <= c.freezesClaimed; i++) {
-        const frozenTs = ts - i * dayMs;
-        if (frozenTs >= start.getTime() && frozenTs <= end.getTime()) {
-          if (dayMap.get(frozenTs) !== "active") {
-            dayMap.set(frozenTs, "frozen");
+    if (c.freezeDates && c.freezeDates.length > 0) {
+      c.freezeDates.forEach((fd) => {
+        const fts = new Date(fd + "T00:00:00Z").getTime();
+        if (fts >= start.getTime() && fts <= end.getTime()) {
+          if (dayMap.get(fts) !== "active") {
+            dayMap.set(fts, "frozen");
           }
         }
-      }
+      });
     }
 
-    if (lastCheckinTs !== null) {
+    if (lastCheckinDate !== null) {
+      const lastTs = new Date(lastCheckinDate + "T00:00:00Z").getTime();
       let gapTs = ts - dayMs;
-      while (gapTs > lastCheckinTs) {
+      while (gapTs > lastTs) {
         if (!dayMap.has(gapTs)) {
           if (gapTs >= start.getTime() && gapTs <= end.getTime()) {
             dayMap.set(gapTs, "grace");
@@ -695,7 +767,7 @@ export function getGridDataForRange(
       }
     }
 
-    lastCheckinTs = ts;
+    lastCheckinDate = c.streakDate;
   });
 
   let currTs = start.getTime();
@@ -878,8 +950,8 @@ function renderCalendarCard() {
   const { activeIndices, frozenIndices, graceIndices } = getGridDataForRange(
     MOCK_CHECKINS,
     primarySubject,
-    startDate.toISOString(),
-    endDate.toISOString(),
+    startDate.toISOString().split("T")[0],
+    endDate.toISOString().split("T")[0],
   );
 
   for (let i = 0; i < fullGridDays.length; i += 7) {
@@ -1018,7 +1090,7 @@ function renderStreakCards(countOverride = null) {
     (c) => c.subject === primarySubject,
   );
   const latestCheckin = primaryCheckins.sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+    (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
   )[0];
   const count =
     countOverride !== null
@@ -1097,7 +1169,7 @@ function renderStreakCards(countOverride = null) {
   subjects.forEach((sub) => {
     const subCheckins = MOCK_CHECKINS.filter((c) => c.subject === sub);
     const subLatest = subCheckins.sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
     )[0];
     const { activeIndices, frozenIndices, graceIndices } = getGridDataForRange(
       MOCK_CHECKINS,
@@ -1167,7 +1239,7 @@ if (typeof document !== "undefined") {
         (c) => c.subject === primarySubject,
       );
       const latestCheckin = primaryCheckins.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+        (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
       )[0];
       const latestSequence = latestCheckin ? latestCheckin.streakSequence : 0;
       inputEl.value = latestSequence;

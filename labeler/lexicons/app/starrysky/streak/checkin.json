@@ -13,6 +13,7 @@
           "policy",
           "subject",
           "streakSequence",
+          "streakDate",
           "createdAt"
         ],
         "properties": {
@@ -34,6 +35,11 @@
             "type": "integer",
             "description": "The current total count of successful intervals/days in this specific streak.",
             "minimum": 1
+          },
+          "streakDate": {
+            "type": "string",
+            "format": "date",
+            "description": "The explicit date this check-in is for (YYYY-MM-DD). Useful for handling timezone boundaries manually."
           },
           "checkinsInInterval": {
             "type": "integer",
@@ -59,10 +65,13 @@
             "format": "cid",
             "description": "CID of the inventory record associated with this check-in."
           },
-          "freezesClaimed": {
-            "type": "integer",
-            "default": 0,
-            "description": "Number of freezes consumed to bridge gaps for this check-in."
+          "freezeDates": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Explicit dates (YYYY-MM-DD) being covered by streak freezes in this check-in."
           },
           "witness": {
             "type": "ref",
