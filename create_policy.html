@@ -159,7 +159,25 @@
                 name="intervalResetDay"
                 placeholder="e.g. 0 for Sunday"
               />
-              <p class="helper-text">Weekly: 0-6 (Sun-Sat). Monthly: 1-31.</p>
+              <p class="helper-text">Weekly: 0-6. Monthly: 1-31.</p>
+            </div>
+
+            <hr style="margin: 2rem 0; opacity: 0.1" />
+            <h3 style="margin-bottom: 1.5rem">Leniency Rules</h3>
+
+            <div class="form-group">
+              <label for="gracePeriodIntervals">Grace Period</label>
+              <input
+                type="number"
+                id="gracePeriodIntervals"
+                name="gracePeriodIntervals"
+                value="0"
+                min="0"
+              />
+              <p class="helper-text">
+                Number of intervals a user can skip with no penalty. Streak will
+                not advance but will not break.
+              </p>
             </div>
 
             <hr style="margin: 2rem 0; opacity: 0.1" />
@@ -315,6 +333,7 @@
           intervalsToEarnFreeze: parseInt(rawData.intervalsToEarnFreeze),
           maxFreezes: parseInt(rawData.maxFreezes),
           startingFreezes: parseInt(rawData.startingFreezes),
+          gracePeriodIntervals: parseInt(rawData.gracePeriodIntervals),
           freezesGrantedAtMilestone: parseInt(
             rawData.freezesGrantedAtMilestone,
           ),

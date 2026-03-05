@@ -89,54 +89,47 @@ export function calculateNextCheckin(
   let inventoryAction = null;
 
   if (intervalsPassed === 0) {
+    // Same interval
     checkinsInInterval = (lastCheckin.checkinsInInterval || 0) + 1;
-  } else if (intervalsPassed === 1) {
-    if (lastCheckin.checkinsInInterval < cadence.requiredCheckinsPerInterval) {
-      const freezesNeeded = 1;
-      if (currentBalance >= freezesNeeded) {
-        freezesClaimed = freezesNeeded;
-        newBalance -= freezesClaimed;
-        inventoryAction = "spend";
-        streakSequence = policy.includeFreezesInStreak
-          ? streakSequence + 2
-          : streakSequence + 1;
-      } else {
-        streakSequence = 1;
-      }
-    } else {
-      streakSequence += 1;
-    }
-    checkinsInInterval = 1;
   } else {
-    const missedIntervals = intervalsPassed - 1;
-    const extraNeeded =
+    // New interval(s)
+    const unfinishedPrev =
       lastCheckin.checkinsInInterval < cadence.requiredCheckinsPerInterval
         ? 1
         : 0;
-    const totalFreezesNeeded = missedIntervals + extraNeeded;
+    const missedIntervals = intervalsPassed - 1;
+    const totalGaps = missedIntervals + unfinishedPrev;
 
-    if (totalFreezesNeeded <= currentBalance) {
-      freezesClaimed = totalFreezesNeeded;
+    // Apply Grace Period
+    const grace = policy.gracePeriodIntervals || 0;
+    const freezesNeeded = Math.max(0, totalGaps - grace);
+
+    if (freezesNeeded <= currentBalance) {
+      freezesClaimed = freezesNeeded;
       newBalance -= freezesClaimed;
-      inventoryAction = "spend";
-      streakSequence = policy.includeFreezesInStreak
-        ? streakSequence + totalFreezesNeeded + 1
-        : streakSequence + 1;
+      if (freezesClaimed > 0) inventoryAction = "spend";
+
+      // Advance sequence by 1 (successful next interval)
+      // plus any intermediate intervals (grace or frozen) if the flag is set.
+      if (policy.includeFreezesInStreak) {
+        streakSequence += totalGaps + 1;
+      } else {
+        streakSequence += 1;
+      }
     } else {
-      sequence = 1;
+      // Streak broken!
+      streakSequence = 1;
     }
     checkinsInInterval = 1;
   }
 
   // Freeze Granting
   let totalFreezesEarned = 0;
-
   const reachedMilestone =
     isMilestoneLogic(streakSequence, policy) && intervalsPassed > 0;
   if (reachedMilestone) {
     totalFreezesEarned += policy.freezesGrantedAtMilestone || 0;
   }
-
   const reachedRate =
     policy.intervalsToEarnFreeze > 0 &&
     streakSequence % policy.intervalsToEarnFreeze === 0 &&
@@ -173,7 +166,7 @@ export function calculateNextCheckin(
       prev: lastInventory ? lastInventory.cid : null,
       action: inventoryAction.includes("earn") ? "earn" : "spend",
       balance: newBalance,
-      relatedCheckin: "placeholder-cid-of-next-checkin", // Real CID would be calculated after signing
+      relatedCheckin: "placeholder-cid-of-next-checkin",
       createdAt: currentTime,
     };
   }
@@ -193,7 +186,6 @@ export function calculateClaimInventory(
   const currentBalance = lastInventory ? lastInventory.balance : 0;
   const grantCount = freezeGrant.count || 1;
   const max = policy.maxFreezes || 3;
-
   const newBalance = Math.min(currentBalance + grantCount, max);
 
   return {
@@ -226,6 +218,7 @@ export function validateCheckinSequence(checkins, policy) {
     (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
   );
   const cadence = policy.cadence;
+  const grace = policy.gracePeriodIntervals || 0;
 
   for (let i = 1; i < sorted.length; i++) {
     const prev = sorted[i - 1];
@@ -244,12 +237,12 @@ export function validateCheckinSequence(checkins, policy) {
       const missed = passed - 1;
       const unfinished =
         prev.checkinsInInterval < cadence.requiredCheckinsPerInterval ? 1 : 0;
-      const needed = missed + unfinished;
+      const gaps = missed + unfinished;
+      const needed = Math.max(0, gaps - grace);
 
       if (curr.freezesClaimed === needed) {
         expectedStreakSequence =
-          prev.streakSequence +
-          (policy.includeFreezesInStreak ? needed + 1 : 1);
+          prev.streakSequence + (policy.includeFreezesInStreak ? gaps + 1 : 1);
       } else {
         expectedStreakSequence = 1;
       }

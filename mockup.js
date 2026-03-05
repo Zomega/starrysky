@@ -52,6 +52,19 @@ const MOCK_POLICIES = {
     cadence: { type: "daily", requiredCheckinsPerInterval: 1 },
     verificationType: "self-reported",
   },
+  Chess: {
+    name: "Chess",
+    originService: "com.chess",
+    milestones: [10, 50, 100],
+    recurringMilestoneInterval: 100,
+    freezesGrantedAtMilestone: 0,
+    intervalsToEarnFreeze: 0,
+    includeFreezesInStreak: false,
+    maxFreezes: 0,
+    gracePeriodIntervals: 2,
+    cadence: { type: "daily", requiredCheckinsPerInterval: 1 },
+    verificationType: "self-reported",
+  },
 };
 
 function getPolicyForSubject(subject) {
@@ -453,7 +466,7 @@ const MOCK_CHECKINS = [
     freezesClaimed: 0,
   },
 
-  // Tiled Words - Freezes COUNT towards sequence here
+  // Tiled Words
   {
     subject: "Tiled Words",
     createdAt: "2026-02-22T12:00:00Z",
@@ -475,7 +488,6 @@ const MOCK_CHECKINS = [
     checkinsInInterval: 1,
     freezesClaimed: 0,
   },
-  // Feb 25 is frozen, so Feb 26 checkin sequence is 3 + 1 (frozen) + 1 (current) = 5
   {
     subject: "Tiled Words",
     createdAt: "2026-02-26T12:00:00Z",
@@ -571,6 +583,45 @@ const MOCK_CHECKINS = [
     checkinsInInterval: 1,
     freezesClaimed: 1,
   },
+
+  // Chess - Grace Period Demonstration
+  {
+    subject: "Chess",
+    createdAt: "2026-02-21T12:00:00Z",
+    streakSequence: 10,
+    checkinsInInterval: 1,
+    freezesClaimed: 0,
+  },
+  // 22, 23 are gaps covered by grace
+  {
+    subject: "Chess",
+    createdAt: "2026-02-24T12:00:00Z",
+    streakSequence: 11,
+    checkinsInInterval: 1,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Chess",
+    createdAt: "2026-02-25T12:00:00Z",
+    streakSequence: 12,
+    checkinsInInterval: 1,
+    freezesClaimed: 0,
+  },
+  // 26 is gap covered by grace
+  {
+    subject: "Chess",
+    createdAt: "2026-02-27T12:00:00Z",
+    streakSequence: 13,
+    checkinsInInterval: 1,
+    freezesClaimed: 0,
+  },
+  {
+    subject: "Chess",
+    createdAt: "2026-02-28T12:00:00Z",
+    streakSequence: 14,
+    checkinsInInterval: 1,
+    freezesClaimed: 0,
+  },
 ];
 
 let currentYear = 2026;
@@ -596,6 +647,7 @@ export function getGridDataForRange(
 ) {
   const activeIndices = [];
   const frozenIndices = [];
+  const graceIndices = [];
   const dayMs = 24 * 60 * 60 * 1000;
 
   const start = new Date(startDateStr);
@@ -603,8 +655,13 @@ export function getGridDataForRange(
   const end = new Date(endDateStr);
   end.setUTCHours(0, 0, 0, 0);
 
-  const relevantCheckins = checkins.filter((c) => c.subject === subject);
-  const dayMap = new Map();
+  const relevantCheckins = checkins
+    .filter((c) => c.subject === subject)
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+  const dayMap = new Map(); // timestamp -> 'active' | 'frozen' | 'grace'
+
+  let lastCheckinTs = null;
 
   relevantCheckins.forEach((c) => {
     const checkinDate = new Date(c.createdAt);
@@ -625,6 +682,20 @@ export function getGridDataForRange(
         }
       }
     }
+
+    if (lastCheckinTs !== null) {
+      let gapTs = ts - dayMs;
+      while (gapTs > lastCheckinTs) {
+        if (!dayMap.has(gapTs)) {
+          if (gapTs >= start.getTime() && gapTs <= end.getTime()) {
+            dayMap.set(gapTs, "grace");
+          }
+        }
+        gapTs -= dayMs;
+      }
+    }
+
+    lastCheckinTs = ts;
   });
 
   let currTs = start.getTime();
@@ -633,15 +704,22 @@ export function getGridDataForRange(
     const status = dayMap.get(currTs);
     if (status === "active") activeIndices.push(idx);
     else if (status === "frozen") frozenIndices.push(idx);
+    else if (status === "grace") graceIndices.push(idx);
 
     currTs += dayMs;
     idx++;
   }
 
-  return { activeIndices, frozenIndices };
+  return { activeIndices, frozenIndices, graceIndices };
 }
 
-function renderStreakGrid(days, activeDays, freezeDays, cols = 8) {
+function renderStreakGrid(
+  days,
+  activeDays,
+  freezeDays,
+  graceDays = [],
+  cols = 8,
+) {
   const container = cloneTemplate("tpl-streak-grid");
   container.style.setProperty("--grid-cols", cols);
 
@@ -661,10 +739,11 @@ function renderStreakGrid(days, activeDays, freezeDays, cols = 8) {
   });
 
   const elements = [];
-  const allMarked = [...activeDays, ...freezeDays].sort((a, b) => a - b);
+  const allMarked = [...activeDays, ...freezeDays, ...graceDays].sort(
+    (a, b) => a - b,
+  );
 
   if (allMarked.length > 0) {
-    // 1. Render Background Pills (one for the entire continuous range)
     let rStartIdx = 0;
     while (rStartIdx < allMarked.length) {
       let rEndIdx = rStartIdx;
@@ -688,23 +767,25 @@ function renderStreakGrid(days, activeDays, freezeDays, cols = 8) {
       rStartIdx = rEndIdx + 1;
     }
 
-    // 2. Render Foreground segments (Active or Frozen)
+    const foregroundMarked = [...activeDays, ...freezeDays].sort(
+      (a, b) => a - b,
+    );
     let i = 0;
-    while (i < allMarked.length) {
+    while (i < foregroundMarked.length) {
       let startIdx = i;
       let endIdx = i;
-      let isCurrentFrozen = freezeDays.includes(allMarked[i]);
+      let isCurrentFrozen = freezeDays.includes(foregroundMarked[i]);
 
       while (
-        endIdx + 1 < allMarked.length &&
-        allMarked[endIdx + 1] === allMarked[endIdx] + 1 &&
-        freezeDays.includes(allMarked[endIdx + 1]) === isCurrentFrozen
+        endIdx + 1 < foregroundMarked.length &&
+        foregroundMarked[endIdx + 1] === foregroundMarked[endIdx] + 1 &&
+        freezeDays.includes(foregroundMarked[endIdx + 1]) === isCurrentFrozen
       ) {
         endIdx++;
       }
 
-      const startValue = allMarked[startIdx];
-      const endValue = allMarked[endIdx];
+      const startValue = foregroundMarked[startIdx];
+      const endValue = foregroundMarked[endIdx];
       const left = (startValue / cols) * 100;
       const width = ((endValue - startValue + 1) / cols) * 100;
 
@@ -726,7 +807,6 @@ function renderStreakGrid(days, activeDays, freezeDays, cols = 8) {
     }
   }
 
-  // Prepend elements so they are behind the day cells (which are added earlier)
   elements.reverse().forEach((el) => container.prepend(el));
   return container;
 }
@@ -736,13 +816,14 @@ function renderStreakRow(
   days,
   activeDays,
   freezeDays = [],
+  graceDays = [],
   totalStreak = 0,
 ) {
   const row = cloneTemplate("tpl-streak-row");
   row.querySelector(".streak-name").textContent = name;
   row.querySelector(".streak-total").textContent = `${totalStreak}d`;
   row.insertBefore(
-    renderStreakGrid(days, activeDays, freezeDays, days.length),
+    renderStreakGrid(days, activeDays, freezeDays, graceDays, days.length),
     row.querySelector(".streak-total"),
   );
   return row;
@@ -794,7 +875,7 @@ function renderCalendarCard() {
     Date.UTC(currentYear, currentMonth, 1 - firstDay + fullGridDays.length - 1),
   );
 
-  const { activeIndices, frozenIndices } = getGridDataForRange(
+  const { activeIndices, frozenIndices, graceIndices } = getGridDataForRange(
     MOCK_CHECKINS,
     primarySubject,
     startDate.toISOString(),
@@ -809,8 +890,17 @@ function renderCalendarCard() {
     const weekFrozen = frozenIndices
       .filter((idx) => idx >= i && idx < i + 7)
       .map((idx) => idx - i);
+    const weekGrace = graceIndices
+      .filter((idx) => idx >= i && idx < i + 7)
+      .map((idx) => idx - i);
 
-    const grid = renderStreakGrid(weekDays, weekActive, weekFrozen, 7);
+    const grid = renderStreakGrid(
+      weekDays,
+      weekActive,
+      weekFrozen,
+      weekGrace,
+      7,
+    );
     const cells = grid.querySelectorAll(".day-cell");
     weekDays.forEach((day, idx) => {
       const isActualMonth =
@@ -1009,7 +1099,7 @@ function renderStreakCards(countOverride = null) {
     const subLatest = subCheckins.sort(
       (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
     )[0];
-    const { activeIndices, frozenIndices } = getGridDataForRange(
+    const { activeIndices, frozenIndices, graceIndices } = getGridDataForRange(
       MOCK_CHECKINS,
       sub,
       "2026-02-21",
@@ -1021,6 +1111,7 @@ function renderStreakCards(countOverride = null) {
         windowDaysNum,
         activeIndices,
         frozenIndices,
+        graceIndices,
         subLatest ? subLatest.streakSequence : 0,
       ),
     );
@@ -1046,13 +1137,7 @@ function celebrateGoal(count) {
   const policy = getPolicyForSubject(primarySubject);
   if (isMilestone(count, policy) && count > lastCelebratedCount) {
     jsConfetti.addConfetti({
-      confettiColors: [
-        "#fb923c",
-        "#f97316", // Oranges
-        "#38bdf8",
-        "#0ea5e9", // Blues
-        "#ffffff", // White for sparkle
-      ],
+      confettiColors: ["#fb923c", "#f97316", "#38bdf8", "#0ea5e9", "#ffffff"],
       confettiNumber: 100,
     });
     lastCelebratedCount = count;

@@ -81,6 +81,11 @@
             "default": 3,
             "description": "The maximum number of freezes a user can bank at one time."
           },
+          "gracePeriodIntervals": {
+            "type": "integer",
+            "default": 0,
+            "description": "The number of intervals a user can skip before needing to use a freeze or breaking their streak."
+          },
           "startingFreezes": {
             "type": "integer",
             "default": 0,

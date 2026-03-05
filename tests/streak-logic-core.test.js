@@ -5,6 +5,50 @@ import {
   calculateClaimInventory,
 } from "../labeler/src/streak-logic.js";
 
+function testGracePeriod() {
+  console.log("Testing grace period...");
+  const policy = {
+    gracePeriodIntervals: 2,
+    maxFreezes: 3,
+    originService: "app.test",
+    cadence: { type: "daily", requiredCheckinsPerInterval: 1 },
+    includeFreezesInStreak: false,
+  };
+
+  const lastCheckin = {
+    streakSequence: 5,
+    checkinsInInterval: 1,
+    createdAt: "2026-03-01T12:00:00Z",
+  };
+  const inventory = { balance: 0 };
+
+  // Miss 1 day (Mar 2), check in on Mar 3. Gap is 1. Grace is 2.
+  // Should NOT use freeze, sequence should become 6.
+  const res = calculateNextCheckin(
+    lastCheckin,
+    inventory,
+    policy,
+    "2026-03-03T12:00:00Z",
+  );
+
+  assert.strictEqual(res.nextCheckin.streakSequence, 6);
+  assert.strictEqual(res.nextCheckin.freezesClaimed, 0);
+  assert.strictEqual(res.nextInventory, null);
+
+  // Miss 3 days (Mar 4, 5, 6), check in on Mar 7. Gap is 3. Grace is 2. Needs 1 freeze.
+  const inventoryWithFreeze = { balance: 1 };
+  const res2 = calculateNextCheckin(
+    res.nextCheckin,
+    inventoryWithFreeze,
+    policy,
+    "2026-03-07T12:00:00Z",
+  );
+  assert.strictEqual(res2.nextCheckin.freezesClaimed, 1);
+  assert.strictEqual(res2.nextCheckin.streakSequence, 7);
+
+  console.log("✅ Grace period passed");
+}
+
 function testStartingFreezes() {
   console.log("Testing starting freezes...");
   const policy = {
@@ -13,7 +57,6 @@ function testStartingFreezes() {
     originService: "app.test",
     cadence: { type: "daily", requiredCheckinsPerInterval: 1 },
   };
-
   const { nextInventory } = calculateNextCheckin(
     null,
     null,
@@ -58,6 +101,7 @@ function testWeeklyTwoTimes() {
 }
 
 try {
+  testGracePeriod();
   testStartingFreezes();
   testIntervalIndex();
   testWeeklyTwoTimes();
