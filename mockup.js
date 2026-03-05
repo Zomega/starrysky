@@ -453,7 +453,7 @@ const MOCK_CHECKINS = [
     freezesClaimed: 0,
   },
 
-  // Tiled Words
+  // Tiled Words - Freezes COUNT towards sequence here
   {
     subject: "Tiled Words",
     createdAt: "2026-02-22T12:00:00Z",
@@ -475,24 +475,25 @@ const MOCK_CHECKINS = [
     checkinsInInterval: 1,
     freezesClaimed: 0,
   },
+  // Feb 25 is frozen, so Feb 26 checkin sequence is 3 + 1 (frozen) + 1 (current) = 5
   {
     subject: "Tiled Words",
     createdAt: "2026-02-26T12:00:00Z",
-    streakSequence: 4,
+    streakSequence: 5,
     checkinsInInterval: 1,
     freezesClaimed: 1,
   },
   {
     subject: "Tiled Words",
     createdAt: "2026-02-27T12:00:00Z",
-    streakSequence: 5,
+    streakSequence: 6,
     checkinsInInterval: 1,
     freezesClaimed: 0,
   },
   {
     subject: "Tiled Words",
     createdAt: "2026-02-28T12:00:00Z",
-    streakSequence: 6,
+    streakSequence: 7,
     checkinsInInterval: 1,
     freezesClaimed: 0,
   },
@@ -663,24 +664,49 @@ function renderStreakGrid(days, activeDays, freezeDays, cols = 8) {
   const allMarked = [...activeDays, ...freezeDays].sort((a, b) => a - b);
 
   if (allMarked.length > 0) {
-    let i = 0;
-    while (i < allMarked.length) {
-      let startIdx = allMarked[i];
-      let endIdx = startIdx;
-      let isCurrentFrozen = freezeDays.includes(startIdx);
-
-      let j = i + 1;
+    // 1. Render Background Pills (one for the entire continuous range)
+    let rStartIdx = 0;
+    while (rStartIdx < allMarked.length) {
+      let rEndIdx = rStartIdx;
       while (
-        j < allMarked.length &&
-        allMarked[j] === endIdx + 1 &&
-        freezeDays.includes(allMarked[j]) === isCurrentFrozen
+        rEndIdx + 1 < allMarked.length &&
+        allMarked[rEndIdx + 1] === allMarked[rEndIdx] + 1
       ) {
-        endIdx = allMarked[j];
-        j++;
+        rEndIdx++;
       }
 
-      const left = (startIdx / cols) * 100;
-      const width = ((endIdx - startIdx + 1) / cols) * 100;
+      const startValue = allMarked[rStartIdx];
+      const endValue = allMarked[rEndIdx];
+      const left = (startValue / cols) * 100;
+      const width = ((endValue - startValue + 1) / cols) * 100;
+
+      const bgPill = cloneTemplate("tpl-streak-pill-bg");
+      bgPill.style.left = `${left}%`;
+      bgPill.style.width = `${width}%`;
+      elements.push(bgPill);
+
+      rStartIdx = rEndIdx + 1;
+    }
+
+    // 2. Render Foreground segments (Active or Frozen)
+    let i = 0;
+    while (i < allMarked.length) {
+      let startIdx = i;
+      let endIdx = i;
+      let isCurrentFrozen = freezeDays.includes(allMarked[i]);
+
+      while (
+        endIdx + 1 < allMarked.length &&
+        allMarked[endIdx + 1] === allMarked[endIdx] + 1 &&
+        freezeDays.includes(allMarked[endIdx + 1]) === isCurrentFrozen
+      ) {
+        endIdx++;
+      }
+
+      const startValue = allMarked[startIdx];
+      const endValue = allMarked[endIdx];
+      const left = (startValue / cols) * 100;
+      const width = ((endValue - startValue + 1) / cols) * 100;
 
       const pill = cloneTemplate("tpl-streak-pill");
       if (isCurrentFrozen) pill.classList.add("frozen");
@@ -691,16 +717,17 @@ function renderStreakGrid(days, activeDays, freezeDays, cols = 8) {
       if (isCurrentFrozen) {
         const icon = cloneTemplate("tpl-freeze-icon");
         const centerLeft =
-          ((startIdx + (endIdx - startIdx) / 2 + 0.5) / cols) * 100;
+          ((startValue + (endValue - startValue) / 2 + 0.5) / cols) * 100;
         icon.style.left = `${centerLeft}%`;
         elements.push(icon);
       }
 
-      i = j;
+      i = endIdx + 1;
     }
   }
 
-  elements.forEach((el) => container.appendChild(el));
+  // Prepend elements so they are behind the day cells (which are added earlier)
+  elements.reverse().forEach((el) => container.prepend(el));
   return container;
 }
 

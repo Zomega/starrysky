@@ -44,7 +44,19 @@ main {
   transform: translateY(-50%);
   background: linear-gradient(to right, var(--orange-400), var(--orange-500));
   border-radius: var(--radius-pill);
-  z-index: 1;
+  z-index: 2; /* Middle layer */
+  pointer-events: none;
+}
+
+.streak-pill-bg {
+  position: absolute;
+  height: 1.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--orange-400);
+  opacity: 0.5;
+  border-radius: var(--radius-pill);
+  z-index: 1; /* Bottom layer */
   pointer-events: none;
 }
 
@@ -61,7 +73,7 @@ main {
   font-weight: 700;
   color: var(--text-muted);
   position: relative;
-  z-index: 2;
+  z-index: 3; /* Top layer (text) */
   line-height: 1;
 }
 
