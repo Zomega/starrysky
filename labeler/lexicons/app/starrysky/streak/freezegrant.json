@@ -1,0 +1,44 @@
+{
+  "lexicon": 1,
+  "id": "app.starrysky.streak.freezegrant",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "An attestation from an authorized granter issuing extra streak freezes to a user.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["recipient", "policy", "count", "createdAt"],
+        "properties": {
+          "recipient": {
+            "type": "string",
+            "format": "did",
+            "description": "The DID of the user receiving the freezes."
+          },
+          "policy": {
+            "type": "string",
+            "format": "at-uri",
+            "description": "The URI of the policy these freezes apply to."
+          },
+          "count": {
+            "type": "integer",
+            "default": 1,
+            "description": "Number of freezes granted in this record."
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "sig": {
+            "type": "bytes",
+            "description": "Cryptographic signature from the granter (optional for self-hosted data, recommended for verification)."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

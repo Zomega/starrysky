@@ -123,7 +123,7 @@ export function calculateNextCheckin(
         ? streakSequence + totalFreezesNeeded + 1
         : streakSequence + 1;
     } else {
-      streakSequence = 1;
+      sequence = 1;
     }
     checkinsInInterval = 1;
   }
@@ -170,13 +170,42 @@ export function calculateNextCheckin(
       originService: lastCheckin.originService || policy.originService,
       policy: lastCheckin.policy,
       subject: lastCheckin.subject,
+      prev: lastInventory ? lastInventory.cid : null,
       action: inventoryAction.includes("earn") ? "earn" : "spend",
       balance: newBalance,
+      relatedCheckin: "placeholder-cid-of-next-checkin", // Real CID would be calculated after signing
       createdAt: currentTime,
     };
   }
 
   return { nextCheckin, nextInventory };
+}
+
+/**
+ * Generates an inventory record for claiming an external freezegrant.
+ */
+export function calculateClaimInventory(
+  lastInventory,
+  freezeGrant,
+  policy,
+  currentTime,
+) {
+  const currentBalance = lastInventory ? lastInventory.balance : 0;
+  const grantCount = freezeGrant.count || 1;
+  const max = policy.maxFreezes || 3;
+
+  const newBalance = Math.min(currentBalance + grantCount, max);
+
+  return {
+    originService: lastInventory.originService,
+    policy: lastInventory.policy,
+    subject: lastInventory.subject,
+    prev: lastInventory.cid || null,
+    action: "claim",
+    balance: newBalance,
+    relatedFreezeGrant: freezeGrant.cid || "grant-cid",
+    createdAt: currentTime,
+  };
 }
 
 function isMilestoneLogic(count, policy) {

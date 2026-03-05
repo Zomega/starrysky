@@ -173,6 +173,19 @@
               </select>
             </div>
 
+            <div class="form-group">
+              <label for="allowedWitnesses">Authorized Witnesses (DIDs)</label>
+              <input
+                type="text"
+                id="allowedWitnesses"
+                name="allowedWitnesses"
+                placeholder="did:plc:..., did:web:..."
+              />
+              <p class="helper-text">
+                Comma separated list of DIDs authorized to sign check-ins.
+              </p>
+            </div>
+
             <hr style="margin: 2rem 0; opacity: 0.1" />
             <h3 style="margin-bottom: 1.5rem">Goal & Milestone Logic</h3>
 
@@ -243,6 +256,19 @@
               </p>
             </div>
 
+            <div class="form-group">
+              <label for="allowedGranters">Authorized Granters (DIDs)</label>
+              <input
+                type="text"
+                id="allowedGranters"
+                name="allowedGranters"
+                placeholder="did:plc:..., did:web:..."
+              />
+              <p class="helper-text">
+                Comma separated list of DIDs authorized to grant extra freezes.
+              </p>
+            </div>
+
             <div class="checkbox-group">
               <input
                 type="checkbox"
@@ -291,6 +317,18 @@
           recurringMilestoneInterval: parseInt(
             rawData.recurringMilestoneInterval,
           ),
+          allowedWitnesses: rawData.allowedWitnesses
+            ? rawData.allowedWitnesses
+                .split(",")
+                .map((s) => s.trim())
+                .filter((s) => s !== "")
+            : [],
+          allowedGranters: rawData.allowedGranters
+            ? rawData.allowedGranters
+                .split(",")
+                .map((s) => s.trim())
+                .filter((s) => s !== "")
+            : [],
           createdAt: new Date().toISOString(),
         };
 

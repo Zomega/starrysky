@@ -4,7 +4,7 @@
   "defs": {
     "main": {
       "type": "record",
-      "description": "A ledger record tracking the accumulation and expenditure of streak freezes.",
+      "description": "A ledger record tracking the accumulation and expenditure of streak freezes. Forms a linked chain via the 'prev' field.",
       "key": "tid",
       "record": {
         "type": "object",
@@ -33,21 +33,26 @@
           "prev": {
             "type": "string",
             "format": "cid",
-            "description": "Link to the previous inventory record. Null if initializing the ledger."
+            "description": "Link to the previous inventory record in the ledger chain. Null if initializing."
           },
           "action": {
             "type": "string",
-            "knownValues": ["earn", "spend", "initialize"],
+            "knownValues": ["earn", "spend", "initialize", "claim"],
             "description": "The transaction type occurring in this ledger entry."
           },
           "balance": {
             "type": "integer",
             "description": "The total number of freezes available *after* this action is applied."
           },
-          "reasonRef": {
+          "relatedCheckin": {
             "type": "string",
             "format": "cid",
-            "description": "The CID of the checkin record that either earned this freeze (milestone) or spent it (gap bridging)."
+            "description": "The CID of the checkin record that earned or spent these freezes."
+          },
+          "relatedFreezeGrant": {
+            "type": "string",
+            "format": "cid",
+            "description": "The CID of the freezegrant record being claimed."
           },
           "createdAt": {
             "type": "string",

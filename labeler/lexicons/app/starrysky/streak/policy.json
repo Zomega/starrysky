@@ -38,6 +38,14 @@
             },
             "description": "An array of DIDs authorized to sign attestations for this policy. Required if witnessed."
           },
+          "allowedGranters": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "did"
+            },
+            "description": "An array of DIDs authorized to grant extra streak freezes to the user."
+          },
           "cadence": {
             "type": "object",
             "required": ["type", "requiredCheckinsPerInterval"],

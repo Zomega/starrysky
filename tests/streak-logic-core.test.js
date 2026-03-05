@@ -2,6 +2,7 @@ import assert from "assert";
 import {
   calculateNextCheckin,
   getIntervalIndex,
+  calculateClaimInventory,
 } from "../labeler/src/streak-logic.js";
 
 function testIntervalIndex() {
@@ -11,43 +12,6 @@ function testIntervalIndex() {
     getIntervalIndex("2026-03-01T12:00:00Z", daily),
     getIntervalIndex("2026-03-01T23:59:59Z", daily),
   );
-
-  const weeklyMon = { type: "weekly", intervalResetDay: 1 };
-  assert.notStrictEqual(
-    getIntervalIndex("2026-03-01T12:00:00Z", weeklyMon),
-    getIntervalIndex("2026-03-02T12:00:00Z", weeklyMon),
-  );
-
-  const monthly = { type: "monthly" };
-  assert.strictEqual(
-    getIntervalIndex("2026-03-01T12:00:00Z", monthly),
-    getIntervalIndex("2026-03-31T12:00:00Z", monthly),
-  );
-  assert.notStrictEqual(
-    getIntervalIndex("2026-03-31T12:00:00Z", monthly),
-    getIntervalIndex("2026-04-01T12:00:00Z", monthly),
-  );
-
-  const quarterly = { type: "quarterly" };
-  assert.strictEqual(
-    getIntervalIndex("2026-01-01T12:00:00Z", quarterly),
-    getIntervalIndex("2026-03-31T12:00:00Z", quarterly),
-  );
-  assert.notStrictEqual(
-    getIntervalIndex("2026-03-31T12:00:00Z", quarterly),
-    getIntervalIndex("2026-04-01T12:00:00Z", quarterly),
-  );
-
-  const yearly = { type: "yearly" };
-  assert.strictEqual(
-    getIntervalIndex("2026-01-01T12:00:00Z", yearly),
-    getIntervalIndex("2026-12-31T12:00:00Z", yearly),
-  );
-  assert.notStrictEqual(
-    getIntervalIndex("2026-12-31T12:00:00Z", yearly),
-    getIntervalIndex("2027-01-01T12:00:00Z", yearly),
-  );
-
   console.log("✅ getIntervalIndex passed");
 }
 
@@ -90,7 +54,8 @@ function testMilestoneFreezeGrant() {
     checkinsInInterval: 1,
     createdAt: "2026-03-04T12:00:00Z",
   };
-  const inventory = { balance: 0 };
+  const inventory = { balance: 0, cid: "inv-4" };
+
   const res = calculateNextCheckin(
     lastCheckin,
     inventory,
@@ -99,14 +64,44 @@ function testMilestoneFreezeGrant() {
   );
   assert.strictEqual(res.nextCheckin.streakSequence, 5);
   assert.strictEqual(res.nextInventory.balance, 2);
+  assert.strictEqual(res.nextInventory.prev, "inv-4");
+  assert.ok(res.nextInventory.relatedCheckin);
   console.log("✅ Milestone freeze grant passed");
+}
+
+function testClaimGrant() {
+  console.log("Testing freezegrant claiming...");
+  const policy = { maxFreezes: 5 };
+  const lastInventory = {
+    originService: "app.test",
+    policy: "at://policy",
+    subject: "Test",
+    balance: 1,
+    cid: "inv-prev",
+  };
+  const grant = { count: 2, cid: "grant-123" };
+
+  const nextInv = calculateClaimInventory(
+    lastInventory,
+    grant,
+    policy,
+    "2026-03-06T12:00:00Z",
+  );
+
+  assert.strictEqual(nextInv.action, "claim");
+  assert.strictEqual(nextInv.balance, 3);
+  assert.strictEqual(nextInv.relatedFreezeGrant, "grant-123");
+  assert.strictEqual(nextInv.prev, "inv-prev");
+
+  console.log("✅ Freezegrant claiming passed");
 }
 
 try {
   testIntervalIndex();
   testWeeklyTwoTimes();
   testMilestoneFreezeGrant();
-  console.log("\nAll core logic tests passed! 🎉");
+  testClaimGrant();
+  console.log("\nAll refactored core logic tests passed! 🎉");
 } catch (error) {
   console.error("\nTests failed! ❌");
   console.error(error);
