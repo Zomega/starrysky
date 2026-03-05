@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="homepage.css" />
     <link rel="stylesheet" href="shooting_stars.css" />
+    <script src="theme.js"></script>
   </head>
   <body>
     <header class="top-nav">
@@ -100,29 +101,5 @@
         />
       </a>
     </footer>
-
-    <script>
-      document.querySelector(".theme-toggle").addEventListener("click", () => {
-        const isLight =
-          document.documentElement.classList.contains("force-light-mode");
-        const isDark =
-          document.documentElement.classList.contains("force-dark-mode");
-        const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)",
-        ).matches;
-
-        document.documentElement.classList.remove(
-          "force-light-mode",
-          "force-dark-mode",
-        );
-
-        if (isLight) document.documentElement.classList.add("force-dark-mode");
-        else if (isDark)
-          document.documentElement.classList.add("force-light-mode");
-        else if (prefersDark)
-          document.documentElement.classList.add("force-light-mode");
-        else document.documentElement.classList.add("force-dark-mode");
-      });
-    </script>
   </body>
 </html>

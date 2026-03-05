@@ -1063,29 +1063,6 @@ if (typeof document !== "undefined") {
 
     refreshUI();
 
-    const themeToggle = document.querySelector(".theme-toggle");
-    if (themeToggle) {
-      themeToggle.addEventListener("click", () => {
-        const isLight =
-          document.documentElement.classList.contains("force-light-mode");
-        const isDark =
-          document.documentElement.classList.contains("force-dark-mode");
-        const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)",
-        ).matches;
-        document.documentElement.classList.remove(
-          "force-light-mode",
-          "force-dark-mode",
-        );
-        if (isLight) document.documentElement.classList.add("force-dark-mode");
-        else if (isDark)
-          document.documentElement.classList.add("force-light-mode");
-        else if (prefersDark)
-          document.documentElement.classList.add("force-light-mode");
-        else document.documentElement.classList.add("force-dark-mode");
-      });
-    }
-
     if (inputEl) {
       inputEl.addEventListener("input", refreshUI);
     }

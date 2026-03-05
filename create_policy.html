@@ -15,6 +15,7 @@
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
     />
     <link rel="stylesheet" href="style.css" />
+    <script src="theme.js"></script>
     <style>
       main {
         display: block;
@@ -260,27 +261,6 @@
     </main>
 
     <script type="module">
-      // Basic theme toggle logic
-      document.querySelector(".theme-toggle").addEventListener("click", () => {
-        const isLight =
-          document.documentElement.classList.contains("force-light-mode");
-        const isDark =
-          document.documentElement.classList.contains("force-dark-mode");
-        const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)",
-        ).matches;
-        document.documentElement.classList.remove(
-          "force-light-mode",
-          "force-dark-mode",
-        );
-        if (isLight) document.documentElement.classList.add("force-dark-mode");
-        else if (isDark)
-          document.documentElement.classList.add("force-light-mode");
-        else if (prefersDark)
-          document.documentElement.classList.add("force-light-mode");
-        else document.documentElement.classList.add("force-dark-mode");
-      });
-
       // Form handling
       document.getElementById("policy-form").addEventListener("submit", (e) => {
         e.preventDefault();
