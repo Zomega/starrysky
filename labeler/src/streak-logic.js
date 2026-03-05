@@ -4,13 +4,41 @@
  */
 
 /**
+ * Returns a deterministic index for a given date based on cadence.
+ * Uses UTC to avoid local timezone shifts.
+ */
+export function getIntervalIndex(date, cadence) {
+  const d = new Date(date);
+  const type = cadence.type;
+  const resetDay = cadence.intervalResetDay || 0;
+
+  if (type === "daily") {
+    return Math.floor(d.getTime() / (24 * 60 * 60 * 1000));
+  }
+
+  if (type === "weekly") {
+    const dayMs = 24 * 60 * 60 * 1000;
+    const weekMs = 7 * dayMs;
+    return Math.floor((d.getTime() - (resetDay - 4) * dayMs) / weekMs);
+  }
+
+  if (type === "monthly") {
+    return d.getUTCFullYear() * 12 + d.getUTCMonth();
+  }
+
+  if (type === "quarterly") {
+    return d.getUTCFullYear() * 4 + Math.floor(d.getUTCMonth() / 3);
+  }
+
+  if (type === "yearly") {
+    return d.getUTCFullYear();
+  }
+
+  return 0;
+}
+
+/**
  * Calculates the state for the next check-in.
- *
- * @param {Object|null} lastCheckin - The previous check-in record (null if first).
- * @param {Object|null} lastInventory - The previous inventory record (null if first).
- * @param {Object} policy - The policy record defining the rules.
- * @param {string} currentTime - ISO timestamp of the new check-in.
- * @returns {Object} { nextCheckin, nextInventory }
  */
 export function calculateNextCheckin(
   lastCheckin,
@@ -19,22 +47,23 @@ export function calculateNextCheckin(
   currentTime,
 ) {
   const now = new Date(currentTime);
-  const windowMs = (policy.windowSeconds || 86400) * 1000;
+  const cadence = policy.cadence;
+  const currentIntervalIdx = getIntervalIndex(now, cadence);
 
   // 1. Initial Check-in
   if (!lastCheckin) {
     const firstCheckin = {
-      service: policy.service,
+      originService: policy.originService,
       policy: policy.uri || "at://placeholder",
       subject: policy.subject || "Default",
-      sequence: 1,
+      streakSequence: 1,
+      checkinsInInterval: 1,
       freezesClaimed: 0,
       createdAt: currentTime,
     };
 
-    // Initial inventory if none exists
     const firstInventory = lastInventory || {
-      service: policy.service,
+      originService: policy.originService,
       policy: policy.uri || "at://placeholder",
       subject: policy.subject || "Default",
       action: "initialize",
@@ -45,58 +74,91 @@ export function calculateNextCheckin(
     return { nextCheckin: firstCheckin, nextInventory: firstInventory };
   }
 
-  const lastDate = new Date(lastCheckin.createdAt);
-  const diffMs = now.getTime() - lastDate.getTime();
-
-  // Calculate missed windows
-  // 0-24h: 0 freezes
-  // 24h-48h: 1 freeze
-  // etc.
-  const freezesNeeded = Math.floor((diffMs - 1) / windowMs);
+  const lastIntervalIdx = getIntervalIndex(
+    new Date(lastCheckin.createdAt),
+    cadence,
+  );
+  const intervalsPassed = currentIntervalIdx - lastIntervalIdx;
 
   const currentBalance = lastInventory ? lastInventory.balance : 0;
 
-  let sequence = lastCheckin.sequence;
+  let streakSequence = lastCheckin.streakSequence;
+  let checkinsInInterval = 1;
   let freezesClaimed = 0;
   let newBalance = currentBalance;
   let inventoryAction = null;
 
-  if (freezesNeeded > 0) {
-    if (freezesNeeded <= currentBalance) {
-      // Bridge the gap
-      freezesClaimed = freezesNeeded;
-      newBalance -= freezesClaimed;
-      inventoryAction = "spend";
-
-      if (policy.includeFreezesInStreak) {
-        sequence += freezesClaimed + 1;
+  if (intervalsPassed === 0) {
+    checkinsInInterval = (lastCheckin.checkinsInInterval || 0) + 1;
+  } else if (intervalsPassed === 1) {
+    if (lastCheckin.checkinsInInterval < cadence.requiredCheckinsPerInterval) {
+      const freezesNeeded = 1;
+      if (currentBalance >= freezesNeeded) {
+        freezesClaimed = freezesNeeded;
+        newBalance -= freezesClaimed;
+        inventoryAction = "spend";
+        streakSequence = policy.includeFreezesInStreak
+          ? streakSequence + 2
+          : streakSequence + 1;
       } else {
-        sequence += 1;
+        streakSequence = 1;
       }
     } else {
-      // Streak broken!
-      sequence = 1;
-      freezesClaimed = 0;
+      streakSequence += 1;
     }
+    checkinsInInterval = 1;
   } else {
-    // Consecutive check-in within the same window
-    sequence += 1;
+    const missedIntervals = intervalsPassed - 1;
+    const extraNeeded =
+      lastCheckin.checkinsInInterval < cadence.requiredCheckinsPerInterval
+        ? 1
+        : 0;
+    const totalFreezesNeeded = missedIntervals + extraNeeded;
+
+    if (totalFreezesNeeded <= currentBalance) {
+      freezesClaimed = totalFreezesNeeded;
+      newBalance -= freezesClaimed;
+      inventoryAction = "spend";
+      streakSequence = policy.includeFreezesInStreak
+        ? streakSequence + totalFreezesNeeded + 1
+        : streakSequence + 1;
+    } else {
+      streakSequence = 1;
+    }
+    checkinsInInterval = 1;
   }
 
-  // Check if we earned a new freeze
-  if (
-    sequence % policy.freezeGrantRate === 0 &&
-    newBalance < (policy.maxFreezes || 3)
-  ) {
-    newBalance += 1;
+  // Freeze Granting
+  let totalFreezesEarned = 0;
+
+  const reachedMilestone =
+    isMilestoneLogic(streakSequence, policy) && intervalsPassed > 0;
+  if (reachedMilestone) {
+    totalFreezesEarned += policy.freezesGrantedAtMilestone || 0;
+  }
+
+  const reachedRate =
+    policy.intervalsToEarnFreeze > 0 &&
+    streakSequence % policy.intervalsToEarnFreeze === 0 &&
+    intervalsPassed > 0;
+  if (reachedRate) {
+    totalFreezesEarned += 1;
+  }
+
+  if (totalFreezesEarned > 0) {
+    newBalance = Math.min(
+      newBalance + totalFreezesEarned,
+      policy.maxFreezes || 3,
+    );
     inventoryAction = inventoryAction === "spend" ? "spend_and_earn" : "earn";
   }
 
   const nextCheckin = {
-    service: lastCheckin.service,
+    originService: lastCheckin.originService || policy.originService,
     policy: lastCheckin.policy,
     subject: lastCheckin.subject,
-    sequence: sequence,
+    streakSequence: streakSequence,
+    checkinsInInterval: checkinsInInterval,
     freezesClaimed: freezesClaimed,
     prev: lastCheckin.cid || "placeholder-cid",
     createdAt: currentTime,
@@ -105,7 +167,7 @@ export function calculateNextCheckin(
   let nextInventory = null;
   if (inventoryAction) {
     nextInventory = {
-      service: lastCheckin.service,
+      originService: lastCheckin.originService || policy.originService,
       policy: lastCheckin.policy,
       subject: lastCheckin.subject,
       action: inventoryAction.includes("earn") ? "earn" : "spend",
@@ -117,51 +179,62 @@ export function calculateNextCheckin(
   return { nextCheckin, nextInventory };
 }
 
-/**
- * Validates a sequence of check-ins against a policy.
- */
+function isMilestoneLogic(count, policy) {
+  if (count <= 0) return false;
+  if (policy.milestones && policy.milestones.includes(count)) return true;
+  if (policy.recurringMilestoneInterval) {
+    const lastExplicit = policy.milestones ? Math.max(...policy.milestones) : 0;
+    if (count > lastExplicit) {
+      return (count - lastExplicit) % policy.recurringMilestoneInterval === 0;
+    }
+  }
+  return false;
+}
+
 export function validateCheckinSequence(checkins, policy) {
   if (!checkins || checkins.length === 0) return true;
-
   const sorted = [...checkins].sort(
     (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
   );
-  const windowMs = (policy.windowSeconds || 86400) * 1000;
+  const cadence = policy.cadence;
 
   for (let i = 1; i < sorted.length; i++) {
     const prev = sorted[i - 1];
     const curr = sorted[i];
 
-    const diffMs =
-      new Date(curr.createdAt).getTime() - new Date(prev.createdAt).getTime();
-    const freezesNeeded = Math.floor((diffMs - 1) / windowMs);
+    const lastIdx = getIntervalIndex(new Date(prev.createdAt), cadence);
+    const currIdx = getIntervalIndex(new Date(curr.createdAt), cadence);
+    const passed = currIdx - lastIdx;
 
-    let expectedSequence;
-    if (freezesNeeded > 0) {
-      if (curr.freezesClaimed === freezesNeeded) {
-        expectedSequence =
-          prev.sequence +
-          (policy.includeFreezesInStreak ? freezesNeeded + 1 : 1);
-      } else {
-        expectedSequence = 1;
-      }
+    let expectedStreakSequence = prev.streakSequence;
+    let expectedCheckinsInInterval = 1;
+
+    if (passed === 0) {
+      expectedCheckinsInInterval = prev.checkinsInInterval + 1;
     } else {
-      expectedSequence = prev.sequence + 1;
+      const missed = passed - 1;
+      const unfinished =
+        prev.checkinsInInterval < cadence.requiredCheckinsPerInterval ? 1 : 0;
+      const needed = missed + unfinished;
+
+      if (curr.freezesClaimed === needed) {
+        expectedStreakSequence =
+          prev.streakSequence +
+          (policy.includeFreezesInStreak ? needed + 1 : 1);
+      } else {
+        expectedStreakSequence = 1;
+      }
+      expectedCheckinsInInterval = 1;
     }
 
-    if (curr.sequence !== expectedSequence) {
+    if (curr.streakSequence !== expectedStreakSequence) {
       throw new Error(
-        `Sequence mismatch at check-in ${i}. Expected ${expectedSequence}, got ${curr.sequence}`,
+        `Streak sequence mismatch at check-in ${i}. Expected ${expectedStreakSequence}, got ${curr.streakSequence}`,
       );
     }
-
-    if (
-      freezesNeeded > 0 &&
-      curr.freezesClaimed > 0 &&
-      curr.freezesClaimed > freezesNeeded
-    ) {
+    if (curr.checkinsInInterval !== expectedCheckinsInInterval) {
       throw new Error(
-        `Over-claimed freezes at check-in ${i}. Missed ${freezesNeeded}, claimed ${curr.freezesClaimed}`,
+        `Interval check-in count mismatch at check-in ${i}. Expected ${expectedCheckinsInInterval}, got ${curr.checkinsInInterval}`,
       );
     }
   }

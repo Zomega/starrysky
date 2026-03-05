@@ -8,9 +8,15 @@
       "key": "tid",
       "record": {
         "type": "object",
-        "required": ["service", "policy", "subject", "sequence", "createdAt"],
+        "required": [
+          "originService",
+          "policy",
+          "subject",
+          "streakSequence",
+          "createdAt"
+        ],
         "properties": {
-          "service": {
+          "originService": {
             "type": "string",
             "description": "The NSID of the service where the streak event occurred."
           },
@@ -24,10 +30,15 @@
             "description": "The name of the habit (e.g., 'Daily Coding', 'Morning Run').",
             "maxLength": 100
           },
-          "sequence": {
+          "streakSequence": {
             "type": "integer",
-            "description": "The current day number of this specific streak.",
+            "description": "The current total count of successful intervals/days in this specific streak.",
             "minimum": 1
+          },
+          "checkinsInInterval": {
+            "type": "integer",
+            "default": 1,
+            "description": "Progress within the current cadence interval (e.g., 2 if this is the second check-in of the week)."
           },
           "note": {
             "type": "string",

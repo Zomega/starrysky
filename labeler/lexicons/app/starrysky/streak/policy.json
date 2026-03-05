@@ -9,16 +9,21 @@
       "record": {
         "type": "object",
         "required": [
-          "service",
+          "name",
           "verificationType",
-          "windowSeconds",
-          "freezeGrantRate",
+          "cadence",
+          "intervalsToEarnFreeze",
           "createdAt"
         ],
         "properties": {
-          "service": {
+          "name": {
             "type": "string",
-            "description": "The NSID of the service being tracked (e.g., app.bsky.feed.post)."
+            "description": "Human-readable name for this streak (e.g., 'Daily Coding').",
+            "maxLength": 100
+          },
+          "originService": {
+            "type": "string",
+            "description": "Optional: The NSID of the service being tracked for automated check-ins (e.g., app.bsky.feed.post)."
           },
           "verificationType": {
             "type": "string",
@@ -33,14 +38,35 @@
             },
             "description": "An array of DIDs authorized to sign attestations for this policy. Required if witnessed."
           },
-          "windowSeconds": {
-            "type": "integer",
-            "default": 86400,
-            "description": "Maximum time allowed between check-ins to maintain the streak."
+          "cadence": {
+            "type": "object",
+            "required": ["type", "requiredCheckinsPerInterval"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "knownValues": [
+                  "daily",
+                  "weekly",
+                  "monthly",
+                  "quarterly",
+                  "yearly"
+                ],
+                "description": "The time window during which the required check-ins must occur."
+              },
+              "requiredCheckinsPerInterval": {
+                "type": "integer",
+                "default": 1,
+                "description": "Number of check-ins required within the interval to maintain the streak."
+              },
+              "intervalResetDay": {
+                "type": "integer",
+                "description": "For weekly: 0-6 (Sun-Sat). For monthly: 1-31. Defines when the window rolls over."
+              }
+            }
           },
-          "freezeGrantRate": {
+          "intervalsToEarnFreeze": {
             "type": "integer",
-            "description": "Number of consecutive check-ins required to earn 1 freeze."
+            "description": "Number of successful intervals required to earn 1 freeze."
           },
           "maxFreezes": {
             "type": "integer",
@@ -50,7 +76,7 @@
           "includeFreezesInStreak": {
             "type": "boolean",
             "default": false,
-            "description": "If true, frozen days are included in the streak sequence count."
+            "description": "If true, frozen intervals are included in the streak sequence count."
           },
           "milestones": {
             "type": "array",
@@ -61,10 +87,10 @@
             "type": "integer",
             "description": "Interval for repeating milestones (e.g., every 100 days) after explicit milestones are passed."
           },
-          "grantFreezeAtMilestone": {
-            "type": "boolean",
-            "default": false,
-            "description": "If true, reaching a milestone (explicit or recurring) grants a streak freeze."
+          "freezesGrantedAtMilestone": {
+            "type": "integer",
+            "default": 0,
+            "description": "Number of freezes to grant when reaching a milestone (explicit or recurring)."
           },
           "createdAt": {
             "type": "string",

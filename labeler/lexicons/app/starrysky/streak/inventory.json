@@ -9,7 +9,7 @@
       "record": {
         "type": "object",
         "required": [
-          "service",
+          "originService",
           "policy",
           "subject",
           "action",
@@ -17,7 +17,7 @@
           "createdAt"
         ],
         "properties": {
-          "service": {
+          "originService": {
             "type": "string",
             "description": "The NSID of the service this inventory applies to."
           },
