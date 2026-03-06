@@ -40,7 +40,6 @@ async function init() {
     console.log("🛠️ window.client is ready");
 
     // The SDK should handle the redirect return automatically.
-    // It looks for 'code' and 'state' in the URL.
     const result = await client.init();
     console.log("Client init result:", result);
 
@@ -59,8 +58,6 @@ async function init() {
       statusEl.innerText = "Connection Error: " + err.message;
       statusEl.style.color = "var(--red-500)";
     }
-    // Even if init fails (e.g. invalid code), try to show logout if we have an old session
-    // But usually init is the only way to get the session.
   }
 }
 
@@ -73,7 +70,6 @@ async function setupGameUI(session) {
   const logoutBtn = document.getElementById("logout-btn");
   if (logoutBtn) {
     logoutBtn.style.display = "flex";
-    console.log("Logout button display set to flex");
   }
 
   agent = new Agent(oauthSession);
@@ -131,7 +127,6 @@ async function login() {
   if (!handle) return alert("Enter your handle");
 
   try {
-    // Standardizing the redirect URI: must match metadata exactly.
     const redirectUri = window.location.origin + "/";
     console.log("signIn initiating with redirect_uri:", redirectUri);
 
@@ -165,25 +160,34 @@ async function saveCheckin() {
 
   try {
     const did = oauthSession.sub;
-    const now = new Date().toISOString();
+    const now = new Date();
+    const isoNow = now.toISOString();
+    const dateStr = isoNow.split("T")[0]; // YYYY-MM-DD
 
+    console.log(`Saving check-in for ${dateStr}...`);
+
+    // In a real app, we would use the core logic to calculate the sequence
+    // based on the previous record. For this mockup simulation, we'll just upsert.
     await agent.com.atproto.repo.putRecord({
       repo: did,
       collection: "app.starrysky.streak.checkin",
       rkey: "daily-checkin",
       record: {
         $type: "app.starrysky.streak.checkin",
-        service: "app.starrysky",
+        originService: "app.starrysky",
         policy: "at://did:plc:placeholder/app.starrysky.streak.policy/main",
         subject: "Daily Streak",
-        sequence: 1,
-        createdAt: now,
+        streakSequence: 1, // Placeholder
+        streakDate: dateStr,
+        checkinsInInterval: 1,
+        freezeDates: [],
+        createdAt: isoNow,
         note: "Checked in via Starrysky!",
       },
     });
 
     alert("Check-in saved successfully!");
-    await readCheckin();
+    await readCheckin(); // Refresh the view
   } catch (err) {
     console.error("Save failed:", err);
     alert("Save failed: " + err.message);
@@ -204,7 +208,7 @@ async function readCheckin() {
     });
 
     const val = response.data.value;
-    statusEl.innerText = `Last check-in: ${new Date(val.createdAt).toLocaleString()}`;
+    statusEl.innerText = `Last check-in (${val.streakDate}): ${new Date(val.createdAt).toLocaleString()}`;
   } catch (err) {
     if (err.message.includes("Could not find record")) {
       statusEl.innerText = "No check-in found for today.";

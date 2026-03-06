@@ -13,3 +13,9 @@ npm-debug.log*
 # OS specific files
 .DS_Store
 Thumbs.db
+
+# Coverage reports and logs
+coverage/
+.nyc_output/
+.c8_output/
+node_modules/.cache/

@@ -37,7 +37,13 @@
           },
           "action": {
             "type": "string",
-            "knownValues": ["earn", "spend", "initialize", "claim"],
+            "knownValues": [
+              "earn",
+              "spend",
+              "initialize",
+              "claim",
+              "spend_and_earn"
+            ],
             "description": "The transaction type occurring in this ledger entry."
           },
           "balance": {
