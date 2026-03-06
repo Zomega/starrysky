@@ -1,4 +1,5 @@
-import assert from "assert";
+import { test, describe } from "node:test";
+import assert from "node:assert";
 import {
   calculateNextCheckin,
   getIntervalIndex,
@@ -6,269 +7,234 @@ import {
   validateCheckinSequence,
 } from "../labeler/src/streak-logic.js";
 
-function testAbsolute100() {
-  console.log("Absolute 100% Branch Coverage Pursuit Starting...");
+const basePolicy = {
+  originService: "app.test",
+  cadence: { type: "daily", requiredCheckinsPerInterval: 1 },
+  gracePeriodIntervals: 0,
+  maxFreezes: 5,
+  includeFreezesInStreak: false,
+};
 
-  const basePoly = {
-    originService: "app.test",
-    cadence: { type: "daily", requiredCheckinsPerInterval: 1 },
-    gracePeriodIntervals: 0,
-    maxFreezes: 5,
-    includeFreezesInStreak: false,
-  };
+describe("Core Streak Logic - Robustness Suite", () => {
+  test("getIntervalIndex precision and cadence boundaries", () => {
+    // Exact day index gap (Arithmetic precision)
+    const d1 = getIntervalIndex("2026-03-01", { type: "daily" });
+    const d2 = getIntervalIndex("2026-03-03", { type: "daily" });
+    assert.strictEqual(d2 - d1, 2, "2 days gap must be exactly 2 units");
 
-  // --- calculateNextCheckin Initial branches (Lines 64-79) ---
-  // Line 70: lastInventory provided vs null
-  const resNullInv = calculateNextCheckin(
-    null,
-    null,
-    basePoly,
-    "now",
-    "2026-03-01",
-  );
-  const resProvInv = calculateNextCheckin(
-    null,
-    { balance: 10, cid: "p" },
-    basePoly,
-    "now",
-    "2026-03-01",
-  );
-  assert.strictEqual(resProvInv.nextInventory.balance, 10);
+    // Monthly rollover precision
+    const m1 = getIntervalIndex("2026-12-31", { type: "monthly" });
+    const m2 = getIntervalIndex("2027-01-01", { type: "monthly" });
+    assert.strictEqual(
+      m2 - m1,
+      1,
+      "Year rollover must advance monthly index by 1",
+    );
 
-  // Line 76: startingFreezes provided vs undefined
-  const pStartProv = { ...basePoly, startingFreezes: 2 };
-  const resStartProv = calculateNextCheckin(
-    null,
-    null,
-    pStartProv,
-    "now",
-    "2026-03-01",
-  );
-  assert.strictEqual(resStartProv.nextInventory.balance, 2);
-  const pStartDef = { cadence: { type: "daily" } };
-  const resStartDef = calculateNextCheckin(
-    null,
-    null,
-    pStartDef,
-    "now",
-    "2026-03-01",
-  );
-  assert.strictEqual(resStartDef.nextInventory.balance, 0);
+    // Quarterly precision
+    const q1 = getIntervalIndex("2026-03-31", { type: "quarterly" });
+    const q2 = getIntervalIndex("2026-04-01", { type: "quarterly" });
+    assert.strictEqual(q2 - q1, 1);
 
-  // Line 76: maxFreezes provided vs default 3
-  const pMaxProv = {
-    cadence: { type: "daily" },
-    maxFreezes: 5,
-    startingFreezes: 10,
-  };
-  const resMaxProv = calculateNextCheckin(
-    null,
-    null,
-    pMaxProv,
-    "now",
-    "2026-03-01",
-  );
-  assert.strictEqual(resMaxProv.nextInventory.balance, 5);
+    // Yearly precision
+    const y1 = getIntervalIndex("2026-12-31", { type: "yearly" });
+    const y2 = getIntervalIndex("2027-01-01", { type: "yearly" });
+    assert.strictEqual(y2 - y1, 1);
+  });
 
-  // --- Gaps ---
-  const init = resNullInv.nextCheckin;
-  // Line 100: lastCheckin.checkinsInInterval provided vs falsy
-  const cProv = {
-    streakSequence: 1,
-    streakDate: "2026-03-01",
-    checkinsInInterval: 1,
-  };
-  calculateNextCheckin(cProv, null, basePoly, "now", "2026-03-01");
-  const cFalsy = { streakSequence: 1, streakDate: "2026-03-01" }; // undefined
-  calculateNextCheckin(cFalsy, null, basePoly, "now", "2026-03-01");
+  test("Initial check-in and Record Construction exhaustive field checks", () => {
+    const richPolicy = {
+      ...basePolicy,
+      startingFreezes: 2,
+      maxFreezes: 10,
+      uri: "at://policy",
+      subject: "My Streak",
+    };
+    const res = calculateNextCheckin(
+      null,
+      null,
+      richPolicy,
+      "2026-03-01T12:00:00Z",
+      "2026-03-01",
+    );
 
-  // Line 126: includeFreezesInStreak truthy vs falsy
-  calculateNextCheckin(
-    init,
-    { balance: 1 },
-    { ...basePoly, includeFreezesInStreak: true },
-    "now",
-    "2026-03-03",
-  );
-  calculateNextCheckin(
-    init,
-    { balance: 1 },
-    { ...basePoly, includeFreezesInStreak: false },
-    "now",
-    "2026-03-03",
-  );
+    assert.strictEqual(res.nextCheckin.streakSequence, 1);
+    assert.strictEqual(res.nextCheckin.policy, "at://policy");
+    assert.strictEqual(res.nextCheckin.subject, "My Streak");
+    assert.strictEqual(res.nextCheckin.checkinsInInterval, 1);
+    assert.deepStrictEqual(res.nextCheckin.freezeDates, []);
 
-  // --- Rewards ---
-  // Line 141: intervalsToEarnFreeze > 0 vs <= 0
-  calculateNextCheckin(
-    cProv,
-    null,
-    { ...basePoly, intervalsToEarnFreeze: 2 },
-    "now",
-    "2026-03-02",
-  );
-  calculateNextCheckin(
-    cProv,
-    null,
-    { ...basePoly, intervalsToEarnFreeze: 0 },
-    "now",
-    "2026-03-02",
-  );
+    assert.strictEqual(res.nextInventory.balance, 2);
+    assert.strictEqual(res.nextInventory.action, "initialize");
+    assert.strictEqual(res.nextInventory.policy, "at://policy");
+    assert.strictEqual(res.nextInventory.subject, "My Streak");
+  });
 
-  // Line 154: lastCheckin.originService provided vs falsy
-  const cOrigProv = { ...cProv, originService: "custom" };
-  const resOrigProv = calculateNextCheckin(
-    cOrigProv,
-    null,
-    basePoly,
-    "now",
-    "2026-03-02",
-  );
-  assert.strictEqual(resOrigProv.nextCheckin.originService, "custom");
-  const cOrigFalsy = { ...cProv };
-  const resOrigFalsy = calculateNextCheckin(
-    cOrigFalsy,
-    null,
-    basePoly,
-    "now",
-    "2026-03-02",
-  );
-  assert.strictEqual(resOrigFalsy.nextCheckin.originService, "app.test");
+  test("Gap calculation, freeze usage, and grace periods (Arithmetic precision)", () => {
+    const last = {
+      streakSequence: 10,
+      streakDate: "2026-03-01",
+      checkinsInInterval: 1,
+      cid: "prev-c",
+    };
+    const inv = { balance: 5, cid: "prev-i" };
 
-  // Line 178: lastInventory provided vs null
-  const invProv = { balance: 0, cid: "i-cid" };
-  calculateNextCheckin(
-    cProv,
-    invProv,
-    { ...basePoly, milestones: [2], freezesGrantedAtMilestone: 1 },
-    "now",
-    "2026-03-02",
-  );
-  calculateNextCheckin(
-    cProv,
-    null,
-    { ...basePoly, milestones: [2], freezesGrantedAtMilestone: 1 },
-    "now",
-    "2026-03-02",
-  );
+    // 1. One skip covered by 1 freeze (Arithmetic: 10+1=11, 5-1=4)
+    const res1 = calculateNextCheckin(
+      last,
+      inv,
+      basePolicy,
+      "now",
+      "2026-03-03",
+    );
+    assert.strictEqual(res1.nextCheckin.streakSequence, 11);
+    assert.strictEqual(res1.nextCheckin.freezesClaimed, 1);
+    assert.deepStrictEqual(res1.nextCheckin.freezeDates, ["2026-03-02"]);
+    assert.strictEqual(res1.nextInventory.balance, 4);
+    assert.strictEqual(res1.nextInventory.action, "spend");
 
-  // --- calculateClaimInventory (Lines 194-211) ---
-  // Line 198: grant.count provided vs default 1
-  const invBasic = {
-    balance: 0,
-    originService: "a",
-    policy: "b",
-    subject: "c",
-  };
-  calculateClaimInventory(invBasic, { count: 5 }, { maxFreezes: 10 }, "now");
-  calculateClaimInventory(invBasic, {}, { maxFreezes: 10 }, "now");
+    // 2. Unfinished interval skip (Arithmetic: passed=1, unf=1, total=1)
+    const lastUnf = { ...last, checkinsInInterval: 0 };
+    const res2 = calculateNextCheckin(
+      lastUnf,
+      inv,
+      basePolicy,
+      "now",
+      "2026-03-02",
+    );
+    assert.strictEqual(res2.nextCheckin.freezesClaimed, 1);
+    assert.strictEqual(res2.nextCheckin.streakSequence, 11);
 
-  // Line 200: lastInventory.cid provided vs null
-  calculateClaimInventory(
-    { ...invBasic, cid: "my-cid" },
-    {},
-    { maxFreezes: 5 },
-    "now",
-  );
-  calculateClaimInventory(invBasic, {}, { maxFreezes: 5 }, "now");
+    // 3. includeFreezesInStreak: true (Arithmetic: 10 + 2 (gaps) + 1 (new) = 13)
+    const pInc = { ...basePolicy, includeFreezesInStreak: true };
+    const res3 = calculateNextCheckin(last, inv, pInc, "now", "2026-03-04");
+    assert.strictEqual(res3.nextCheckin.streakSequence, 13);
 
-  // --- isMilestoneLogic (Lines 213-225) ---
-  // Line 213: milestones provided vs falsy
-  calculateNextCheckin(
-    cProv,
-    null,
-    { ...basePoly, milestones: [2], freezesGrantedAtMilestone: 1 },
-    "now",
-    "2026-03-02",
-  );
-  calculateNextCheckin(
-    cProv,
-    null,
-    {
-      ...basePoly,
-      recurringMilestoneInterval: 5,
-      freezesGrantedAtMilestone: 1,
-    },
-    "now",
-    "2026-03-02",
-  );
+    // 4. Grace period coverage (Arithmetic: gaps=1, grace=1, freezesNeeded=0)
+    const pGrace = { ...basePolicy, gracePeriodIntervals: 1 };
+    const res4 = calculateNextCheckin(last, inv, pGrace, "now", "2026-03-03");
+    assert.strictEqual(res4.nextCheckin.freezesClaimed, 0);
+    assert.strictEqual(res4.nextInventory, null);
+  });
 
-  // Line 219: lastExplicit calc (policy.milestones truthy vs falsy)
-  const pMileRec = {
-    ...basePoly,
-    milestones: [2],
-    recurringMilestoneInterval: 5,
-    freezesGrantedAtMilestone: 1,
-  };
-  calculateNextCheckin(
-    { streakSequence: 6, streakDate: "2026-03-01", checkinsInInterval: 1 },
-    null,
-    pMileRec,
-    "now",
-    "2026-03-02",
-  );
+  test("Reward logic precision and boundaries", () => {
+    const pMileOnly = {
+      ...basePolicy,
+      milestones: [10],
+      freezesGrantedAtMilestone: 2,
+      intervalsToEarnFreeze: 0,
+      maxFreezes: 10,
+    };
 
-  // --- validateCheckinSequence (Lines 230-290) ---
-  // Line 264: passed === 0 vs !== 0
-  const vSame = [cProv, { ...cProv, checkinsInInterval: 2 }];
-  validateCheckinSequence(vSame, basePoly);
-  const vDiff = [
-    cProv,
-    { ...cProv, streakDate: "2026-03-02", streakSequence: 2 },
-  ];
-  validateCheckinSequence(vDiff, basePoly);
+    // Explicit milestone 10
+    const r1 = calculateNextCheckin(
+      { streakSequence: 9, streakDate: "2026-03-01", checkinsInInterval: 1 },
+      { balance: 0 },
+      pMileOnly,
+      "now",
+      "2026-03-02",
+    );
+    assert.strictEqual(r1.nextInventory.balance, 2, "Grant must be EXACTLY 2");
 
-  // Line 273: curr.freezesClaimed provided vs falsy
-  const vFreezeProv = [
-    cProv,
-    {
-      ...cProv,
-      streakDate: "2026-03-03",
-      streakSequence: 2,
-      freezesClaimed: 1,
-    },
-  ];
-  validateCheckinSequence(vFreezeProv, basePoly);
-  const vFreezeFalsy = [
-    cProv,
-    { ...cProv, streakDate: "2026-03-02", streakSequence: 2 },
-  ];
-  validateCheckinSequence(vFreezeFalsy, basePoly);
+    // Both (Milestone 10 + Rate 5 = 3)
+    const pBoth = { ...pMileOnly, intervalsToEarnFreeze: 5 };
+    const r2 = calculateNextCheckin(
+      { streakSequence: 9, streakDate: "2026-03-01", checkinsInInterval: 1 },
+      { balance: 0 },
+      pBoth,
+      "now",
+      "2026-03-02",
+    );
+    assert.strictEqual(r2.nextInventory.balance, 3, "2 (mile) + 1 (rate) = 3");
 
-  // Failure branches
-  assert.throws(
-    () =>
+    // Max Freezes Clamping
+    const pMax = { ...pMileOnly, maxFreezes: 1 };
+    const r3 = calculateNextCheckin(
+      { streakSequence: 9, streakDate: "2026-03-01", checkinsInInterval: 1 },
+      { balance: 0 },
+      pMax,
+      "now",
+      "2026-03-02",
+    );
+    assert.strictEqual(
+      r3.nextInventory.balance,
+      1,
+      "Clamping must enforce maxFreezes",
+    );
+  });
+
+  test("validateCheckinSequence strict accounting and errors", () => {
+    const v1 = {
+      streakSequence: 1,
+      streakDate: "2026-03-01",
+      checkinsInInterval: 1,
+    };
+
+    // Correct gap reset
+    assert.ok(
       validateCheckinSequence(
-        [cProv, { ...cProv, streakDate: "2026-03-02", streakSequence: 5 }],
-        basePoly,
+        [
+          v1,
+          {
+            streakSequence: 1,
+            streakDate: "2026-03-03",
+            checkinsInInterval: 1,
+            freezesClaimed: 0,
+          },
+        ],
+        basePolicy,
       ),
-    /mismatch/i,
-  );
-  assert.throws(
-    () =>
-      validateCheckinSequence(
-        [cProv, { ...cProv, streakDate: "2026-03-01", checkinsInInterval: 5 }],
-        basePoly,
-      ),
-    /mismatch/i,
-  );
+    );
 
-  // All Cadences Exhaustion
-  getIntervalIndex("2026-03-01", { type: "daily" });
-  getIntervalIndex("2026-03-01", { type: "weekly", intervalResetDay: 1 });
-  getIntervalIndex("2026-03-01", { type: "weekly" });
-  getIntervalIndex("2026-03-01", { type: "monthly" });
-  getIntervalIndex("2026-03-01", { type: "quarterly" });
-  getIntervalIndex("2026-01-01", { type: "yearly" });
-  getIntervalIndex("2026-01-01", {});
+    // Sequence mismatch throw
+    assert.throws(
+      () =>
+        validateCheckinSequence(
+          [
+            v1,
+            { streakSequence: 2, streakDate: "2026-03-02", streakSequence: 5 },
+          ],
+          basePolicy,
+        ),
+      /Streak sequence mismatch/,
+    );
 
-  console.log("\n🚀 ABSOLUTE 100% PASS!");
-}
+    // Interval count mismatch throw
+    assert.throws(
+      () =>
+        validateCheckinSequence(
+          [
+            v1,
+            {
+              streakSequence: 1,
+              streakDate: "2026-03-01",
+              checkinsInInterval: 1,
+            },
+          ],
+          basePolicy,
+        ),
+      /Interval check-in count mismatch/,
+    );
+  });
 
-try {
-  testAbsolute100();
-} catch (e) {
-  console.error("\n❌ FAILED!");
-  console.error(e);
-  process.exit(1);
-}
+  test("calculateClaimInventory precision and fields", () => {
+    const inv = {
+      balance: 1,
+      originService: "a",
+      policy: "b",
+      subject: "c",
+      cid: "prev",
+    };
+    // grant count 2, max 5 -> 3
+    const res = calculateClaimInventory(
+      inv,
+      { count: 2, cid: "g" },
+      { maxFreezes: 5 },
+      "now",
+    );
+    assert.strictEqual(res.balance, 3);
+    assert.strictEqual(res.action, "claim");
+    assert.strictEqual(res.relatedFreezeGrant, "g");
+    assert.strictEqual(res.prev, "prev");
+  });
+});

@@ -1,0 +1,9 @@
+# Ignore Node dependencies anywhere they appear
+node_modules/
+
+# Coverage reports and logs
+coverage/
+.nyc_output/
+.c8_output/
+.stryker-tmp/
+reports/

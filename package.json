@@ -1,0 +1,56 @@
+{
+  "name": "starrysky",
+  "version": "1.0.0",
+  "description": "Streak mechanics in the ATProto ecosystem.",
+  "main": "login.js",
+  "type": "module",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "test:coverage": "c8 node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "ansi-styles": "^4.3.0",
+    "balanced-match": "^1.0.2",
+    "brace-expansion": "^2.0.2",
+    "chalk": "^4.1.2",
+    "code-block-writer": "^13.0.3",
+    "color-convert": "^2.0.1",
+    "color-name": "^1.1.4",
+    "commander": "^9.5.0",
+    "fdir": "^6.5.0",
+    "has-flag": "^4.0.0",
+    "iso-datestring-validator": "^2.2.2",
+    "minimatch": "^9.0.9",
+    "multiformats": "^9.9.0",
+    "path-browserify": "^1.0.1",
+    "picomatch": "^4.0.3",
+    "prettier": "^3.8.1",
+    "supports-color": "^7.2.0",
+    "tinyglobby": "^0.2.15",
+    "ts-morph": "^24.0.0",
+    "tslib": "^2.8.1",
+    "uint8arrays": "^3.0.0",
+    "unicode-segmenter": "^0.14.5",
+    "yesno": "^0.4.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@stryker-mutator/core": "^9.6.0",
+    "c8": "^11.0.0",
+    "fast-check": "^4.5.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zomega/starrysky.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zomega/starrysky/issues"
+  },
+  "homepage": "https://github.com/zomega/starrysky#readme"
+}
