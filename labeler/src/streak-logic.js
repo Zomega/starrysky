@@ -134,7 +134,7 @@ export function calculateNextCheckin(
 
   // Freeze Granting Logic
   let totalFreezesEarned = 0;
-  if (isMilestoneLogic(streakSequence, policy) && intervalsPassed > 0) {
+  if (isMilestone(streakSequence, policy) && intervalsPassed > 0) {
     totalFreezesEarned += policy.freezesGrantedAtMilestone || 0;
   }
   if (
@@ -209,7 +209,10 @@ export function calculateClaimInventory(
   };
 }
 
-function isMilestoneLogic(count, policy) {
+/**
+ * Checks if a count is a milestone according to a policy.
+ */
+export function isMilestone(count, policy) {
   if (count <= 0) return false;
   if (policy.milestones && policy.milestones.includes(count)) return true;
   if (policy.recurringMilestoneInterval) {
@@ -287,4 +290,113 @@ export function validateCheckinSequence(checkins, policy) {
   }
 
   return true;
+}
+
+/**
+ * Returns grid metadata for a range of dates.
+ */
+export function getGridDataForRange(
+  checkins,
+  subject,
+  startDateStr,
+  endDateStr,
+) {
+  const activeIndices = [];
+  const frozenIndices = [];
+  const graceIndices = [];
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  const start = new Date(startDateStr);
+  start.setUTCHours(0, 0, 0, 0);
+  const end = new Date(endDateStr);
+  end.setUTCHours(0, 0, 0, 0);
+
+  const relevantCheckins = checkins
+    .filter((c) => c.subject === subject)
+    .sort((a, b) => new Date(a.streakDate) - new Date(b.streakDate));
+
+  const dayMap = new Map();
+
+  let lastCheckinDate = null;
+
+  relevantCheckins.forEach((c) => {
+    const ts = new Date(c.streakDate + "T00:00:00Z").getTime();
+
+    if (ts >= start.getTime() && ts <= end.getTime()) {
+      dayMap.set(ts, "active");
+    }
+
+    if (c.freezeDates && c.freezeDates.length > 0) {
+      c.freezeDates.forEach((fd) => {
+        const fts = new Date(fd + "T00:00:00Z").getTime();
+        if (fts >= start.getTime() && fts <= end.getTime()) {
+          if (dayMap.get(fts) !== "active") {
+            dayMap.set(fts, "frozen");
+          }
+        }
+      });
+    }
+
+    if (lastCheckinDate !== null) {
+      const lastTs = new Date(lastCheckinDate + "T00:00:00Z").getTime();
+      let gapTs = ts - dayMs;
+      while (gapTs > lastTs) {
+        if (!dayMap.has(gapTs)) {
+          if (gapTs >= start.getTime() && gapTs <= end.getTime()) {
+            dayMap.set(gapTs, "grace");
+          }
+        }
+        gapTs -= dayMs;
+      }
+    }
+
+    lastCheckinDate = c.streakDate;
+  });
+
+  let currTs = start.getTime();
+  let idx = 0;
+  while (currTs <= end.getTime()) {
+    const status = dayMap.get(currTs);
+    if (status === "active") activeIndices.push(idx);
+    else if (status === "frozen") frozenIndices.push(idx);
+    else if (status === "grace") graceIndices.push(idx);
+
+    currTs += dayMs;
+    idx++;
+  }
+
+  return { activeIndices, frozenIndices, graceIndices };
+}
+
+/**
+ * Returns the number of days in a month.
+ */
+export function getDaysInMonth(year, month) {
+  const date = new Date(Date.UTC(year, month, 1));
+  const days = [];
+  while (date.getUTCMonth() === month) {
+    days.push(date.getUTCDate());
+    date.setUTCDate(date.getUTCDate() + 1);
+  }
+  return days;
+}
+
+/**
+ * Returns milestones relevant to a current count.
+ */
+export function getMilestonesForPolicy(currentCount, policy) {
+  let milestones = [0, ...(policy.milestones || [])];
+
+  const lastExplicit = policy.milestones ? Math.max(...policy.milestones) : 0;
+  if (policy.recurringMilestoneInterval) {
+    let nextRecur = lastExplicit + policy.recurringMilestoneInterval;
+    while (nextRecur <= currentCount + policy.recurringMilestoneInterval) {
+      milestones.push(nextRecur);
+      nextRecur += policy.recurringMilestoneInterval;
+    }
+  }
+
+  const nextGoalIdx = milestones.findIndex((m) => m > currentCount);
+  const startIndex = Math.max(0, nextGoalIdx - 3);
+  return milestones.slice(startIndex, nextGoalIdx + 1);
 }
