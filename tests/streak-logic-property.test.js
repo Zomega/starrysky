@@ -4,9 +4,9 @@ import fc from "fast-check";
 import {
   calculateNextCheckin,
   getIntervalIndex,
+  validateCheckinSequence,
 } from "../labeler/src/streak-logic.js";
 
-// Use a very safe date range to avoid RangeErrors
 const minDate = new Date("2020-01-01").getTime();
 const maxDate = new Date("2030-01-01").getTime();
 
@@ -14,24 +14,29 @@ const dateArb = fc
   .integer({ min: minDate, max: maxDate })
   .map((t) => new Date(t).toISOString().split("T")[0]);
 
+const policyArb = fc.record({
+  cadence: fc.record({
+    type: fc.constantFrom("daily", "weekly", "monthly", "quarterly", "yearly"),
+    requiredCheckinsPerInterval: fc.integer({ min: 1, max: 2 }),
+  }),
+  gracePeriodIntervals: fc.integer({ min: 0, max: 2 }),
+  maxFreezes: fc.integer({ min: 1, max: 10 }),
+  includeFreezesInStreak: fc.boolean(),
+  milestones: fc.option(fc.array(fc.integer({ min: 1, max: 100 }), { maxLength: 5 }), { nil: null }),
+  freezesGrantedAtMilestone: fc.integer({ min: 0, max: 3 }),
+  intervalsToEarnFreeze: fc.integer({ min: 0, max: 10 }),
+});
+
 describe("Streak Logic Properties", () => {
   test("streakSequence should always be >= 1", () => {
     fc.assert(
       fc.property(
-        fc.record({
-          cadence: fc.record({
-            type: fc.constantFrom("daily", "weekly", "monthly"),
-            requiredCheckinsPerInterval: fc.integer({ min: 1, max: 5 }),
-          }),
-          gracePeriodIntervals: fc.integer({ min: 0, max: 3 }),
-          maxFreezes: fc.integer({ min: 0, max: 10 }),
-          includeFreezesInStreak: fc.boolean(),
-        }),
+        policyArb,
         fc.option(
           fc.record({
             streakSequence: fc.integer({ min: 1, max: 1000 }),
             streakDate: dateArb,
-            checkinsInInterval: fc.integer({ min: 0, max: 5 }),
+            checkinsInInterval: fc.integer({ min: 0, max: 2 }),
           }),
           { nil: null },
         ),
@@ -41,81 +46,117 @@ describe("Streak Logic Properties", () => {
           }),
           { nil: null },
         ),
-        dateArb, // next checkin date
+        dateArb,
         (policy, lastCheckin, lastInventory, nextDate) => {
           try {
             const { nextCheckin } = calculateNextCheckin(
               lastCheckin,
               lastInventory,
               policy,
-              new Date().toISOString(),
+              "now",
               nextDate,
             );
             assert.ok(nextCheckin.streakSequence >= 1);
           } catch (e) {
-            // Logic errors like backwards dates are fine to catch and ignore
+            // Ignore logic errors like backwards dates or missing streakDate
           }
         },
       ),
     );
   });
 
-  test("streakSequence should advance on consecutive intervals", () => {
+  test("Inventory balance should respect maxFreezes and never be negative", () => {
     fc.assert(
       fc.property(
-        fc.record({
-          cadence: fc.record({
-            type: fc.constantFrom("daily", "weekly", "monthly"),
-            requiredCheckinsPerInterval: fc.integer({ min: 1, max: 1 }),
+        policyArb,
+        fc.option(
+          fc.record({
+            streakSequence: fc.integer({ min: 1, max: 1000 }),
+            streakDate: dateArb,
+            checkinsInInterval: fc.integer({ min: 0, max: 2 }),
           }),
-          gracePeriodIntervals: fc.integer({ min: 0, max: 0 }),
-          maxFreezes: fc.integer({ min: 0, max: 0 }),
-          includeFreezesInStreak: fc.boolean(),
-        }),
-        fc.record({
-          streakSequence: fc.integer({ min: 1, max: 1000 }),
-          streakDate: dateArb,
-          checkinsInInterval: fc.integer({ min: 1, max: 1 }),
-        }),
-        (policy, lastCheckin) => {
-          const d = new Date(lastCheckin.streakDate);
-          let nextDate;
-
-          if (policy.cadence.type === "daily") {
-            nextDate = new Date(d.getTime() + 24 * 60 * 60 * 1000);
-          } else if (policy.cadence.type === "weekly") {
-            nextDate = new Date(d.getTime() + 7 * 24 * 60 * 60 * 1000);
-          } else {
-            // Next month same day
-            nextDate = new Date(
-              Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate()),
+          { nil: null },
+        ),
+        fc.option(
+          fc.record({
+            balance: fc.integer({ min: 0, max: 10 }),
+          }),
+          { nil: null },
+        ),
+        dateArb,
+        (policy, lastCheckin, lastInventory, nextDate) => {
+          try {
+            const { nextInventory } = calculateNextCheckin(
+              lastCheckin,
+              lastInventory,
+              policy,
+              "now",
+              nextDate,
             );
-          }
-
-          const nextDateStr = nextDate.toISOString().split("T")[0];
-
-          const { nextCheckin } = calculateNextCheckin(
-            lastCheckin,
-            null,
-            policy,
-            new Date().toISOString(),
-            nextDateStr,
-          );
-
-          const lastIdx = getIntervalIndex(
-            lastCheckin.streakDate,
-            policy.cadence,
-          );
-          const nextIdx = getIntervalIndex(nextDateStr, policy.cadence);
-
-          if (nextIdx === lastIdx + 1) {
-            assert.strictEqual(
-              nextCheckin.streakSequence,
-              lastCheckin.streakSequence + 1,
-            );
+            if (nextInventory) {
+              assert.ok(nextInventory.balance >= 0, "Balance must be >= 0");
+              assert.ok(nextInventory.balance <= policy.maxFreezes, "Balance must be <= maxFreezes");
+            }
+          } catch (e) {
+            // Ignore logic errors
           }
         },
       ),
+    );
+  });
+
+  test("getIntervalIndex should be monotonic for a fixed cadence", () => {
+    fc.assert(
+      fc.property(
+        fc.constantFrom("daily", "weekly", "monthly", "quarterly", "yearly"),
+        fc.integer({ min: minDate, max: maxDate }),
+        fc.integer({ min: minDate, max: maxDate }),
+        (type, t1, t2) => {
+          const d1 = new Date(Math.min(t1, t2));
+          const d2 = new Date(Math.max(t1, t2));
+          const idx1 = getIntervalIndex(d1, { type });
+          const idx2 = getIntervalIndex(d2, { type });
+          assert.ok(idx1 <= idx2, `Index for ${d1.toISOString()} (${idx1}) must be <= index for ${d2.toISOString()} (${idx2}) for ${type}`);
+        }
+      )
+    );
+  });
+
+  test("validateCheckinSequence should accept any sequence generated by calculateNextCheckin", () => {
+    fc.assert(
+      fc.property(
+        policyArb,
+        fc.integer({ min: 1, max: 20 }), // sequence length
+        (policy, length) => {
+          let currentCheckin = null;
+          let currentInventory = null;
+          const sequence = [];
+          let currentDate = new Date("2026-01-01");
+
+          for (let i = 0; i < length; i++) {
+            // Move forward by 0-3 days
+            const gap = Math.floor(Math.random() * 4);
+            currentDate.setUTCDate(currentDate.getUTCDate() + gap);
+            const dateStr = currentDate.toISOString().split("T")[0];
+
+            const { nextCheckin, nextInventory } = calculateNextCheckin(
+              currentCheckin,
+              currentInventory,
+              policy,
+              "now",
+              dateStr
+            );
+            
+            sequence.push(nextCheckin);
+            currentCheckin = nextCheckin;
+            if (nextInventory) {
+              currentInventory = nextInventory;
+            }
+          }
+
+          assert.ok(validateCheckinSequence(sequence, policy));
+        }
+      )
     );
   });
 });

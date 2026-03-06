@@ -3,7 +3,7 @@
   "mutate": ["labeler/src/streak-logic.js"],
   "testRunner": "command",
   "commandRunner": {
-    "command": "node --test tests/streak-logic-core.test.js tests/streak-logic-property.test.js tests/mutation-hardening.test.js"
+    "command": "node --test tests/streak-logic-core.test.js tests/streak-logic-property.test.js"
   },
   "reporters": ["progress", "clear-text", "html"],
   "concurrency": 2,
