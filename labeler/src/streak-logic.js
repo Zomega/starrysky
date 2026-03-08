@@ -215,8 +215,14 @@ export function calculateClaimInventory(
 export function isMilestone(count, policy) {
   if (count <= 0) return false;
   if (policy.milestones && policy.milestones.includes(count)) return true;
-  if (policy.recurringMilestoneInterval && policy.recurringMilestoneInterval > 0) {
-    const lastExplicit = (policy.milestones && policy.milestones.length > 0) ? Math.max(...policy.milestones) : 0;
+  if (
+    policy.recurringMilestoneInterval &&
+    policy.recurringMilestoneInterval > 0
+  ) {
+    const lastExplicit =
+      policy.milestones && policy.milestones.length > 0
+        ? Math.max(...policy.milestones)
+        : 0;
     if (count > lastExplicit) {
       return (count - lastExplicit) % policy.recurringMilestoneInterval === 0;
     }
@@ -304,6 +310,7 @@ export function getGridDataForRange(
   const activeIndices = [];
   const frozenIndices = [];
   const graceIndices = [];
+  const brokenIndices = [];
   const dayMs = 24 * 60 * 60 * 1000;
 
   const start = new Date(startDateStr);
@@ -343,7 +350,19 @@ export function getGridDataForRange(
       while (gapTs > lastTs) {
         if (!dayMap.has(gapTs)) {
           if (gapTs >= start.getTime() && gapTs <= end.getTime()) {
-            dayMap.set(gapTs, "grace");
+            if (c.streakSequence > 1) {
+              dayMap.set(gapTs, "grace");
+            } else {
+              // Streak broke. Mark the first day of the gap as broken.
+              const firstGapDayTs = lastTs + dayMs;
+              if (
+                gapTs === firstGapDayTs &&
+                firstGapDayTs >= start.getTime() &&
+                firstGapDayTs <= end.getTime()
+              ) {
+                dayMap.set(firstGapDayTs, "broken");
+              }
+            }
           }
         }
         gapTs -= dayMs;
@@ -360,12 +379,13 @@ export function getGridDataForRange(
     if (status === "active") activeIndices.push(idx);
     else if (status === "frozen") frozenIndices.push(idx);
     else if (status === "grace") graceIndices.push(idx);
+    else if (status === "broken") brokenIndices.push(idx);
 
     currTs += dayMs;
     idx++;
   }
 
-  return { activeIndices, frozenIndices, graceIndices };
+  return { activeIndices, frozenIndices, graceIndices, brokenIndices };
 }
 
 /**
@@ -387,8 +407,14 @@ export function getDaysInMonth(year, month) {
 export function getMilestonesForPolicy(currentCount, policy) {
   let milestones = [0, ...(policy.milestones || [])];
 
-  const lastExplicit = (policy.milestones && policy.milestones.length > 0) ? Math.max(...policy.milestones) : 0;
-  if (policy.recurringMilestoneInterval && policy.recurringMilestoneInterval > 0) {
+  const lastExplicit =
+    policy.milestones && policy.milestones.length > 0
+      ? Math.max(...policy.milestones)
+      : 0;
+  if (
+    policy.recurringMilestoneInterval &&
+    policy.recurringMilestoneInterval > 0
+  ) {
     let nextRecur = lastExplicit + policy.recurringMilestoneInterval;
     while (nextRecur <= currentCount + policy.recurringMilestoneInterval) {
       milestones.push(nextRecur);
@@ -401,4 +427,42 @@ export function getMilestonesForPolicy(currentCount, policy) {
 
   const startIndex = Math.max(0, nextGoalIdx - 3);
   return milestones.slice(startIndex, nextGoalIdx + 1);
+}
+
+/**
+ * Generates a sequence of check-ins for demo/testing purposes.
+ */
+export function generateCheckinHistory(
+  policy,
+  startDateStr,
+  endDateStr,
+  skipDates = [],
+) {
+  let currentCheckin = null;
+  let currentInventory = null;
+  const history = [];
+
+  const curr = new Date(startDateStr);
+  curr.setUTCHours(12, 0, 0, 0);
+  const end = new Date(endDateStr);
+  end.setUTCHours(12, 0, 0, 0);
+
+  while (curr <= end) {
+    const dateStr = curr.toISOString().split("T")[0];
+    if (!skipDates.includes(dateStr)) {
+      const result = calculateNextCheckin(
+        currentCheckin,
+        currentInventory,
+        policy,
+        curr.toISOString(),
+        dateStr,
+      );
+      history.push(result.nextCheckin);
+      currentCheckin = result.nextCheckin;
+      if (result.nextInventory) currentInventory = result.nextInventory;
+    }
+    curr.setUTCDate(curr.getUTCDate() + 1);
+  }
+
+  return { checkins: history, inventory: currentInventory };
 }

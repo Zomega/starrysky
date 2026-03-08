@@ -122,6 +122,11 @@ main {
   background: var(--sky-400);
 }
 
+.streak-pill.broken {
+  background: var(--slate-900);
+  border: 1px solid var(--slate-700);
+}
+
 .day-cell {
   height: 2.2rem;
   display: flex;
@@ -148,6 +153,15 @@ main {
   z-index: 3;
   pointer-events: none;
   color: var(--color-freeze-icon);
+  transform: translateX(-50%);
+}
+.broken-icon-mini {
+  font-size: 0.75rem;
+  position: absolute;
+  bottom: -0.2rem;
+  z-index: 3;
+  pointer-events: none;
+  color: var(--slate-400);
   transform: translateX(-50%);
 }
 .day-cell.prev-month {
