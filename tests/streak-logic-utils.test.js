@@ -37,7 +37,7 @@ describe("Streak Logic Utilities", () => {
     test("handles boundary exactly at last explicit", () => {
       assert.strictEqual(isMilestone(300, policy), true);
     });
-    
+
     test("handles no milestones in policy but has recurring", () => {
       const emptyPolicy = { recurringMilestoneInterval: 100 };
       assert.strictEqual(isMilestone(100, emptyPolicy), true);
@@ -87,7 +87,7 @@ describe("Streak Logic Utilities", () => {
         MOCK_CHECKINS,
         "Wordle",
         "2026-02-21",
-        "2026-02-28"
+        "2026-02-28",
       );
       assert.ok(data.activeIndices.includes(0)); // 21
       assert.ok(data.activeIndices.includes(4)); // 25
@@ -97,20 +97,25 @@ describe("Streak Logic Utilities", () => {
     test("extracts grace periods for a maintained streak", () => {
       const mock = [
         { subject: "GraceTest", streakDate: "2026-01-01", streakSequence: 1 },
-        { subject: "GraceTest", streakDate: "2026-01-03", streakSequence: 2 }
+        { subject: "GraceTest", streakDate: "2026-01-03", streakSequence: 2 },
       ];
       const data = getGridDataForRange(
         mock,
         "GraceTest",
         "2026-01-01",
-        "2026-01-03"
+        "2026-01-03",
       );
       assert.deepStrictEqual(data.activeIndices, [0, 2]);
       assert.deepStrictEqual(data.graceIndices, [1]);
     });
 
     test("handles empty checkins", () => {
-      const data = getGridDataForRange([], "Wordle", "2026-01-01", "2026-01-07");
+      const data = getGridDataForRange(
+        [],
+        "Wordle",
+        "2026-01-01",
+        "2026-01-07",
+      );
       assert.strictEqual(data.activeIndices.length, 0);
     });
   });

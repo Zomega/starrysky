@@ -6,7 +6,11 @@ import {
   getDaysInMonth,
   getMilestonesForPolicy,
 } from "./labeler/src/streak-logic.js";
-import { MOCK_POLICIES, MOCK_CHECKINS, MOCK_INVENTORY } from "./labeler/src/mock-data.js";
+import {
+  MOCK_POLICIES,
+  MOCK_CHECKINS,
+  MOCK_INVENTORY,
+} from "./labeler/src/mock-data.js";
 
 const jsConfetti = new JSConfetti();
 let lastCelebratedCount = -1;
@@ -14,7 +18,9 @@ let lastCelebratedCount = -1;
 function getPolicyForSubject(subject) {
   const policy = MOCK_POLICIES[subject];
   if (!policy) {
-    throw new Error(`Critical Error: No policy configuration found for subject: "${subject}"`);
+    throw new Error(
+      `Critical Error: No policy configuration found for subject: "${subject}"`,
+    );
   }
   return policy;
 }
@@ -49,6 +55,7 @@ function renderStreakGrid(
   freezeDays,
   graceDays = [],
   brokenDays = [],
+  perfectWeekIndices = [],
   cols = 8,
 ) {
   const container = cloneTemplate("tpl-streak-grid");
@@ -75,9 +82,12 @@ function renderStreakGrid(
   });
 
   const elements = [];
-  const allMarked = [...activeDays, ...freezeDays, ...graceDays, ...brokenDays].sort(
-    (a, b) => a - b,
-  );
+  const allMarked = [
+    ...activeDays,
+    ...freezeDays,
+    ...graceDays,
+    ...brokenDays,
+  ].sort((a, b) => a - b);
 
   if (allMarked.length > 0) {
     let rStartIdx = 0;
@@ -111,17 +121,21 @@ function renderStreakGrid(
     while (i < foregroundMarked.length) {
       let startIdx = i;
       let endIdx = i;
-      let type = activeDays.includes(foregroundMarked[i]) ? "active" : 
-                 freezeDays.includes(foregroundMarked[i]) ? "frozen" : "broken";
+      let type = activeDays.includes(foregroundMarked[i])
+        ? "active"
+        : freezeDays.includes(foregroundMarked[i])
+          ? "frozen"
+          : "broken";
 
       while (
         endIdx + 1 < foregroundMarked.length &&
         foregroundMarked[endIdx + 1] === foregroundMarked[endIdx] + 1 &&
-        (
-          (type === "active" && activeDays.includes(foregroundMarked[endIdx + 1])) ||
-          (type === "frozen" && freezeDays.includes(foregroundMarked[endIdx + 1])) ||
-          (type === "broken" && brokenDays.includes(foregroundMarked[endIdx + 1]))
-        )
+        ((type === "active" &&
+          activeDays.includes(foregroundMarked[endIdx + 1])) ||
+          (type === "frozen" &&
+            freezeDays.includes(foregroundMarked[endIdx + 1])) ||
+          (type === "broken" &&
+            brokenDays.includes(foregroundMarked[endIdx + 1])))
       ) {
         endIdx++;
       }
@@ -134,14 +148,16 @@ function renderStreakGrid(
       const pill = cloneTemplate("tpl-streak-pill");
       if (type === "frozen") pill.classList.add("frozen");
       if (type === "broken") pill.classList.add("broken");
-      
+
       pill.style.left = `${left}%`;
       pill.style.width = `${width}%`;
       elements.push(pill);
 
       if (type === "frozen" || type === "broken") {
         for (let k = startValue; k <= endValue; k++) {
-          const icon = cloneTemplate(type === "frozen" ? "tpl-freeze-icon" : "tpl-broken-icon");
+          const icon = cloneTemplate(
+            type === "frozen" ? "tpl-freeze-icon" : "tpl-broken-icon",
+          );
           const centerLeft = ((k + 0.5) / cols) * 100;
           icon.style.left = `${centerLeft}%`;
           elements.push(icon);
@@ -151,6 +167,14 @@ function renderStreakGrid(
       i = endIdx + 1;
     }
   }
+
+  // Add achievement diamonds in the middle of their day
+  perfectWeekIndices.forEach((idx) => {
+    const icon = cloneTemplate("tpl-achievement-icon");
+    const centerLeft = ((idx + 0.5) / cols) * 100;
+    icon.style.left = `${centerLeft}%`;
+    elements.push(icon);
+  });
 
   elements.reverse().forEach((el) => container.prepend(el));
   return container;
@@ -163,13 +187,22 @@ function renderStreakRow(
   freezeDays = [],
   graceDays = [],
   brokenDays = [],
+  perfectWeekIndices = [],
   totalStreak = 0,
 ) {
   const row = cloneTemplate("tpl-streak-row");
   row.querySelector(".streak-name").textContent = name;
   row.querySelector(".streak-total").textContent = `${totalStreak}d`;
   row.insertBefore(
-    renderStreakGrid(days, activeDays, freezeDays, graceDays, brokenDays, days.length),
+    renderStreakGrid(
+      days,
+      activeDays,
+      freezeDays,
+      graceDays,
+      brokenDays,
+      perfectWeekIndices,
+      days.length,
+    ),
     row.querySelector(".streak-total"),
   );
   return row;
@@ -211,7 +244,13 @@ function renderCalendarCard() {
     Date.UTC(currentYear, currentMonth, 1 - firstDay + fullGridDays.length - 1),
   );
 
-  const { activeIndices, frozenIndices, graceIndices, brokenIndices } = getGridDataForRange(
+  const {
+    activeIndices,
+    frozenIndices,
+    graceIndices,
+    brokenIndices,
+    perfectWeekIndices,
+  } = getGridDataForRange(
     MOCK_CHECKINS,
     primarySubject,
     startDate.toISOString().split("T")[0],
@@ -232,6 +271,9 @@ function renderCalendarCard() {
     const weekBroken = brokenIndices
       .filter((idx) => idx >= i && idx < i + 7)
       .map((idx) => idx - i);
+    const weekPerfect = perfectWeekIndices
+      .filter((idx) => idx >= i && idx < i + 7)
+      .map((idx) => idx - i);
 
     const grid = renderStreakGrid(
       weekDays,
@@ -239,6 +281,7 @@ function renderCalendarCard() {
       weekFrozen,
       weekGrace,
       weekBroken,
+      weekPerfect,
       7,
     );
     const cells = grid.querySelectorAll(".day-cell");
@@ -369,7 +412,7 @@ function renderStreakCards(countOverride = null) {
     isAnimating = true;
     fancyCard.style.cursor = "default";
     display.innerHTML = "";
-    
+
     for (let i = 0; i < displayCount; i++) {
       const star = createStar(i);
       // Track the end of the longest animation (the last star)
@@ -386,7 +429,7 @@ function renderStreakCards(countOverride = null) {
       }
       display.appendChild(star);
     }
-    
+
     if (displayCount === 0) {
       console.log("No stars to animate.");
       isAnimating = false;
@@ -404,7 +447,7 @@ function renderStreakCards(countOverride = null) {
   const policy = getPolicyForSubject(primarySubject);
   const inventory = MOCK_INVENTORY[primarySubject] || { balance: 0 };
   const freezeCard = cloneTemplate("tpl-freeze-card");
-  
+
   freezeCard.querySelector(".freeze-count-text").textContent =
     `You have ${inventory.balance}/${policy.maxFreezes} Streak Freezes!`;
   if (policy.maxFreezes > 0) {
@@ -458,18 +501,21 @@ function renderStreakCards(countOverride = null) {
     monthLabelsEl.appendChild(mSpan);
   });
 
-  const uniqueSubjectsInMocks = [...new Set(MOCK_CHECKINS.map((c) => c.subject))];
+  const uniqueSubjectsInMocks = [
+    ...new Set(MOCK_CHECKINS.map((c) => c.subject)),
+  ];
   uniqueSubjectsInMocks.forEach((sub) => {
     const subCheckins = MOCK_CHECKINS.filter((c) => c.subject === sub);
     const subLatest = subCheckins.sort(
       (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
     )[0];
-    const { activeIndices, frozenIndices, graceIndices, brokenIndices } = getGridDataForRange(
-      MOCK_CHECKINS,
-      sub,
-      "2026-02-21",
-      "2026-02-28",
-    );
+    const {
+      activeIndices,
+      frozenIndices,
+      graceIndices,
+      brokenIndices,
+      perfectWeekIndices,
+    } = getGridDataForRange(MOCK_CHECKINS, sub, "2026-02-21", "2026-02-28");
     multiGrid.appendChild(
       renderStreakRow(
         sub,
@@ -478,6 +524,7 @@ function renderStreakCards(countOverride = null) {
         frozenIndices,
         graceIndices,
         brokenIndices,
+        perfectWeekIndices,
         subLatest ? subLatest.streakSequence : 0,
       ),
     );
@@ -545,8 +592,12 @@ function renderTabs() {
     btn.addEventListener("click", () => {
       console.log("Tab clicked:", sub);
       primarySubject = sub;
-      const subCheckins = MOCK_CHECKINS.filter((c) => c.subject === primarySubject);
-      const subLatest = subCheckins.sort((a, b) => new Date(b.streakDate) - new Date(a.streakDate),)[0];
+      const subCheckins = MOCK_CHECKINS.filter(
+        (c) => c.subject === primarySubject,
+      );
+      const subLatest = subCheckins.sort(
+        (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
+      )[0];
       const inputEl = document.querySelector("input");
       if (inputEl && subLatest) {
         inputEl.value = subLatest.streakSequence;
@@ -564,8 +615,12 @@ if (typeof document !== "undefined") {
     console.log("DOMContentLoaded - Initializing Mockup");
     const inputEl = document.querySelector("input");
     if (inputEl) {
-      const subCheckins = MOCK_CHECKINS.filter((c) => c.subject === primarySubject);
-      const latestCheckin = subCheckins.sort((a, b) => new Date(b.streakDate) - new Date(a.streakDate),)[0];
+      const subCheckins = MOCK_CHECKINS.filter(
+        (c) => c.subject === primarySubject,
+      );
+      const latestCheckin = subCheckins.sort(
+        (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
+      )[0];
       inputEl.value = latestCheckin ? latestCheckin.streakSequence : 0;
     }
 

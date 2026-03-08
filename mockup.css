@@ -164,6 +164,15 @@ main {
   color: var(--slate-400);
   transform: translateX(-50%);
 }
+.achievement-icon-mini {
+  font-size: 0.75rem;
+  position: absolute;
+  bottom: -0.2rem;
+  z-index: 3;
+  pointer-events: none;
+  color: #22d3ee; /* cyan-400 diamond color */
+  transform: translateX(-50%);
+}
 .day-cell.prev-month {
   opacity: 0.4;
 }

@@ -311,6 +311,7 @@ export function getGridDataForRange(
   const frozenIndices = [];
   const graceIndices = [];
   const brokenIndices = [];
+  const perfectWeekIndices = [];
   const dayMs = 24 * 60 * 60 * 1000;
 
   const start = new Date(startDateStr);
@@ -385,7 +386,35 @@ export function getGridDataForRange(
     idx++;
   }
 
-  return { activeIndices, frozenIndices, graceIndices, brokenIndices };
+  // Identify perfect weeks (Sunday to Saturday all active)
+  for (let i = 0; i < idx; i++) {
+    const d = new Date(start.getTime() + i * dayMs);
+    if (d.getUTCDay() === 0) {
+      // Sunday. Check if the next 7 days are all active.
+      let allActive = true;
+      for (let j = 0; j < 7; j++) {
+        if (
+          i + j >= idx ||
+          dayMap.get(start.getTime() + (i + j) * dayMs) !== "active"
+        ) {
+          allActive = false;
+          break;
+        }
+      }
+      if (allActive) {
+        // Place icon in the middle of the week (Wednesday = idx + 3)
+        perfectWeekIndices.push(i + 3);
+      }
+    }
+  }
+
+  return {
+    activeIndices,
+    frozenIndices,
+    graceIndices,
+    brokenIndices,
+    perfectWeekIndices,
+  };
 }
 
 /**

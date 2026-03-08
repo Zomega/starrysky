@@ -22,7 +22,10 @@ const policyArb = fc.record({
   gracePeriodIntervals: fc.integer({ min: 0, max: 2 }),
   maxFreezes: fc.integer({ min: 1, max: 10 }),
   includeFreezesInStreak: fc.boolean(),
-  milestones: fc.option(fc.array(fc.integer({ min: 1, max: 100 }), { maxLength: 5 }), { nil: null }),
+  milestones: fc.option(
+    fc.array(fc.integer({ min: 1, max: 100 }), { maxLength: 5 }),
+    { nil: null },
+  ),
   freezesGrantedAtMilestone: fc.integer({ min: 0, max: 3 }),
   intervalsToEarnFreeze: fc.integer({ min: 0, max: 10 }),
 });
@@ -95,7 +98,10 @@ describe("Streak Logic Properties", () => {
             );
             if (nextInventory) {
               assert.ok(nextInventory.balance >= 0, "Balance must be >= 0");
-              assert.ok(nextInventory.balance <= policy.maxFreezes, "Balance must be <= maxFreezes");
+              assert.ok(
+                nextInventory.balance <= policy.maxFreezes,
+                "Balance must be <= maxFreezes",
+              );
             }
           } catch (e) {
             // Ignore logic errors
@@ -116,9 +122,12 @@ describe("Streak Logic Properties", () => {
           const d2 = new Date(Math.max(t1, t2));
           const idx1 = getIntervalIndex(d1, { type });
           const idx2 = getIntervalIndex(d2, { type });
-          assert.ok(idx1 <= idx2, `Index for ${d1.toISOString()} (${idx1}) must be <= index for ${d2.toISOString()} (${idx2}) for ${type}`);
-        }
-      )
+          assert.ok(
+            idx1 <= idx2,
+            `Index for ${d1.toISOString()} (${idx1}) must be <= index for ${d2.toISOString()} (${idx2}) for ${type}`,
+          );
+        },
+      ),
     );
   });
 
@@ -144,9 +153,9 @@ describe("Streak Logic Properties", () => {
               currentInventory,
               policy,
               "now",
-              dateStr
+              dateStr,
             );
-            
+
             sequence.push(nextCheckin);
             currentCheckin = nextCheckin;
             if (nextInventory) {
@@ -155,8 +164,8 @@ describe("Streak Logic Properties", () => {
           }
 
           assert.ok(validateCheckinSequence(sequence, policy));
-        }
-      )
+        },
+      ),
     );
   });
 });
