@@ -1,3 +1,4 @@
+console.log("mockup.js loading...");
 import JSConfetti from "https://esm.sh/js-confetti@0.12.0";
 import {
   isMilestone,
@@ -5,21 +6,34 @@ import {
   getDaysInMonth,
   getMilestonesForPolicy,
 } from "./labeler/src/streak-logic.js";
-import { MOCK_POLICIES, MOCK_CHECKINS } from "./labeler/src/mock-data.js";
+import { MOCK_POLICIES, MOCK_CHECKINS, MOCK_INVENTORY } from "./labeler/src/mock-data.js";
 
 const jsConfetti = new JSConfetti();
 let lastCelebratedCount = -1;
 
 function getPolicyForSubject(subject) {
-  return MOCK_POLICIES[subject] || MOCK_POLICIES["Wordle"];
+  const policy = MOCK_POLICIES[subject];
+  if (!policy) {
+    throw new Error(`Critical Error: No policy configuration found for subject: "${subject}"`);
+  }
+  return policy;
 }
 
+const subjects = [...new Set(MOCK_CHECKINS.map((c) => c.subject))];
+console.log("Detected subjects:", subjects);
+
+if (subjects.length === 0) {
+  throw new Error("Critical Error: No subjects found in MOCK_CHECKINS.");
+}
+
+let primarySubject = subjects[0];
 let currentYear = 2026;
-let currentMonth = 1; // February
-const primarySubject = "Wordle";
+let currentMonth = 1; // February (to match mockup data)
 
 function cloneTemplate(id) {
-  return document.getElementById(id).content.cloneNode(true).firstElementChild;
+  const tpl = document.getElementById(id);
+  if (!tpl) throw new Error(`Template not found: ${id}`);
+  return tpl.content.cloneNode(true).firstElementChild;
 }
 
 function createStar(index) {
@@ -330,10 +344,15 @@ function renderStreakCards(countOverride = null) {
   fancyCard.querySelector(".streak-title").textContent = `${count} day streak!`;
   fragment.appendChild(fancyCard);
 
+  const policy = getPolicyForSubject(primarySubject);
+  const inventory = MOCK_INVENTORY[primarySubject] || { balance: 0 };
   const freezeCard = cloneTemplate("tpl-freeze-card");
+  
   freezeCard.querySelector(".freeze-count-text").textContent =
-    "You only have 1/2 Streak Freezes!";
-  fragment.appendChild(freezeCard);
+    `You have ${inventory.balance}/${policy.maxFreezes} Streak Freezes!`;
+  if (policy.maxFreezes > 0) {
+    fragment.appendChild(freezeCard);
+  }
 
   fragment.appendChild(renderCalendarCard());
 
@@ -382,8 +401,8 @@ function renderStreakCards(countOverride = null) {
     monthLabelsEl.appendChild(mSpan);
   });
 
-  const subjects = [...new Set(MOCK_CHECKINS.map((c) => c.subject))];
-  subjects.forEach((sub) => {
+  const uniqueSubjectsInMocks = [...new Set(MOCK_CHECKINS.map((c) => c.subject))];
+  uniqueSubjectsInMocks.forEach((sub) => {
     const subCheckins = MOCK_CHECKINS.filter((c) => c.subject === sub);
     const subLatest = subCheckins.sort(
       (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
@@ -434,6 +453,7 @@ function celebrateGoal(count) {
 }
 
 function refreshUI() {
+  console.log("Refreshing UI for", primarySubject);
   const cardContainer = document.querySelector(".card-container");
   if (!cardContainer) return;
   const inputEl = document.querySelector("input");
@@ -441,27 +461,57 @@ function refreshUI() {
   const overrideCount = inputEl ? parseInt(inputEl.value) : 0;
 
   cardContainer.innerHTML = "";
-  cardContainer.appendChild(renderStreakCards(overrideCount));
-
-  if (overrideCount > 0) {
-    celebrateGoal(overrideCount);
+  try {
+    cardContainer.appendChild(renderStreakCards(overrideCount));
+    if (overrideCount > 0) {
+      celebrateGoal(overrideCount);
+    }
+  } catch (e) {
+    console.error("UI Render Error:", e);
+    cardContainer.innerHTML = `<div class="card" style="border-color: var(--orange-500); color: var(--orange-500); padding: 2rem; font-weight: bold; text-align: center;">${e.message}</div>`;
   }
+}
+
+function renderTabs() {
+  const tabsContainer = document.getElementById("subject-tabs");
+  if (!tabsContainer) {
+    console.warn("Tabs container #subject-tabs not found");
+    return;
+  }
+  tabsContainer.innerHTML = "";
+
+  subjects.forEach((sub) => {
+    const btn = document.createElement("button");
+    btn.className = `tab-button ${sub === primarySubject ? "active" : ""}`;
+    btn.textContent = sub;
+    btn.addEventListener("click", () => {
+      console.log("Tab clicked:", sub);
+      primarySubject = sub;
+      const subCheckins = MOCK_CHECKINS.filter((c) => c.subject === primarySubject);
+      const subLatest = subCheckins.sort((a, b) => new Date(b.streakDate) - new Date(a.streakDate),)[0];
+      const inputEl = document.querySelector("input");
+      if (inputEl && subLatest) {
+        inputEl.value = subLatest.streakSequence;
+      }
+      lastCelebratedCount = -1; // Reset celebration for new subject
+      renderTabs();
+      refreshUI();
+    });
+    tabsContainer.appendChild(btn);
+  });
 }
 
 if (typeof document !== "undefined") {
   window.addEventListener("DOMContentLoaded", () => {
+    console.log("DOMContentLoaded - Initializing Mockup");
     const inputEl = document.querySelector("input");
     if (inputEl) {
-      const primaryCheckins = MOCK_CHECKINS.filter(
-        (c) => c.subject === primarySubject,
-      );
-      const latestCheckin = primaryCheckins.sort(
-        (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
-      )[0];
-      const latestSequence = latestCheckin ? latestCheckin.streakSequence : 0;
-      inputEl.value = latestSequence;
+      const subCheckins = MOCK_CHECKINS.filter((c) => c.subject === primarySubject);
+      const latestCheckin = subCheckins.sort((a, b) => new Date(b.streakDate) - new Date(a.streakDate),)[0];
+      inputEl.value = latestCheckin ? latestCheckin.streakSequence : 0;
     }
 
+    renderTabs();
     refreshUI();
 
     if (inputEl) {
@@ -469,3 +519,4 @@ if (typeof document !== "undefined") {
     }
   });
 }
+console.log("mockup.js loaded.");

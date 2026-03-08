@@ -1,6 +1,6 @@
 main {
   display: block;
-  padding: 4rem 2rem;
+  padding: 6rem 2rem 4rem 2rem; /* Increased top padding for fixed header */
   min-height: 100svh;
 }
 
@@ -25,6 +25,64 @@ main {
   }
 }
 
+/* Header & Tabs Styling */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  background-color: var(--color-background);
+  border-bottom: 1px solid var(--color-background-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  z-index: 100;
+  box-shadow: var(--card-shadow);
+}
+
+.tabs-container {
+  display: flex;
+  gap: var(--gap-m);
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  scrollbar-width: none; /* Hide scrollbar for cleaner look */
+}
+
+.tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-button {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  background: var(--color-background-secondary);
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.875rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab-button:hover {
+  background: var(--color-background-alt);
+  color: var(--text-main);
+}
+
+.tab-button.active {
+  background: var(--orange-500);
+  color: var(--white);
+}
+
+.nav-actions {
+  display: flex;
+  gap: var(--gap-m);
+  align-items: center;
+}
+
 /* Shared Streak/Grid Components */
 .streak-grid-container {
   position: relative;
@@ -39,12 +97,12 @@ main {
 
 .streak-pill {
   position: absolute;
-  height: 1.8rem; /* Slightly taller for better coverage */
+  height: 1.8rem;
   top: 50%;
   transform: translateY(-50%);
   background: linear-gradient(to right, var(--orange-400), var(--orange-500));
   border-radius: var(--radius-pill);
-  z-index: 2; /* Middle layer */
+  z-index: 2;
   pointer-events: none;
 }
 
@@ -56,7 +114,7 @@ main {
   background-color: var(--orange-400);
   opacity: 0.5;
   border-radius: var(--radius-pill);
-  z-index: 1; /* Bottom layer */
+  z-index: 1;
   pointer-events: none;
 }
 
@@ -73,7 +131,7 @@ main {
   font-weight: 700;
   color: var(--text-muted);
   position: relative;
-  z-index: 3; /* Top layer (text) */
+  z-index: 3;
   line-height: 1;
 }
 
@@ -86,7 +144,7 @@ main {
 .freeze-icon-mini {
   font-size: 0.75rem;
   position: absolute;
-  bottom: -0.2rem; /* Center vertically on the pill */
+  bottom: -0.2rem;
   z-index: 3;
   pointer-events: none;
   color: var(--color-freeze-icon);
@@ -103,7 +161,7 @@ main {
 }
 
 .streak-association {
-  font-size: 0.75rem; /* Smaller for badge look */
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--text-muted);
   position: absolute;
@@ -124,8 +182,8 @@ main {
   align-items: center;
   justify-content: center;
   gap: var(--gap-2xl);
-  position: relative; /* Anchor for absolute children */
-  padding-top: 2.5rem; /* Extra room for the association badge */
+  position: relative;
+  padding-top: 2.5rem;
   @media (width < 600px) {
     flex-direction: column;
     text-align: center;
@@ -203,7 +261,7 @@ main {
   display: grid;
   grid-template-areas: "center";
   position: relative;
-  z-index: 5; /* Ensure stars are above badge */
+  z-index: 5;
 }
 
 .star-icon {
@@ -393,11 +451,11 @@ main {
 
 .goal-visual-container {
   display: flex;
-  align-items: flex-start; /* Align nodes to top */
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0;
   margin: 2rem 0 var(--gap-xl) 0;
-  height: 5rem; /* Taller to fit labels */
+  height: 5rem;
 }
 
 .goal-checkpoint-wrap {
@@ -456,8 +514,8 @@ main {
   height: 0.75rem;
   background-color: var(--color-background-secondary);
   position: relative;
-  margin: 0 -2px; /* Overlap slightly to prevent gaps */
-  margin-top: 0.75rem; /* Align with middle of checkpoint */
+  margin: 0 -2px;
+  margin-top: 0.75rem;
   z-index: 1;
 }
 
@@ -474,12 +532,6 @@ main {
   text-align: center;
 }
 
-header {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: var(--gap-m);
-}
 hr {
   border: none;
   height: 1px;

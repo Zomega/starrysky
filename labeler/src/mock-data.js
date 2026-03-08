@@ -675,3 +675,11 @@ export const MOCK_CHECKINS = [
     freezeDates: [],
   },
 ];
+
+export const MOCK_INVENTORY = {
+  Wordle: { balance: 1 },
+  "Tiled Words": { balance: 3 },
+  Connections: { balance: 0 },
+  Crossword: { balance: 2 },
+  Chess: { balance: 0 },
+};
