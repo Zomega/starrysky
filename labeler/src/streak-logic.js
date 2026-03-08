@@ -215,8 +215,8 @@ export function calculateClaimInventory(
 export function isMilestone(count, policy) {
   if (count <= 0) return false;
   if (policy.milestones && policy.milestones.includes(count)) return true;
-  if (policy.recurringMilestoneInterval) {
-    const lastExplicit = policy.milestones ? Math.max(...policy.milestones) : 0;
+  if (policy.recurringMilestoneInterval && policy.recurringMilestoneInterval > 0) {
+    const lastExplicit = (policy.milestones && policy.milestones.length > 0) ? Math.max(...policy.milestones) : 0;
     if (count > lastExplicit) {
       return (count - lastExplicit) % policy.recurringMilestoneInterval === 0;
     }
@@ -387,8 +387,8 @@ export function getDaysInMonth(year, month) {
 export function getMilestonesForPolicy(currentCount, policy) {
   let milestones = [0, ...(policy.milestones || [])];
 
-  const lastExplicit = policy.milestones ? Math.max(...policy.milestones) : 0;
-  if (policy.recurringMilestoneInterval) {
+  const lastExplicit = (policy.milestones && policy.milestones.length > 0) ? Math.max(...policy.milestones) : 0;
+  if (policy.recurringMilestoneInterval && policy.recurringMilestoneInterval > 0) {
     let nextRecur = lastExplicit + policy.recurringMilestoneInterval;
     while (nextRecur <= currentCount + policy.recurringMilestoneInterval) {
       milestones.push(nextRecur);
@@ -397,6 +397,8 @@ export function getMilestonesForPolicy(currentCount, policy) {
   }
 
   const nextGoalIdx = milestones.findIndex((m) => m > currentCount);
+  if (nextGoalIdx === -1) return milestones.slice(-1); // Safety fallback
+
   const startIndex = Math.max(0, nextGoalIdx - 3);
   return milestones.slice(startIndex, nextGoalIdx + 1);
 }

@@ -337,9 +337,46 @@ function renderStreakCards(countOverride = null) {
   const displayCount = Math.min(count, 100);
   display.className = `star-display ${variantClasses.join(" ")} count-${count}`;
   display.style.setProperty("--count", displayCount);
-  for (let i = 0; i < displayCount; i++) {
-    display.appendChild(createStar(i));
-  }
+
+  let isAnimating = false;
+
+  const startAnimation = () => {
+    if (isAnimating) {
+      console.log("Animation already in progress, ignoring click.");
+      return;
+    }
+    console.log(`Starting animation for ${displayCount} stars...`);
+    isAnimating = true;
+    fancyCard.style.cursor = "default";
+    display.innerHTML = "";
+    
+    for (let i = 0; i < displayCount; i++) {
+      const star = createStar(i);
+      // Track the end of the longest animation (the last star)
+      if (i === displayCount - 1) {
+        const onAnimationEnd = (e) => {
+          if (e.animationName.includes("star-move")) {
+            console.log("Main animation finished.");
+            isAnimating = false;
+            fancyCard.style.cursor = "pointer";
+            star.removeEventListener("animationend", onAnimationEnd);
+          }
+        };
+        star.addEventListener("animationend", onAnimationEnd);
+      }
+      display.appendChild(star);
+    }
+    
+    if (displayCount === 0) {
+      console.log("No stars to animate.");
+      isAnimating = false;
+      fancyCard.style.cursor = "pointer";
+    }
+  };
+
+  fancyCard.addEventListener("click", startAnimation);
+  startAnimation(); // Initial run
+
   fancyCard.querySelector(".streak-association").textContent = primarySubject;
   fancyCard.querySelector(".streak-title").textContent = `${count} day streak!`;
   fragment.appendChild(fancyCard);
