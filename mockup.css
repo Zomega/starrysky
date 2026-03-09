@@ -1,6 +1,6 @@
 main {
   display: block;
-  padding: 6rem 2rem 4rem 2rem; /* Increased top padding for fixed header */
+  padding: 6rem 2rem 4rem 2rem;
   min-height: 100svh;
 }
 
@@ -32,13 +32,13 @@ main {
   left: 0;
   right: 0;
   height: 4rem;
-  background-color: var(--bg-color); /* Use the specific theme background var */
+  background-color: var(--bg-color);
   border-bottom: 1px solid var(--color-background-secondary);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
-  z-index: 1000; /* High z-index to stay on top */
+  z-index: 1000;
   box-shadow: var(--card-shadow);
 }
 
@@ -47,7 +47,7 @@ main {
   gap: var(--gap-m);
   overflow-x: auto;
   padding: 0.5rem 0;
-  scrollbar-width: none; /* Hide scrollbar for cleaner look */
+  scrollbar-width: none;
 }
 
 .tabs-container::-webkit-scrollbar {
@@ -146,33 +146,45 @@ main {
 .day-cell.frozen {
   color: var(--white);
 }
-.freeze-icon-mini {
-  font-size: 0.75rem;
-  position: absolute;
-  bottom: -0.2rem;
-  z-index: 3;
-  pointer-events: none;
-  color: var(--color-freeze-icon);
-  transform: translateX(-50%);
-}
-.broken-icon-mini {
-  font-size: 0.75rem;
-  position: absolute;
-  bottom: -0.2rem;
-  z-index: 3;
-  pointer-events: none;
+.day-cell.broken {
   color: var(--slate-400);
-  transform: translateX(-50%);
 }
+
+/* Mini Icon Bubbles */
+.freeze-icon-mini,
+.broken-icon-mini,
 .achievement-icon-mini {
-  font-size: 0.75rem;
+  font-size: 0.6rem;
+  width: 0.85rem;
+  height: 0.85rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
   position: absolute;
-  bottom: -0.2rem;
-  z-index: 3;
+  /* Anchor to row center, then offset by half pill height (0.9rem) */
+  top: 50%;
+  z-index: 4;
   pointer-events: none;
-  color: #22d3ee; /* cyan-400 diamond color */
-  transform: translateX(-50%);
+  transform: translate(-50%, calc(-50% + 0.9rem));
+  border: none;
+  color: var(--white);
+  line-height: 1;
+  font-variation-settings: "FILL" 1;
 }
+
+.freeze-icon-mini {
+  background-color: var(--sky-400);
+}
+
+.broken-icon-mini {
+  background-color: var(--slate-900);
+  color: var(--slate-400);
+}
+
+.achievement-icon-mini {
+  background-color: var(--orange-500);
+}
+
 .day-cell.prev-month {
   opacity: 0.4;
 }
@@ -222,7 +234,7 @@ main {
   width: 5rem;
   height: 5rem;
   --star-size: 2.2rem;
-  pointer-events: none; /* Clicks pass through to the card */
+  pointer-events: none;
 }
 
 .single {
