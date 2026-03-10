@@ -401,6 +401,14 @@ function renderGoalCard(count) {
   return goalCard;
 }
 
+function getColCount() {
+  const width = window.innerWidth;
+  if (width < 400) return 4;
+  if (width < 600) return 6;
+  if (width < 900) return 8;
+  return 12;
+}
+
 function renderStreakCards(countOverride = null) {
   const fragment = document.createDocumentFragment();
 
@@ -485,9 +493,13 @@ function renderStreakCards(countOverride = null) {
   const monthLabelsEl = multiCard.querySelector(".month-labels");
   const dayLabelsEl = multiCard.querySelector(".day-labels");
 
-  const windowStart = new Date("2026-02-21T12:00:00Z");
-  const windowColCount = 8;
+  const windowColCount = getColCount();
   multiCard.style.setProperty("--grid-cols", windowColCount);
+
+  const windowEnd = new Date("2026-02-28T12:00:00Z");
+  const windowStartTs =
+    windowEnd.getTime() - (windowColCount - 1) * 24 * 60 * 60 * 1000;
+  const windowStart = new Date(windowStartTs);
 
   const months = [];
   let curM = "";
@@ -533,6 +545,10 @@ function renderStreakCards(countOverride = null) {
     const subLatest = subCheckins.sort(
       (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
     )[0];
+
+    const startStr = windowStart.toISOString().split("T")[0];
+    const endStr = windowEnd.toISOString().split("T")[0];
+
     const {
       activeIndices,
       frozenIndices,
@@ -540,7 +556,7 @@ function renderStreakCards(countOverride = null) {
       brokenIndices,
       perfectWeekIndices,
       customIconMap,
-    } = getGridDataForRange(MOCK_CHECKINS, sub, "2026-02-21", "2026-02-28");
+    } = getGridDataForRange(MOCK_CHECKINS, sub, startStr, endStr);
     multiGrid.appendChild(
       renderStreakRow(
         sub,
@@ -635,6 +651,15 @@ function renderTabs() {
     tabsContainer.appendChild(btn);
   });
 }
+
+let resizeTimeout;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    console.log("Window resized, refreshing UI...");
+    refreshUI();
+  }, 100);
+});
 
 if (typeof document !== "undefined") {
   window.addEventListener("DOMContentLoaded", () => {
