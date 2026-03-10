@@ -56,6 +56,7 @@ function renderStreakGrid(
   graceDays = [],
   brokenDays = [],
   perfectWeekIndices = [],
+  customIconMap = new Map(),
   cols = 8,
 ) {
   const container = cloneTemplate("tpl-streak-grid");
@@ -176,6 +177,18 @@ function renderStreakGrid(
     elements.push(icon);
   });
 
+  // Add custom check-in icons (only the first one for now)
+  customIconMap.forEach((icons, idx) => {
+    if (icons && icons.length > 0) {
+      const iconName = icons[0];
+      const iconEl = cloneTemplate("tpl-checkin-custom-icon");
+      iconEl.textContent = iconName;
+      const centerLeft = ((idx + 0.5) / cols) * 100;
+      iconEl.style.left = `${centerLeft}%`;
+      elements.push(iconEl);
+    }
+  });
+
   elements.reverse().forEach((el) => container.prepend(el));
   return container;
 }
@@ -188,6 +201,7 @@ function renderStreakRow(
   graceDays = [],
   brokenDays = [],
   perfectWeekIndices = [],
+  customIconMap = new Map(),
   totalStreak = 0,
 ) {
   const row = cloneTemplate("tpl-streak-row");
@@ -201,6 +215,7 @@ function renderStreakRow(
       graceDays,
       brokenDays,
       perfectWeekIndices,
+      customIconMap,
       days.length,
     ),
     row.querySelector(".streak-total"),
@@ -250,6 +265,7 @@ function renderCalendarCard() {
     graceIndices,
     brokenIndices,
     perfectWeekIndices,
+    customIconMap,
   } = getGridDataForRange(
     MOCK_CHECKINS,
     primarySubject,
@@ -275,6 +291,13 @@ function renderCalendarCard() {
       .filter((idx) => idx >= i && idx < i + 7)
       .map((idx) => idx - i);
 
+    const weekCustomIcons = new Map();
+    customIconMap.forEach((icons, idx) => {
+      if (idx >= i && idx < i + 7) {
+        weekCustomIcons.set(idx - i, icons);
+      }
+    });
+
     const grid = renderStreakGrid(
       weekDays,
       weekActive,
@@ -282,6 +305,7 @@ function renderCalendarCard() {
       weekGrace,
       weekBroken,
       weekPerfect,
+      weekCustomIcons,
       7,
     );
     const cells = grid.querySelectorAll(".day-cell");
@@ -515,6 +539,7 @@ function renderStreakCards(countOverride = null) {
       graceIndices,
       brokenIndices,
       perfectWeekIndices,
+      customIconMap,
     } = getGridDataForRange(MOCK_CHECKINS, sub, "2026-02-21", "2026-02-28");
     multiGrid.appendChild(
       renderStreakRow(
@@ -525,6 +550,7 @@ function renderStreakCards(countOverride = null) {
         graceIndices,
         brokenIndices,
         perfectWeekIndices,
+        customIconMap,
         subLatest ? subLatest.streakSequence : 0,
       ),
     );

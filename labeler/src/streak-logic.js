@@ -312,6 +312,7 @@ export function getGridDataForRange(
   const graceIndices = [];
   const brokenIndices = [];
   const perfectWeekIndices = [];
+  const customIconMap = new Map(); // idx -> [icons]
   const dayMs = 24 * 60 * 60 * 1000;
 
   const start = new Date(startDateStr);
@@ -329,9 +330,13 @@ export function getGridDataForRange(
 
   relevantCheckins.forEach((c) => {
     const ts = new Date(c.streakDate + "T00:00:00Z").getTime();
+    const idxInRange = Math.floor((ts - start.getTime()) / dayMs);
 
     if (ts >= start.getTime() && ts <= end.getTime()) {
       dayMap.set(ts, "active");
+      if (c.icons && c.icons.length > 0) {
+        customIconMap.set(idxInRange, c.icons);
+      }
     }
 
     if (c.freezeDates && c.freezeDates.length > 0) {
@@ -414,6 +419,7 @@ export function getGridDataForRange(
     graceIndices,
     brokenIndices,
     perfectWeekIndices,
+    customIconMap,
   };
 }
 
@@ -466,6 +472,7 @@ export function generateCheckinHistory(
   startDateStr,
   endDateStr,
   skipDates = [],
+  customIcons = {}, // dateStr -> [icons]
 ) {
   let currentCheckin = null;
   let currentInventory = null;
@@ -486,6 +493,9 @@ export function generateCheckinHistory(
         curr.toISOString(),
         dateStr,
       );
+      if (customIcons[dateStr]) {
+        result.nextCheckin.icons = customIcons[dateStr];
+      }
       history.push(result.nextCheckin);
       currentCheckin = result.nextCheckin;
       if (result.nextInventory) currentInventory = result.nextInventory;

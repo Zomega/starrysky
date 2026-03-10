@@ -79,6 +79,10 @@ const wordleData = generateCheckinHistory(
   "2025-01-01",
   "2026-02-28",
   ["2026-01-21", "2026-02-16", "2026-02-24"],
+  {
+    "2026-02-28": ["verified"],
+    "2026-02-27": ["verified"],
+  },
 );
 
 const tiledWordsData = generateCheckinHistory(
@@ -101,12 +105,14 @@ const connectionsHistoryFeb = generateCheckinHistory(
   ["2026-02-20", "2026-02-21"],
 );
 
-// Crossword will die on Feb 27 because it hits 4 skips with maxFreezes: 3
 const crosswordData = generateCheckinHistory(
   MOCK_POLICIES.Crossword,
   "2026-02-15",
   "2026-02-28",
   ["2026-02-22", "2026-02-24", "2026-02-26", "2026-02-27"],
+  {
+    "2026-02-28": ["fitness_center"],
+  },
 );
 
 const chessData = generateCheckinHistory(

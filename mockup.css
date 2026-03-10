@@ -153,7 +153,8 @@ main {
 /* Mini Icon Bubbles */
 .freeze-icon-mini,
 .broken-icon-mini,
-.achievement-icon-mini {
+.achievement-icon-mini,
+.checkin-custom-icon-mini {
   font-size: 0.6rem;
   width: 0.85rem;
   height: 0.85rem;
@@ -181,7 +182,8 @@ main {
   color: var(--slate-400);
 }
 
-.achievement-icon-mini {
+.achievement-icon-mini,
+.checkin-custom-icon-mini {
   background-color: var(--orange-500);
 }
 
