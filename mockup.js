@@ -402,99 +402,20 @@ function renderGoalCard(count) {
   return goalCard;
 }
 
-function getColCount() {
-  const width = window.innerWidth;
-  // requested scaling: 600px -> 5 cols, 1200px -> 10 cols.
-  // Formula: floor(width / 120)
-  const cols = Math.floor(width / 120);
+function getColCountForWidth(width) {
+  // Use a scaling factor. Wide screen cards are ~500px max.
+  // 500px -> 8-10 cols is reasonable.
+  const cols = Math.floor(width / 55);
   return Math.max(4, Math.min(cols, 14));
 }
 
-function renderStreakCards(countOverride = null) {
-  const fragment = document.createDocumentFragment();
-
-  const primaryCheckins = MOCK_CHECKINS.filter(
-    (c) => c.subject === primarySubject,
-  );
-  const latestCheckin = primaryCheckins.sort(
-    (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
-  )[0];
-  const count =
-    countOverride !== null
-      ? countOverride
-      : latestCheckin
-        ? latestCheckin.streakSequence
-        : 0;
-
-  const variantClasses = getVariantClasses(count);
-
-  const fancyCard = cloneTemplate("tpl-fancy-streak-card");
-  const display = fancyCard.querySelector(".star-display");
-  const displayCount = Math.min(count, 100);
-  display.className = `star-display ${variantClasses.join(" ")} count-${count}`;
-  display.style.setProperty("--count", displayCount);
-
-  let isAnimating = false;
-
-  const startAnimation = () => {
-    if (isAnimating) {
-      console.log("Animation already in progress, ignoring click.");
-      return;
-    }
-    console.log(`Starting animation for ${displayCount} stars...`);
-    isAnimating = true;
-    fancyCard.style.cursor = "default";
-    display.innerHTML = "";
-
-    for (let i = 0; i < displayCount; i++) {
-      const star = createStar(i);
-      // Track the end of the longest animation (the last star)
-      if (i === displayCount - 1) {
-        const onAnimationEnd = (e) => {
-          if (e.animationName.includes("star-move")) {
-            console.log("Main animation finished.");
-            isAnimating = false;
-            fancyCard.style.cursor = "pointer";
-            star.removeEventListener("animationend", onAnimationEnd);
-          }
-        };
-        star.addEventListener("animationend", onAnimationEnd);
-      }
-      display.appendChild(star);
-    }
-
-    if (displayCount === 0) {
-      console.log("No stars to animate.");
-      isAnimating = false;
-      fancyCard.style.cursor = "pointer";
-    }
-  };
-
-  fancyCard.addEventListener("click", startAnimation);
-  startAnimation(); // Initial run
-
-  fancyCard.querySelector(".streak-association").textContent = primarySubject;
-  fancyCard.querySelector(".streak-title").textContent = `${count} day streak!`;
-  fragment.appendChild(fancyCard);
-
-  const policy = getPolicyForSubject(primarySubject);
-  const inventory = MOCK_INVENTORY[primarySubject] || { balance: 0 };
-  const freezeCard = cloneTemplate("tpl-freeze-card");
-
-  freezeCard.querySelector(".freeze-count-text").textContent =
-    `You have ${inventory.balance}/${policy.maxFreezes} Streak Freezes!`;
-  if (policy.maxFreezes > 0) {
-    fragment.appendChild(freezeCard);
-  }
-
-  fragment.appendChild(renderCalendarCard());
-
+function renderMultiStreakCard(width) {
   const multiCard = cloneTemplate("tpl-multi-streak-card");
   const multiGrid = multiCard.querySelector(".multi-streak-grid");
   const monthLabelsEl = multiCard.querySelector(".month-labels");
   const dayLabelsEl = multiCard.querySelector(".day-labels");
 
-  const windowColCount = getColCount();
+  const windowColCount = getColCountForWidth(width);
   lastRenderedColCount = windowColCount;
   multiCard.style.setProperty("--grid-cols", windowColCount);
 
@@ -573,11 +494,144 @@ function renderStreakCards(countOverride = null) {
       ),
     );
   });
-  fragment.appendChild(multiCard);
+  return multiCard;
+}
 
-  fragment.appendChild(renderGoalCard(count));
+function renderFancyStreakCard(countOverride = null) {
+  const primaryCheckins = MOCK_CHECKINS.filter(
+    (c) => c.subject === primarySubject,
+  );
+  const latestCheckin = primaryCheckins.sort(
+    (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
+  )[0];
+  const count =
+    countOverride !== null
+      ? countOverride
+      : latestCheckin
+        ? latestCheckin.streakSequence
+        : 0;
 
-  return fragment;
+  const variantClasses = getVariantClasses(count);
+  const fancyCard = cloneTemplate("tpl-fancy-streak-card");
+  const display = fancyCard.querySelector(".star-display");
+  const displayCount = Math.min(count, 100);
+  display.className = `star-display ${variantClasses.join(" ")} count-${count}`;
+  display.style.setProperty("--count", displayCount);
+
+  let isAnimating = false;
+  const startAnimation = () => {
+    if (isAnimating) return;
+    isAnimating = true;
+    fancyCard.style.cursor = "default";
+    display.innerHTML = "";
+    for (let i = 0; i < displayCount; i++) {
+      const star = createStar(i);
+      if (i === displayCount - 1) {
+        const onAnimationEnd = (e) => {
+          if (e.animationName.includes("star-move")) {
+            isAnimating = false;
+            fancyCard.style.cursor = "pointer";
+            star.removeEventListener("animationend", onAnimationEnd);
+          }
+        };
+        star.addEventListener("animationend", onAnimationEnd);
+      }
+      display.appendChild(star);
+    }
+    if (displayCount === 0) {
+      isAnimating = false;
+      fancyCard.style.cursor = "pointer";
+    }
+  };
+
+  fancyCard.addEventListener("click", startAnimation);
+  startAnimation();
+
+  fancyCard.querySelector(".streak-association").textContent = primarySubject;
+  fancyCard.querySelector(".streak-title").textContent = `${count} day streak!`;
+  return fancyCard;
+}
+
+function renderFreezeCard() {
+  const policy = getPolicyForSubject(primarySubject);
+  const inventory = MOCK_INVENTORY[primarySubject] || { balance: 0 };
+  const freezeCard = cloneTemplate("tpl-freeze-card");
+  freezeCard.querySelector(".freeze-count-text").textContent =
+    `You have ${inventory.balance}/${policy.maxFreezes} Streak Freezes!`;
+  return policy.maxFreezes > 0 ? freezeCard : null;
+}
+
+const multiCardObserver = new ResizeObserver((entries) => {
+  for (const entry of entries) {
+    const width = entry.contentRect.width;
+    const newColCount = getColCountForWidth(width);
+    if (newColCount !== lastRenderedColCount) {
+      console.log(
+        "Card width changed enough to require re-render:",
+        newColCount,
+      );
+      const newCard = renderMultiStreakCard(width);
+      entry.target.replaceWith(newCard);
+      // Need to re-observe the new element
+      multiCardObserver.observe(newCard);
+    }
+  }
+});
+
+function refreshUI(full = true) {
+  console.log("Refreshing UI for", primarySubject, "Full:", full);
+  const cardContainer = document.querySelector(".card-container");
+  if (!cardContainer) return;
+  const inputEl = document.querySelector("input");
+  const overrideCount = inputEl ? parseInt(inputEl.value) : 0;
+
+  if (full) {
+    cardContainer.innerHTML = "";
+    try {
+      cardContainer.appendChild(renderFancyStreakCard(overrideCount));
+      const fr = renderFreezeCard();
+      if (fr) cardContainer.appendChild(fr);
+      cardContainer.appendChild(renderCalendarCard());
+
+      const initialWidth = cardContainer.offsetWidth; // Good enough proxy for card width start
+      const multi = renderMultiStreakCard(initialWidth);
+      cardContainer.appendChild(multi);
+      multiCardObserver.disconnect();
+      multiCardObserver.observe(multi);
+
+      cardContainer.appendChild(renderGoalCard(overrideCount));
+      if (overrideCount > 0) celebrateGoal(overrideCount);
+    } catch (e) {
+      console.error("UI Render Error:", e);
+      cardContainer.innerHTML = `<div class="card" style="border-color: var(--orange-500); color: var(--orange-500); padding: 2rem; font-weight: bold; text-align: center;">${e.message}</div>`;
+    }
+  }
+}
+
+function renderTabs() {
+  const tabsContainer = document.getElementById("subject-tabs");
+  if (!tabsContainer) return;
+  tabsContainer.innerHTML = "";
+  subjects.forEach((sub) => {
+    const btn = document.createElement("button");
+    btn.className = `tab-button ${sub === primarySubject ? "active" : ""}`;
+    btn.textContent = sub;
+    btn.addEventListener("click", () => {
+      primarySubject = sub;
+      const subCheckins = MOCK_CHECKINS.filter(
+        (c) => c.subject === primarySubject,
+      );
+      const subLatest = subCheckins.sort(
+        (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
+      )[0];
+      const inputEl = document.querySelector("input");
+      if (inputEl && subLatest) inputEl.value = subLatest.streakSequence;
+      lastCelebratedCount = -1;
+      renderTabs();
+      refreshUI(true);
+    });
+    tabsContainer.appendChild(btn);
+  });
 }
 
 function getVariantClasses(count) {
@@ -601,74 +655,8 @@ function celebrateGoal(count) {
   }
 }
 
-function refreshUI() {
-  console.log("Refreshing UI for", primarySubject);
-  const cardContainer = document.querySelector(".card-container");
-  if (!cardContainer) return;
-  const inputEl = document.querySelector("input");
-
-  const overrideCount = inputEl ? parseInt(inputEl.value) : 0;
-
-  cardContainer.innerHTML = "";
-  try {
-    cardContainer.appendChild(renderStreakCards(overrideCount));
-    if (overrideCount > 0) {
-      celebrateGoal(overrideCount);
-    }
-  } catch (e) {
-    console.error("UI Render Error:", e);
-    cardContainer.innerHTML = `<div class="card" style="border-color: var(--orange-500); color: var(--orange-500); padding: 2rem; font-weight: bold; text-align: center;">${e.message}</div>`;
-  }
-}
-
-function renderTabs() {
-  const tabsContainer = document.getElementById("subject-tabs");
-  if (!tabsContainer) {
-    console.warn("Tabs container #subject-tabs not found");
-    return;
-  }
-  tabsContainer.innerHTML = "";
-
-  subjects.forEach((sub) => {
-    const btn = document.createElement("button");
-    btn.className = `tab-button ${sub === primarySubject ? "active" : ""}`;
-    btn.textContent = sub;
-    btn.addEventListener("click", () => {
-      console.log("Tab clicked:", sub);
-      primarySubject = sub;
-      const subCheckins = MOCK_CHECKINS.filter(
-        (c) => c.subject === primarySubject,
-      );
-      const subLatest = subCheckins.sort(
-        (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
-      )[0];
-      const inputEl = document.querySelector("input");
-      if (inputEl && subLatest) {
-        inputEl.value = subLatest.streakSequence;
-      }
-      lastCelebratedCount = -1; // Reset celebration for new subject
-      renderTabs();
-      refreshUI();
-    });
-    tabsContainer.appendChild(btn);
-  });
-}
-
-let resizeTimeout;
-window.addEventListener("resize", () => {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
-    const newColCount = getColCount();
-    if (newColCount !== lastRenderedColCount) {
-      console.log("Column count changed, refreshing UI...");
-      refreshUI();
-    }
-  }, 150);
-});
-
 if (typeof document !== "undefined") {
   window.addEventListener("DOMContentLoaded", () => {
-    console.log("DOMContentLoaded - Initializing Mockup");
     const inputEl = document.querySelector("input");
     if (inputEl) {
       const subCheckins = MOCK_CHECKINS.filter(
@@ -679,13 +667,9 @@ if (typeof document !== "undefined") {
       )[0];
       inputEl.value = latestCheckin ? latestCheckin.streakSequence : 0;
     }
-
     renderTabs();
-    refreshUI();
-
-    if (inputEl) {
-      inputEl.addEventListener("input", refreshUI);
-    }
+    refreshUI(true);
+    if (inputEl) inputEl.addEventListener("input", () => refreshUI(true));
   });
 }
 console.log("mockup.js loaded.");
