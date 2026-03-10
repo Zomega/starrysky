@@ -14,6 +14,7 @@ import {
 
 const jsConfetti = new JSConfetti();
 let lastCelebratedCount = -1;
+let lastRenderedColCount = -1;
 
 function getPolicyForSubject(subject) {
   const policy = MOCK_POLICIES[subject];
@@ -403,10 +404,10 @@ function renderGoalCard(count) {
 
 function getColCount() {
   const width = window.innerWidth;
-  if (width < 400) return 4;
-  if (width < 600) return 6;
-  if (width < 900) return 8;
-  return 12;
+  // requested scaling: 600px -> 5 cols, 1200px -> 10 cols.
+  // Formula: floor(width / 120)
+  const cols = Math.floor(width / 120);
+  return Math.max(4, Math.min(cols, 14));
 }
 
 function renderStreakCards(countOverride = null) {
@@ -494,6 +495,7 @@ function renderStreakCards(countOverride = null) {
   const dayLabelsEl = multiCard.querySelector(".day-labels");
 
   const windowColCount = getColCount();
+  lastRenderedColCount = windowColCount;
   multiCard.style.setProperty("--grid-cols", windowColCount);
 
   const windowEnd = new Date("2026-02-28T12:00:00Z");
@@ -656,9 +658,12 @@ let resizeTimeout;
 window.addEventListener("resize", () => {
   clearTimeout(resizeTimeout);
   resizeTimeout = setTimeout(() => {
-    console.log("Window resized, refreshing UI...");
-    refreshUI();
-  }, 100);
+    const newColCount = getColCount();
+    if (newColCount !== lastRenderedColCount) {
+      console.log("Column count changed, refreshing UI...");
+      refreshUI();
+    }
+  }, 150);
 });
 
 if (typeof document !== "undefined") {
