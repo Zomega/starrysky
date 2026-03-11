@@ -1,5 +1,5 @@
 console.log("mockup.js loading...");
-import JSConfetti from "https://esm.sh/js-confetti@0.12.0";
+import i18next, { initI18n } from "./labeler/src/i18n.js";
 import {
   isMilestone,
   getGridDataForRange,
@@ -12,6 +12,24 @@ import {
   MOCK_INVENTORY,
 } from "./labeler/src/mock-data.js";
 
+// Handle JSConfetti conditionally for Node test environments
+let JSConfetti;
+if (typeof window !== "undefined") {
+  try {
+    const module = await import("js-confetti");
+    JSConfetti = module.default;
+  } catch (e) {
+    console.warn("Failed to load JSConfetti from CDN, using mock.");
+    JSConfetti = class {
+      addConfetti() {}
+    };
+  }
+} else {
+  JSConfetti = class {
+    addConfetti() {}
+  };
+}
+
 const jsConfetti = new JSConfetti();
 let lastCelebratedCount = -1;
 let lastRenderedColCount = -1;
@@ -19,18 +37,15 @@ let lastRenderedColCount = -1;
 function getPolicyForSubject(subject) {
   const policy = MOCK_POLICIES[subject];
   if (!policy) {
-    throw new Error(
-      `Critical Error: No policy configuration found for subject: "${subject}"`,
-    );
+    throw new Error(i18next.t("error.no_policy", { subject }));
   }
   return policy;
 }
 
 const subjects = [...new Set(MOCK_CHECKINS.map((c) => c.subject))];
-console.log("Detected subjects:", subjects);
 
 if (subjects.length === 0) {
-  throw new Error("Critical Error: No subjects found in MOCK_CHECKINS.");
+  throw new Error(i18next.t("error.no_subjects"));
 }
 
 let primarySubject = subjects[0];
@@ -39,7 +54,7 @@ let currentMonth = 1; // February
 
 function cloneTemplate(id) {
   const tpl = document.getElementById(id);
-  if (!tpl) throw new Error(`Template not found: ${id}`);
+  if (!tpl) throw new Error(i18next.t("error.template_not_found", { id }));
   return tpl.content.cloneNode(true).firstElementChild;
 }
 
@@ -227,6 +242,8 @@ function renderStreakRow(
 function renderCalendarCard() {
   const calCard = cloneTemplate("tpl-calendar-card");
   calCard.querySelector(".streak-association").textContent = primarySubject;
+  calCard.querySelector("h2:not(.streak-association)").textContent =
+    i18next.t("ui.streak_calendar");
 
   const monthName = new Date(
     Date.UTC(currentYear, currentMonth, 1),
@@ -236,6 +253,14 @@ function renderCalendarCard() {
     timeZone: "UTC",
   });
   calCard.querySelector(".calendar-month-title").textContent = monthName;
+
+  const daysHeader = calCard.querySelector(".calendar-days-header");
+  daysHeader.innerHTML = "";
+  ["su", "mo", "tu", "we", "th", "fr", "sa"].forEach((d) => {
+    const span = document.createElement("span");
+    span.textContent = i18next.t(`calendar.days.${d}`);
+    daysHeader.appendChild(span);
+  });
 
   const calWeeks = calCard.querySelector(".calendar-weeks");
   const monthDays = getDaysInMonth(currentYear, currentMonth);
@@ -347,6 +372,8 @@ function renderGoalCard(count) {
   const goalCard = cloneTemplate("tpl-goal-card");
   const policy = getPolicyForSubject(primarySubject);
   goalCard.querySelector(".streak-association").textContent = primarySubject;
+  goalCard.querySelector("h2:not(.streak-association)").textContent =
+    i18next.t("ui.streak_goal");
 
   const visualContainer = goalCard.querySelector(".goal-visual-container");
   const milestones = getMilestonesForPolicy(count, policy);
@@ -397,20 +424,21 @@ function renderGoalCard(count) {
     }
   });
 
-  goalCard.querySelector(".goal-text").textContent =
-    `${count} / ${nextGoal} days`;
+  goalCard.querySelector(".goal-text").textContent = i18next.t(
+    "streak.goal_progress",
+    { count, nextGoal },
+  );
   return goalCard;
 }
 
 function getColCountForWidth(width) {
-  // Use a scaling factor. Wide screen cards are ~500px max.
-  // 500px -> 8-10 cols is reasonable.
   const cols = Math.floor(width / 55);
   return Math.max(4, Math.min(cols, 14));
 }
 
 function renderMultiStreakCard(width) {
   const multiCard = cloneTemplate("tpl-multi-streak-card");
+  multiCard.querySelector("h2").textContent = i18next.t("ui.multiple_streaks");
   const multiGrid = multiCard.querySelector(".multi-streak-grid");
   const monthLabelsEl = multiCard.querySelector(".month-labels");
   const dayLabelsEl = multiCard.querySelector(".day-labels");
@@ -548,7 +576,11 @@ function renderFancyStreakCard(countOverride = null) {
   startAnimation();
 
   fancyCard.querySelector(".streak-association").textContent = primarySubject;
-  fancyCard.querySelector(".streak-title").textContent = `${count} day streak!`;
+  fancyCard.querySelector(".streak-title").textContent = i18next.t(
+    "streak.count_display",
+    { count },
+  );
+  fancyCard.querySelector("p").textContent = i18next.t("streak.come_back");
   return fancyCard;
 }
 
@@ -556,34 +588,40 @@ function renderFreezeCard() {
   const policy = getPolicyForSubject(primarySubject);
   const inventory = MOCK_INVENTORY[primarySubject] || { balance: 0 };
   const freezeCard = cloneTemplate("tpl-freeze-card");
-  freezeCard.querySelector(".freeze-count-text").textContent =
-    `You have ${inventory.balance}/${policy.maxFreezes} Streak Freezes!`;
+  freezeCard.querySelector(".freeze-count-text").textContent = i18next.t(
+    "streak.inventory_balance",
+    {
+      balance: inventory.balance,
+      max: policy.maxFreezes,
+    },
+  );
+  freezeCard.querySelector("a").textContent = i18next.t("ui.get_more");
   return policy.maxFreezes > 0 ? freezeCard : null;
 }
 
-const multiCardObserver = new ResizeObserver((entries) => {
-  for (const entry of entries) {
-    const width = entry.contentRect.width;
-    const newColCount = getColCountForWidth(width);
-    if (newColCount !== lastRenderedColCount) {
-      console.log(
-        "Card width changed enough to require re-render:",
-        newColCount,
-      );
-      const newCard = renderMultiStreakCard(width);
-      entry.target.replaceWith(newCard);
-      // Need to re-observe the new element
-      multiCardObserver.observe(newCard);
-    }
-  }
-});
+const multiCardObserver =
+  typeof ResizeObserver !== "undefined"
+    ? new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const width = entry.contentRect.width;
+          const newColCount = getColCountForWidth(width);
+          if (newColCount !== lastRenderedColCount) {
+            const newCard = renderMultiStreakCard(width);
+            entry.target.replaceWith(newCard);
+            multiCardObserver.observe(newCard);
+          }
+        }
+      })
+    : null;
 
-function refreshUI(full = true) {
-  console.log("Refreshing UI for", primarySubject, "Full:", full);
+export function refreshUI(full = true) {
   const cardContainer = document.querySelector(".card-container");
   if (!cardContainer) return;
   const inputEl = document.querySelector("input");
   const overrideCount = inputEl ? parseInt(inputEl.value) : 0;
+
+  const overrideLabel = document.querySelector(".controls-card label span");
+  if (overrideLabel) overrideLabel.textContent = i18next.t("ui.override_label");
 
   if (full) {
     cardContainer.innerHTML = "";
@@ -593,22 +631,24 @@ function refreshUI(full = true) {
       if (fr) cardContainer.appendChild(fr);
       cardContainer.appendChild(renderCalendarCard());
 
-      const initialWidth = cardContainer.offsetWidth; // Good enough proxy for card width start
+      const initialWidth = cardContainer.offsetWidth || 500;
       const multi = renderMultiStreakCard(initialWidth);
       cardContainer.appendChild(multi);
-      multiCardObserver.disconnect();
-      multiCardObserver.observe(multi);
+      if (multiCardObserver) {
+        multiCardObserver.disconnect();
+        multiCardObserver.observe(multi);
+      }
 
       cardContainer.appendChild(renderGoalCard(overrideCount));
       if (overrideCount > 0) celebrateGoal(overrideCount);
     } catch (e) {
       console.error("UI Render Error:", e);
-      cardContainer.innerHTML = `<div class="card" style="border-color: var(--orange-500); color: var(--orange-500); padding: 2rem; font-weight: bold; text-align: center;">${e.message}</div>`;
+      cardContainer.innerHTML = `<div class="card" style="border-color: var(--orange-500); color: var(--orange-500); padding: 2rem; font-weight: bold; text-align: center;">${i18next.t("error.render_failed", { message: e.message })}</div>`;
     }
   }
 }
 
-function renderTabs() {
+export function renderTabs() {
   const tabsContainer = document.getElementById("subject-tabs");
   if (!tabsContainer) return;
   tabsContainer.innerHTML = "";
@@ -616,8 +656,10 @@ function renderTabs() {
     const btn = document.createElement("button");
     btn.className = `tab-button ${sub === primarySubject ? "active" : ""}`;
     btn.textContent = sub;
-    btn.addEventListener("click", () => {
-      primarySubject = sub;
+    btn.addEventListener("click", (e) => {
+      // Use currentTarget to ensure we always get the button even if nested elements exist
+      const clickedSub = e.currentTarget.textContent;
+      primarySubject = clickedSub;
       const subCheckins = MOCK_CHECKINS.filter(
         (c) => c.subject === primarySubject,
       );
@@ -632,6 +674,14 @@ function renderTabs() {
     });
     tabsContainer.appendChild(btn);
   });
+}
+
+export function setPrimarySubject(sub) {
+  primarySubject = sub;
+}
+
+export function getPrimarySubject() {
+  return primarySubject;
 }
 
 function getVariantClasses(count) {
@@ -656,7 +706,10 @@ function celebrateGoal(count) {
 }
 
 if (typeof document !== "undefined") {
-  window.addEventListener("DOMContentLoaded", () => {
+  window.addEventListener("DOMContentLoaded", async () => {
+    console.log("DOMContentLoaded - Initializing Mockup");
+    await initI18n();
+
     const inputEl = document.querySelector("input");
     if (inputEl) {
       const subCheckins = MOCK_CHECKINS.filter(

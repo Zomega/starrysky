@@ -1,0 +1,32 @@
+{
+  "error": {
+    "no_policy": "Critical Error: No policy configuration found for subject: \"{{subject}}\"",
+    "no_subjects": "Critical Error: No subjects found in MOCK_CHECKINS.",
+    "template_not_found": "Template not found: {{id}}",
+    "render_failed": "UI Render Error: {{message}}"
+  },
+  "streak": {
+    "count_display": "{{count}} day streak!",
+    "inventory_balance": "You have {{balance}}/{{max}} Streak Freezes!",
+    "goal_progress": "{{count}} / {{nextGoal}} days",
+    "come_back": "Come back tomorrow to continue your streak!"
+  },
+  "ui": {
+    "streak_calendar": "Streak Calendar",
+    "multiple_streaks": "Multiple Streaks",
+    "streak_goal": "Streak Goal",
+    "get_more": "GET MORE",
+    "override_label": "Streak count override:"
+  },
+  "calendar": {
+    "days": {
+      "su": "Su",
+      "mo": "Mo",
+      "tu": "Tu",
+      "we": "We",
+      "th": "Th",
+      "fr": "Fr",
+      "sa": "Sa"
+    }
+  }
+}

@@ -82,7 +82,6 @@ describe("Streak Logic Utilities", () => {
 
   describe("getGridDataForRange", () => {
     test("extracts correct indices for Wordle in late Feb 2026 (Maintained)", () => {
-      // Wordle now maintains streak through Feb 24 via freeze
       const data = getGridDataForRange(
         MOCK_CHECKINS,
         "Wordle",
@@ -107,6 +106,65 @@ describe("Streak Logic Utilities", () => {
       );
       assert.deepStrictEqual(data.activeIndices, [0, 2]);
       assert.deepStrictEqual(data.graceIndices, [1]);
+    });
+
+    test("identifies perfect weeks", () => {
+      const mock = [];
+      for (let i = 1; i <= 14; i++) {
+        const date = `2026-03-${i.toString().padStart(2, "0")}`;
+        mock.push({ subject: "Perfect", streakDate: date, streakSequence: i });
+      }
+      // 2026-03-01 is a Sunday.
+      // 2026-03-01 to 2026-03-07 is a perfect week (idx 0 to 6).
+      // Wednesday is idx 3.
+      const data = getGridDataForRange(
+        mock,
+        "Perfect",
+        "2026-03-01",
+        "2026-03-14",
+      );
+      assert.ok(
+        data.perfectWeekIndices.includes(3),
+        "Should have perfect week on first Wednesday",
+      );
+      assert.ok(
+        data.perfectWeekIndices.includes(10),
+        "Should have perfect week on second Wednesday",
+      );
+    });
+
+    test("captures custom icons", () => {
+      const mock = [
+        {
+          subject: "Icons",
+          streakDate: "2026-01-01",
+          icons: ["star", "heart"],
+        },
+      ];
+      const data = getGridDataForRange(
+        mock,
+        "Icons",
+        "2026-01-01",
+        "2026-01-01",
+      );
+      assert.ok(data.customIconMap.has(0));
+      assert.deepStrictEqual(data.customIconMap.get(0), ["star", "heart"]);
+    });
+
+    test("handles broken streaks with first gap as broken", () => {
+      const mock = [
+        { subject: "Broken", streakDate: "2026-01-01", streakSequence: 10 },
+        { subject: "Broken", streakDate: "2026-01-05", streakSequence: 1 }, // broke!
+      ];
+      const data = getGridDataForRange(
+        mock,
+        "Broken",
+        "2026-01-01",
+        "2026-01-05",
+      );
+      // Gaps: 02, 03, 04. First gap 02 (idx 1) should be "broken".
+      assert.ok(data.brokenIndices.includes(1));
+      assert.strictEqual(data.graceIndices.length, 0);
     });
 
     test("handles empty checkins", () => {

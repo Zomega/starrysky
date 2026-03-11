@@ -1,9 +1,9 @@
 {
   "$schema": "https://stryker-mutator.io/schema/stryker-config.json",
-  "mutate": ["labeler/src/streak-logic.js"],
+  "mutate": ["labeler/src/streak-logic.js", "mockup.js", "labeler/src/i18n.js"],
   "testRunner": "command",
   "commandRunner": {
-    "command": "node --test tests/streak-logic-core.test.js tests/streak-logic-property.test.js"
+    "command": "node --test tests/streak-logic-core.test.js tests/streak-logic-property.test.js tests/streak-logic-utils.test.js tests/mockup-dom.test.js"
   },
   "reporters": ["progress", "clear-text", "html"],
   "concurrency": 2,
