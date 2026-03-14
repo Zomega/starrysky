@@ -65,6 +65,111 @@ function createStar(index) {
   return star;
 }
 
+/**
+ * Renders the background pill elements for a streak grid.
+ */
+function renderStreakBackgroundPills(
+  allMarked,
+  brokenDays,
+  cols,
+  templateId = "tpl-streak-pill-bg",
+) {
+  const elements = [];
+  if (allMarked.length === 0) return elements;
+
+  let rStartIdx = 0;
+  while (rStartIdx < allMarked.length) {
+    let rEndIdx = rStartIdx;
+    while (
+      rEndIdx + 1 < allMarked.length &&
+      allMarked[rEndIdx + 1] === allMarked[rEndIdx] + 1 &&
+      !brokenDays.includes(allMarked[rEndIdx])
+    ) {
+      rEndIdx++;
+    }
+
+    const startValue = allMarked[rStartIdx];
+    const endValue = allMarked[rEndIdx];
+    const left = (startValue / cols) * 100;
+    const width = ((endValue - startValue + 1) / cols) * 100;
+
+    const bgPill = cloneTemplate(templateId);
+    bgPill.style.left = `${left}%`;
+    bgPill.style.width = `${width}%`;
+    elements.push(bgPill);
+
+    rStartIdx = rEndIdx + 1;
+  }
+  return elements;
+}
+
+/**
+ * Renders the foreground pill elements (active, frozen, broken) for a streak grid.
+ */
+function renderStreakForegroundPills(
+  activeDays,
+  freezeDays,
+  brokenDays,
+  cols,
+  templateId = "tpl-streak-pill",
+) {
+  const elements = [];
+  const foregroundMarked = [...activeDays, ...freezeDays, ...brokenDays].sort(
+    (a, b) => a - b,
+  );
+  if (foregroundMarked.length === 0) return elements;
+
+  let i = 0;
+  while (i < foregroundMarked.length) {
+    let startIdx = i;
+    let endIdx = i;
+    let type = activeDays.includes(foregroundMarked[i])
+      ? "active"
+      : freezeDays.includes(foregroundMarked[i])
+        ? "frozen"
+        : "broken";
+
+    while (
+      endIdx + 1 < foregroundMarked.length &&
+      foregroundMarked[endIdx + 1] === foregroundMarked[endIdx] + 1 &&
+      ((type === "active" &&
+        activeDays.includes(foregroundMarked[endIdx + 1])) ||
+        (type === "frozen" &&
+          freezeDays.includes(foregroundMarked[endIdx + 1])) ||
+        (type === "broken" && brokenDays.includes(foregroundMarked[endIdx + 1])))
+    ) {
+      endIdx++;
+    }
+
+    const startValue = foregroundMarked[startIdx];
+    const endValue = foregroundMarked[endIdx];
+    const left = (startValue / cols) * 100;
+    const width = ((endValue - startValue + 1) / cols) * 100;
+
+    const pill = cloneTemplate(templateId);
+    if (type === "frozen") pill.classList.add("frozen");
+    if (type === "broken") pill.classList.add("broken");
+
+    pill.style.left = `${left}%`;
+    pill.style.width = `${width}%`;
+    elements.push(pill);
+
+    if (type === "frozen" || type === "broken") {
+      for (let k = startValue; k <= endValue; k++) {
+        const icon = cloneTemplate(
+          type === "frozen" ? "tpl-freeze-icon" : "tpl-broken-icon",
+        );
+        const centerLeft = ((k + 0.5) / cols) * 100;
+        icon.style.left = `${centerLeft}%`;
+        elements.push(icon);
+      }
+    }
+
+    i = endIdx + 1;
+  }
+  return elements;
+}
+
 function renderStreakGrid(
   days,
   activeDays,
@@ -98,7 +203,6 @@ function renderStreakGrid(
     container.appendChild(cell);
   });
 
-  const elements = [];
   const allMarked = [
     ...activeDays,
     ...freezeDays,
@@ -106,84 +210,19 @@ function renderStreakGrid(
     ...brokenDays,
   ].sort((a, b) => a - b);
 
-  if (allMarked.length > 0) {
-    let rStartIdx = 0;
-    while (rStartIdx < allMarked.length) {
-      let rEndIdx = rStartIdx;
-      while (
-        rEndIdx + 1 < allMarked.length &&
-        allMarked[rEndIdx + 1] === allMarked[rEndIdx] + 1 &&
-        !brokenDays.includes(allMarked[rEndIdx])
-      ) {
-        rEndIdx++;
-      }
+  const backgroundPills = renderStreakBackgroundPills(
+    allMarked,
+    brokenDays,
+    cols,
+  );
+  const foregroundPills = renderStreakForegroundPills(
+    activeDays,
+    freezeDays,
+    brokenDays,
+    cols,
+  );
 
-      const startValue = allMarked[rStartIdx];
-      const endValue = allMarked[rEndIdx];
-      const left = (startValue / cols) * 100;
-      const width = ((endValue - startValue + 1) / cols) * 100;
-
-      const bgPill = cloneTemplate("tpl-streak-pill-bg");
-      bgPill.style.left = `${left}%`;
-      bgPill.style.width = `${width}%`;
-      elements.push(bgPill);
-
-      rStartIdx = rEndIdx + 1;
-    }
-
-    const foregroundMarked = [...activeDays, ...freezeDays, ...brokenDays].sort(
-      (a, b) => a - b,
-    );
-    let i = 0;
-    while (i < foregroundMarked.length) {
-      let startIdx = i;
-      let endIdx = i;
-      let type = activeDays.includes(foregroundMarked[i])
-        ? "active"
-        : freezeDays.includes(foregroundMarked[i])
-          ? "frozen"
-          : "broken";
-
-      while (
-        endIdx + 1 < foregroundMarked.length &&
-        foregroundMarked[endIdx + 1] === foregroundMarked[endIdx] + 1 &&
-        ((type === "active" &&
-          activeDays.includes(foregroundMarked[endIdx + 1])) ||
-          (type === "frozen" &&
-            freezeDays.includes(foregroundMarked[endIdx + 1])) ||
-          (type === "broken" &&
-            brokenDays.includes(foregroundMarked[endIdx + 1])))
-      ) {
-        endIdx++;
-      }
-
-      const startValue = foregroundMarked[startIdx];
-      const endValue = foregroundMarked[endIdx];
-      const left = (startValue / cols) * 100;
-      const width = ((endValue - startValue + 1) / cols) * 100;
-
-      const pill = cloneTemplate("tpl-streak-pill");
-      if (type === "frozen") pill.classList.add("frozen");
-      if (type === "broken") pill.classList.add("broken");
-
-      pill.style.left = `${left}%`;
-      pill.style.width = `${width}%`;
-      elements.push(pill);
-
-      if (type === "frozen" || type === "broken") {
-        for (let k = startValue; k <= endValue; k++) {
-          const icon = cloneTemplate(
-            type === "frozen" ? "tpl-freeze-icon" : "tpl-broken-icon",
-          );
-          const centerLeft = ((k + 0.5) / cols) * 100;
-          icon.style.left = `${centerLeft}%`;
-          elements.push(icon);
-        }
-      }
-
-      i = endIdx + 1;
-    }
-  }
+  const elements = [...backgroundPills, ...foregroundPills];
 
   // Add achievement diamonds in the middle of their day
   perfectWeekIndices.forEach((idx) => {
@@ -438,6 +477,7 @@ function getColCountForWidth(width) {
 
 function renderMultiStreakCard(width) {
   const multiCard = cloneTemplate("tpl-multi-streak-card");
+  multiCard.id = "multi-streak-card"; // Add ID for easier selection in tests
   multiCard.querySelector("h2").textContent = i18next.t("ui.multiple_streaks");
   const multiGrid = multiCard.querySelector(".multi-streak-grid");
   const monthLabelsEl = multiCard.querySelector(".month-labels");
@@ -525,27 +565,11 @@ function renderMultiStreakCard(width) {
   return multiCard;
 }
 
-function renderFancyStreakCard(countOverride = null) {
-  const primaryCheckins = MOCK_CHECKINS.filter(
-    (c) => c.subject === primarySubject,
-  );
-  const latestCheckin = primaryCheckins.sort(
-    (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
-  )[0];
-  const count =
-    countOverride !== null
-      ? countOverride
-      : latestCheckin
-        ? latestCheckin.streakSequence
-        : 0;
-
-  const variantClasses = getVariantClasses(count);
-  const fancyCard = cloneTemplate("tpl-fancy-streak-card");
-  const display = fancyCard.querySelector(".star-display");
-  const displayCount = Math.min(count, 100);
-  display.className = `star-display ${variantClasses.join(" ")} count-${count}`;
-  display.style.setProperty("--count", displayCount);
-
+/**
+ * Creates and attaches the animation logic to a fancy card.
+ * Exported separately to allow binding listeners in Node environments if needed.
+ */
+export function attachAnimationLogic(fancyCard, display, displayCount) {
   let isAnimating = false;
   const startAnimation = () => {
     if (isAnimating) return;
@@ -574,6 +598,31 @@ function renderFancyStreakCard(countOverride = null) {
 
   fancyCard.addEventListener("click", startAnimation);
   startAnimation();
+  return startAnimation;
+}
+
+function renderFancyStreakCard(countOverride = null) {
+  const primaryCheckins = MOCK_CHECKINS.filter(
+    (c) => c.subject === primarySubject,
+  );
+  const latestCheckin = primaryCheckins.sort(
+    (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
+  )[0];
+  const count =
+    countOverride !== null
+      ? countOverride
+      : latestCheckin
+        ? latestCheckin.streakSequence
+        : 0;
+
+  const variantClasses = getVariantClasses(count);
+  const fancyCard = cloneTemplate("tpl-fancy-streak-card");
+  const display = fancyCard.querySelector(".star-display");
+  const displayCount = Math.min(count, 100);
+  display.className = `star-display ${variantClasses.join(" ")} count-${count}`;
+  display.style.setProperty("--count", displayCount);
+
+  attachAnimationLogic(fancyCard, display, displayCount);
 
   fancyCard.querySelector(".streak-association").textContent = primarySubject;
   fancyCard.querySelector(".streak-title").textContent = i18next.t(
@@ -606,6 +655,10 @@ const multiCardObserver =
           const width = entry.contentRect.width;
           const newColCount = getColCountForWidth(width);
           if (newColCount !== lastRenderedColCount) {
+            console.log(
+              "Card width changed enough to require re-render:",
+              newColCount,
+            );
             const newCard = renderMultiStreakCard(width);
             entry.target.replaceWith(newCard);
             multiCardObserver.observe(newCard);
@@ -683,6 +736,21 @@ export function setPrimarySubject(sub) {
 export function getPrimarySubject() {
   return primarySubject;
 }
+
+// Export internal rendering functions for testing
+export {
+  renderStreakBackgroundPills,
+  renderStreakForegroundPills,
+  renderStreakGrid,
+  renderStreakRow,
+  renderCalendarCard,
+  renderGoalCard,
+  renderFancyStreakCard,
+  renderMultiStreakCard,
+  renderFreezeCard,
+  getColCountForWidth,
+  getVariantClasses,
+};
 
 function getVariantClasses(count) {
   if (count === 1) return ["single"];
