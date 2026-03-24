@@ -1,6 +1,7 @@
 {
   "lexicon": 1,
   "id": "app.starrysky.streak.policy",
+  "$type": "com.atproto.lexicon.schema",
   "defs": {
     "main": {
       "type": "record",

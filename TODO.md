@@ -69,3 +69,17 @@
 - [ ] **E2E Testing**: Add Playwright/BackstopJS for responsive UI and visual regression verification.
 - [ ] **Performance Profiling**: Ensure `getGridDataForRange` handles multi-year histories without lag.
 - [ ] **API Documentation**: Auto-generate documentation from TypeScript definitions and JSDoc.
+
+## 7. Lexicon Publication & Authority
+
+- [x] **Install Tooling**: Setup the `goat` CLI for lexicon management.
+- [x] **Account Setup**: Create/Login to the official `@starrysky.app` account to host the authoritative schemas.
+- [x] **Publish Schemas**: Used `goat lex publish` to upload `checkin.json`, `inventory.json`, `policy.json`, and `freezegrant.json` to the PDS.
+- [x] **DNS Configuration**:
+  - [x] Added **TXT** record at `_lexicon.streak.starrysky.app` with the value `did=did:plc:pdftantb2wpnczkhusrixbpy`.
+- [x] **Verification**: Confirmed records are present in the PDS and correctly resolve via the AT Protocol.
+
+
+## 8. Other
+- [x] Verify custom domain for GitHub Pages
+- [ ] Add an MX record for your root domain so that mail can reach @starrysky.app addresses or set up restrictive SPF, DKIM, and DMARC records to prevent email spoofing.

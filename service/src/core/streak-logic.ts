@@ -129,7 +129,7 @@ export function calculateNextCheckin(
       policy: policy.uri || "at://placeholder",
       subject: policy.subject || "Default",
       streakSequence: 1,
-      streakDate: streakDate,
+      streakDate: streakDate + "T00:00:00Z",
       checkinsInInterval: 1,
       freezeDates: [],
       freezesClaimed: 0,
@@ -178,7 +178,7 @@ export function calculateNextCheckin(
         if (cadence.type === "daily") {
           for (let i = 1; i <= freezesNeeded; i++) {
             const fDate = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-            freezeDates.push(fDate.toISOString().split("T")[0]);
+            freezeDates.push(fDate.toISOString().split("T")[0] + "T00:00:00Z");
           }
         }
       }
@@ -224,7 +224,7 @@ export function calculateNextCheckin(
     policy: lastCheckin.policy,
     subject: lastCheckin.subject,
     streakSequence: streakSequence,
-    streakDate: streakDate,
+    streakDate: streakDate + "T00:00:00Z",
     checkinsInInterval: checkinsInInterval,
     freezeDates: freezeDates,
     freezesClaimed: freezesNeeded,
@@ -450,7 +450,9 @@ export function getGridDataForRange(
   let lastCheckinDate: string | null = null;
 
   relevantCheckins.forEach((c) => {
-    const ts = new Date(c.streakDate + "T00:00:00Z").getTime();
+    // Standardize to YYYY-MM-DD then to UTC timestamp
+    const dateStr = c.streakDate.split("T")[0];
+    const ts = new Date(dateStr + "T00:00:00Z").getTime();
     const idxInRange = Math.floor((ts - start.getTime()) / dayMs);
 
     if (ts >= start.getTime() && ts <= end.getTime()) {
@@ -462,7 +464,8 @@ export function getGridDataForRange(
 
     if (c.freezeDates && c.freezeDates.length > 0) {
       c.freezeDates.forEach((fd) => {
-        const fts = new Date(fd + "T00:00:00Z").getTime();
+        const fDateStr = fd.split("T")[0];
+        const fts = new Date(fDateStr + "T00:00:00Z").getTime();
         if (fts >= start.getTime() && fts <= end.getTime()) {
           if (dayMap.get(fts) !== "active") {
             dayMap.set(fts, "frozen");
@@ -472,7 +475,8 @@ export function getGridDataForRange(
     }
 
     if (lastCheckinDate !== null) {
-      const lastTs = new Date(lastCheckinDate + "T00:00:00Z").getTime();
+      const lastDateStr = lastCheckinDate.split("T")[0];
+      const lastTs = new Date(lastDateStr + "T00:00:00Z").getTime();
       let gapTs = ts - dayMs;
       while (gapTs > lastTs) {
         if (!dayMap.has(gapTs)) {

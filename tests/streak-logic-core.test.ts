@@ -107,7 +107,7 @@ describe("Core Streak Logic - Gap and Freeze Handling", () => {
     );
     assert.strictEqual(res.nextCheckin.streakSequence, 11);
     assert.strictEqual(res.nextCheckin.freezesClaimed, 1);
-    assert.deepStrictEqual(res.nextCheckin.freezeDates, ["2026-03-02"]);
+    assert.deepStrictEqual(res.nextCheckin.freezeDates, ["2026-03-02T00:00:00Z"]);
     assert.strictEqual(res.nextInventory.balance, 4);
     assert.strictEqual(res.nextInventory.action, "spend");
   });
