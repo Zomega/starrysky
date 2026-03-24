@@ -1,20 +1,21 @@
 console.log("mockup.js loading...");
-import i18next, { initI18n } from "./labeler/src/i18n.js";
+import i18next, { initI18n } from "./service/dist/core/i18n.js";
 import {
   isMilestone,
   getGridDataForRange,
   getDaysInMonth,
   getMilestonesForPolicy,
-} from "./labeler/src/streak-logic.js";
-import {
-  MOCK_POLICIES,
-  MOCK_CHECKINS,
-  MOCK_INVENTORY,
-} from "./labeler/src/mock-data.js";
+} from "./service/dist/core/streak-logic.js";
+import { MockDataProvider } from "./service/dist/core/providers/mock.js";
+import { AppViewDataProvider } from "./service/dist/core/providers/appview.js";
+import { PdsDataProvider } from "./service/dist/core/providers/pds.js";
 
 // Handle JSConfetti conditionally for Node test environments
 let JSConfetti;
-if (typeof window !== "undefined") {
+const isTest =
+  typeof process !== "undefined" && process.env.NODE_ENV === "test";
+
+if (typeof window !== "undefined" && !isTest) {
   try {
     const module = await import("js-confetti");
     JSConfetti = module.default;
@@ -26,7 +27,9 @@ if (typeof window !== "undefined") {
   }
 } else {
   JSConfetti = class {
-    addConfetti() {}
+    addConfetti() {
+      console.log("Mock confetti added");
+    }
   };
 }
 
@@ -34,23 +37,48 @@ const jsConfetti = new JSConfetti();
 let lastCelebratedCount = -1;
 let lastRenderedColCount = -1;
 
-function getPolicyForSubject(subject) {
-  const policy = MOCK_POLICIES[subject];
-  if (!policy) {
-    throw new Error(i18next.t("error.no_policy", { subject }));
-  }
-  return policy;
-}
-
-const subjects = [...new Set(MOCK_CHECKINS.map((c) => c.subject))];
-
-if (subjects.length === 0) {
-  throw new Error(i18next.t("error.no_subjects"));
-}
-
-let primarySubject = subjects[0];
+export let dataProvider = new MockDataProvider();
+export let currentActor = "did:example:alice";
+export let primarySubject = "Wordle";
+export let subjects = [];
+export let streakDetail = null;
 let currentYear = 2026;
 let currentMonth = 1; // February
+
+export async function loadInitialData() {
+  try {
+    const summary = await dataProvider.getProfileStreaks(currentActor);
+    subjects = summary.map((s) => s.subject);
+    if (!subjects.includes(primarySubject) && subjects.length > 0) {
+      primarySubject = subjects[0];
+    }
+    await loadDetailData();
+  } catch (e) {
+    console.error("Failed to load initial data:", e);
+    throw e;
+  }
+}
+
+export async function loadDetailData() {
+  try {
+    // Use a placeholder policy URI for now
+    const policyUri =
+      "at://policy/" + primarySubject.toLowerCase().replace(" ", "-");
+    streakDetail = await dataProvider.getStreakDetail(
+      currentActor,
+      primarySubject,
+      policyUri,
+    );
+  } catch (e) {
+    console.error("Failed to load detail data:", e);
+    throw e;
+  }
+}
+
+function getPolicyForSubject(subject) {
+  if (streakDetail && primarySubject === subject) return streakDetail.policy;
+  return streakDetail?.policy;
+}
 
 function cloneTemplate(id) {
   const tpl = document.getElementById(id);
@@ -68,7 +96,7 @@ function createStar(index) {
 /**
  * Renders the background pill elements for a streak grid.
  */
-function renderStreakBackgroundPills(
+export function renderStreakBackgroundPills(
   allMarked,
   brokenDays,
   cols,
@@ -106,7 +134,7 @@ function renderStreakBackgroundPills(
 /**
  * Renders the foreground pill elements (active, frozen, broken) for a streak grid.
  */
-function renderStreakForegroundPills(
+export function renderStreakForegroundPills(
   activeDays,
   freezeDays,
   brokenDays,
@@ -136,7 +164,8 @@ function renderStreakForegroundPills(
         activeDays.includes(foregroundMarked[endIdx + 1])) ||
         (type === "frozen" &&
           freezeDays.includes(foregroundMarked[endIdx + 1])) ||
-        (type === "broken" && brokenDays.includes(foregroundMarked[endIdx + 1])))
+        (type === "broken" &&
+          brokenDays.includes(foregroundMarked[endIdx + 1])))
     ) {
       endIdx++;
     }
@@ -170,7 +199,7 @@ function renderStreakForegroundPills(
   return elements;
 }
 
-function renderStreakGrid(
+export function renderStreakGrid(
   days,
   activeDays,
   freezeDays,
@@ -248,7 +277,7 @@ function renderStreakGrid(
   return container;
 }
 
-function renderStreakRow(
+export function renderStreakRow(
   name,
   days,
   activeDays,
@@ -278,7 +307,7 @@ function renderStreakRow(
   return row;
 }
 
-function renderCalendarCard() {
+export function renderCalendarCard() {
   const calCard = cloneTemplate("tpl-calendar-card");
   calCard.querySelector(".streak-association").textContent = primarySubject;
   calCard.querySelector("h2:not(.streak-association)").textContent =
@@ -332,7 +361,7 @@ function renderCalendarCard() {
     perfectWeekIndices,
     customIconMap,
   } = getGridDataForRange(
-    MOCK_CHECKINS,
+    streakDetail.checkins,
     primarySubject,
     startDate.toISOString().split("T")[0],
     endDate.toISOString().split("T")[0],
@@ -385,29 +414,29 @@ function renderCalendarCard() {
 
   calCard
     .querySelector(".nav-arrow:first-child")
-    .addEventListener("click", () => {
+    .addEventListener("click", async () => {
       currentMonth--;
       if (currentMonth < 0) {
         currentMonth = 11;
         currentYear--;
       }
-      refreshUI();
+      await refreshUI(true);
     });
   calCard
     .querySelector(".nav-arrow:last-child")
-    .addEventListener("click", () => {
+    .addEventListener("click", async () => {
       currentMonth++;
       if (currentMonth > 11) {
         currentMonth = 0;
         currentYear++;
       }
-      refreshUI();
+      await refreshUI(true);
     });
 
   return calCard;
 }
 
-function renderGoalCard(count) {
+export function renderGoalCard(count) {
   const goalCard = cloneTemplate("tpl-goal-card");
   const policy = getPolicyForSubject(primarySubject);
   goalCard.querySelector(".streak-association").textContent = primarySubject;
@@ -470,12 +499,12 @@ function renderGoalCard(count) {
   return goalCard;
 }
 
-function getColCountForWidth(width) {
+export function getColCountForWidth(width) {
   const cols = Math.floor(width / 55);
   return Math.max(4, Math.min(cols, 14));
 }
 
-function renderMultiStreakCard(width) {
+export async function renderMultiStreakCard(width) {
   const multiCard = cloneTemplate("tpl-multi-streak-card");
   multiCard.id = "multi-streak-card"; // Add ID for easier selection in tests
   multiCard.querySelector("h2").textContent = i18next.t("ui.multiple_streaks");
@@ -528,46 +557,43 @@ function renderMultiStreakCard(width) {
     monthLabelsEl.appendChild(mSpan);
   });
 
-  const uniqueSubjectsInMocks = [
-    ...new Set(MOCK_CHECKINS.map((c) => c.subject)),
-  ];
-  uniqueSubjectsInMocks.forEach((sub) => {
-    const subCheckins = MOCK_CHECKINS.filter((c) => c.subject === sub);
-    const subLatest = subCheckins.sort(
-      (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
-    )[0];
+  const summaries = await dataProvider.getProfileStreaks(currentActor);
+  for (const s of summaries) {
+    let gridData;
+    if (s.subject === primarySubject && streakDetail) {
+      gridData = streakDetail.gridData;
+    } else {
+      // For demo purposes, we'll just show an empty grid for others or fetch them
+      // In a real app we might fetch all details or summary might include grid data
+      gridData = {
+        activeIndices: [],
+        frozenIndices: [],
+        graceIndices: [],
+        brokenIndices: [],
+        perfectWeekIndices: [],
+        customIconMap: new Map(),
+      };
+    }
 
-    const startStr = windowStart.toISOString().split("T")[0];
-    const endStr = windowEnd.toISOString().split("T")[0];
-
-    const {
-      activeIndices,
-      frozenIndices,
-      graceIndices,
-      brokenIndices,
-      perfectWeekIndices,
-      customIconMap,
-    } = getGridDataForRange(MOCK_CHECKINS, sub, startStr, endStr);
     multiGrid.appendChild(
       renderStreakRow(
-        sub,
+        s.subject,
         windowDaysNum,
-        activeIndices,
-        frozenIndices,
-        graceIndices,
-        brokenIndices,
-        perfectWeekIndices,
-        customIconMap,
-        subLatest ? subLatest.streakSequence : 0,
+        gridData.activeIndices,
+        gridData.frozenIndices,
+        gridData.graceIndices,
+        gridData.brokenIndices,
+        gridData.perfectWeekIndices,
+        gridData.customIconMap,
+        s.streakSequence,
       ),
     );
-  });
+  }
   return multiCard;
 }
 
 /**
  * Creates and attaches the animation logic to a fancy card.
- * Exported separately to allow binding listeners in Node environments if needed.
  */
 export function attachAnimationLogic(fancyCard, display, displayCount) {
   let isAnimating = false;
@@ -601,13 +627,9 @@ export function attachAnimationLogic(fancyCard, display, displayCount) {
   return startAnimation;
 }
 
-function renderFancyStreakCard(countOverride = null) {
-  const primaryCheckins = MOCK_CHECKINS.filter(
-    (c) => c.subject === primarySubject,
-  );
-  const latestCheckin = primaryCheckins.sort(
-    (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
-  )[0];
+export function renderFancyStreakCard(countOverride = null) {
+  if (!streakDetail) return null;
+  const latestCheckin = streakDetail.checkins[streakDetail.checkins.length - 1];
   const count =
     countOverride !== null
       ? countOverride
@@ -633,9 +655,10 @@ function renderFancyStreakCard(countOverride = null) {
   return fancyCard;
 }
 
-function renderFreezeCard() {
-  const policy = getPolicyForSubject(primarySubject);
-  const inventory = MOCK_INVENTORY[primarySubject] || { balance: 0 };
+export function renderFreezeCard() {
+  if (!streakDetail) return null;
+  const policy = streakDetail.policy;
+  const inventory = streakDetail.inventory;
   const freezeCard = cloneTemplate("tpl-freeze-card");
   freezeCard.querySelector(".freeze-count-text").textContent = i18next.t(
     "streak.inventory_balance",
@@ -650,7 +673,7 @@ function renderFreezeCard() {
 
 const multiCardObserver =
   typeof ResizeObserver !== "undefined"
-    ? new ResizeObserver((entries) => {
+    ? new ResizeObserver(async (entries) => {
         for (const entry of entries) {
           const width = entry.contentRect.width;
           const newColCount = getColCountForWidth(width);
@@ -659,7 +682,7 @@ const multiCardObserver =
               "Card width changed enough to require re-render:",
               newColCount,
             );
-            const newCard = renderMultiStreakCard(width);
+            const newCard = await renderMultiStreakCard(width);
             entry.target.replaceWith(newCard);
             multiCardObserver.observe(newCard);
           }
@@ -667,33 +690,35 @@ const multiCardObserver =
       })
     : null;
 
-export function refreshUI(full = true) {
+export async function refreshUI(full = true) {
   const cardContainer = document.querySelector(".card-container");
   if (!cardContainer) return;
-  const inputEl = document.querySelector("input");
-  const overrideCount = inputEl ? parseInt(inputEl.value) : 0;
-
-  const overrideLabel = document.querySelector(".controls-card label span");
-  if (overrideLabel) overrideLabel.textContent = i18next.t("ui.override_label");
 
   if (full) {
-    cardContainer.innerHTML = "";
     try {
-      cardContainer.appendChild(renderFancyStreakCard(overrideCount));
+      await loadDetailData();
+      if (!streakDetail) return;
+      const latestCheckin =
+        streakDetail.checkins[streakDetail.checkins.length - 1];
+      const count = latestCheckin ? latestCheckin.streakSequence : 0;
+
+      cardContainer.innerHTML = "";
+      const fancy = renderFancyStreakCard();
+      if (fancy) cardContainer.appendChild(fancy);
       const fr = renderFreezeCard();
       if (fr) cardContainer.appendChild(fr);
       cardContainer.appendChild(renderCalendarCard());
 
       const initialWidth = cardContainer.offsetWidth || 500;
-      const multi = renderMultiStreakCard(initialWidth);
+      const multi = await renderMultiStreakCard(initialWidth);
       cardContainer.appendChild(multi);
       if (multiCardObserver) {
         multiCardObserver.disconnect();
         multiCardObserver.observe(multi);
       }
 
-      cardContainer.appendChild(renderGoalCard(overrideCount));
-      if (overrideCount > 0) celebrateGoal(overrideCount);
+      cardContainer.appendChild(renderGoalCard(count));
+      if (count > 0) celebrateGoal(count);
     } catch (e) {
       console.error("UI Render Error:", e);
       cardContainer.innerHTML = `<div class="card" style="border-color: var(--orange-500); color: var(--orange-500); padding: 2rem; font-weight: bold; text-align: center;">${i18next.t("error.render_failed", { message: e.message })}</div>`;
@@ -709,21 +734,11 @@ export function renderTabs() {
     const btn = document.createElement("button");
     btn.className = `tab-button ${sub === primarySubject ? "active" : ""}`;
     btn.textContent = sub;
-    btn.addEventListener("click", (e) => {
-      // Use currentTarget to ensure we always get the button even if nested elements exist
-      const clickedSub = e.currentTarget.textContent;
-      primarySubject = clickedSub;
-      const subCheckins = MOCK_CHECKINS.filter(
-        (c) => c.subject === primarySubject,
-      );
-      const subLatest = subCheckins.sort(
-        (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
-      )[0];
-      const inputEl = document.querySelector("input");
-      if (inputEl && subLatest) inputEl.value = subLatest.streakSequence;
+    btn.addEventListener("click", async (e) => {
+      primarySubject = e.currentTarget.textContent;
       lastCelebratedCount = -1;
       renderTabs();
-      refreshUI(true);
+      await refreshUI(true);
     });
     tabsContainer.appendChild(btn);
   });
@@ -737,22 +752,7 @@ export function getPrimarySubject() {
   return primarySubject;
 }
 
-// Export internal rendering functions for testing
-export {
-  renderStreakBackgroundPills,
-  renderStreakForegroundPills,
-  renderStreakGrid,
-  renderStreakRow,
-  renderCalendarCard,
-  renderGoalCard,
-  renderFancyStreakCard,
-  renderMultiStreakCard,
-  renderFreezeCard,
-  getColCountForWidth,
-  getVariantClasses,
-};
-
-function getVariantClasses(count) {
+export function getVariantClasses(count) {
   if (count === 1) return ["single"];
   if (count === 2) return ["double"];
   const classes = [];
@@ -773,24 +773,64 @@ function celebrateGoal(count) {
   }
 }
 
-if (typeof document !== "undefined") {
-  window.addEventListener("DOMContentLoaded", async () => {
-    console.log("DOMContentLoaded - Initializing Mockup");
+export async function init() {
+  console.log("Initializing Mockup...");
+  try {
     await initI18n();
+    await loadInitialData();
 
-    const inputEl = document.querySelector("input");
+    const inputEl = document.querySelector("input[type='number']");
     if (inputEl) {
-      const subCheckins = MOCK_CHECKINS.filter(
-        (c) => c.subject === primarySubject,
-      );
-      const latestCheckin = subCheckins.sort(
-        (a, b) => new Date(b.streakDate) - new Date(a.streakDate),
-      )[0];
+      const latestCheckin =
+        streakDetail?.checkins?.[streakDetail.checkins.length - 1];
       inputEl.value = latestCheckin ? latestCheckin.streakSequence : 0;
+      inputEl.addEventListener("input", () => refreshUI(true));
     }
+
+    const providerSelect = document.getElementById("provider-select");
+    if (providerSelect) {
+      providerSelect.addEventListener("change", async (e) => {
+        const val = e.target.value;
+        if (val === "mock") dataProvider = new MockDataProvider();
+        else if (val === "appview") dataProvider = new AppViewDataProvider();
+        else if (val === "pds") dataProvider = new PdsDataProvider();
+        await loadInitialData();
+        renderTabs();
+        await refreshUI(true);
+      });
+    }
+
+    const actorInput = document.getElementById("actor-input");
+    if (actorInput) {
+      actorInput.addEventListener("change", async (e) => {
+        currentActor = e.target.value;
+        await loadInitialData();
+        renderTabs();
+        await refreshUI(true);
+      });
+    }
+
     renderTabs();
-    refreshUI(true);
-    if (inputEl) inputEl.addEventListener("input", () => refreshUI(true));
-  });
+    await refreshUI(true);
+    console.log("Mockup Initialized Successfully");
+  } catch (e) {
+    console.error("Mockup Initialization Failed:", e);
+    const container = document.querySelector(".card-container");
+    if (container) {
+      container.innerHTML = `<div class="card" style="border-color: var(--orange-500); color: var(--orange-500); padding: 2rem; font-weight: bold; text-align: center;">Initialization Failed: ${e.message}</div>`;
+    }
+  }
+}
+
+if (typeof document !== "undefined") {
+  if (document.readyState === "loading") {
+    window.addEventListener("DOMContentLoaded", init);
+  } else {
+    // If we're already loaded, run it unless we're in a test 
+    // where we want to manually trigger initialization.
+    if (!isTest) {
+      init();
+    }
+  }
 }
 console.log("mockup.js loaded.");

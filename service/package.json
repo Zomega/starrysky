@@ -1,0 +1,29 @@
+{
+  "name": "starrysky-service",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start:combined": "tsx src/main.ts",
+    "start:appview": "tsx src/appview/main.ts",
+    "start:labeler": "tsx src/labeler/main.ts",
+    "sync:shared": "tsc src/core/streak-logic.ts src/core/i18n.ts src/core/data-provider.ts src/core/providers/mock.ts src/core/providers/appview.ts src/core/providers/pds.ts --target es2022 --module esnext --moduleResolution node --outDir dist/core --declaration false --sourceMap false --removeComments"
+  },
+  "dependencies": {
+    "@atproto/api": "^0.19.0",
+    "@atproto/crypto": "^0.4.5",
+    "@skyware/jetstream": "^0.2.5",
+    "better-sqlite3": "^12.8.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "password-prompt": "^1.1.3",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

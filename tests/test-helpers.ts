@@ -53,3 +53,18 @@ export function getDaysLater(dateStr, days) {
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().split("T")[0];
 }
+
+export function waitForEvent(target: any, eventName: string): Promise<void> {
+  return new Promise((resolve) => {
+    target.addEventListener(eventName, () => resolve(), { once: true });
+  });
+}
+
+export async function poll(predicate: () => boolean, timeout = 2000) {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    if (predicate()) return;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  throw new Error("Timeout waiting for condition");
+}

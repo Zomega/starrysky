@@ -5,14 +5,14 @@ import {
   getIntervalIndex,
   calculateClaimInventory,
   validateCheckinSequence,
-} from "../labeler/src/streak-logic.js";
+} from "../service/src/core/streak-logic.ts";
 import {
   basePolicy,
   createLastCheckin,
   createLastInventory,
   getNextDay,
   getDaysLater,
-} from "./test-helpers.js";
+} from "./test-helpers.ts";
 
 describe("Core Streak Logic - Interval Indexing", () => {
   test("daily gap precision", () => {

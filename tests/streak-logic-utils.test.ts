@@ -5,8 +5,8 @@ import {
   getGridDataForRange,
   getDaysInMonth,
   getMilestonesForPolicy,
-} from "../labeler/src/streak-logic.js";
-import { MOCK_POLICIES, MOCK_CHECKINS } from "../labeler/src/mock-data.js";
+} from "../service/src/core/streak-logic.ts";
+import { MOCK_POLICIES, MOCK_CHECKINS } from "../service/src/mock-data.js";
 
 describe("Streak Logic Utilities", () => {
   describe("isMilestone", () => {

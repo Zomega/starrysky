@@ -21,11 +21,13 @@ export async function initI18n(lng = "en") {
     if (!fs.existsSync(filePath)) {
       filePath = path.resolve("..", "locales", lng, "translation.json");
     }
+    // @ts-ignore
     if (!fs.existsSync(filePath)) {
       // Last resort fallback for certain test runners
       filePath = path.resolve("labeler", "locales", lng, "translation.json");
     }
 
+    // @ts-ignore
     translation = JSON.parse(fs.readFileSync(filePath, "utf8"));
   } else if (
     typeof window !== "undefined" &&

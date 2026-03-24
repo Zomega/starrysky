@@ -604,3 +604,30 @@ p {
   font-size: 1rem;
   margin-top: var(--gap-xl);
 }
+
+.controls-card {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.control-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: bold;
+  font-size: 0.875rem;
+}
+.control-group select,
+.control-group input {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--gray-200);
+  background: var(--bg-card);
+  color: inherit;
+  font-family: inherit;
+}

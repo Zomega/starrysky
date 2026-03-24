@@ -20,7 +20,11 @@
       {
         "imports": {
           "i18next": "https://esm.sh/i18next@23.10.0",
-          "js-confetti": "https://esm.sh/js-confetti@0.12.0"
+          "js-confetti": "https://esm.sh/js-confetti@0.12.0",
+          "./service/dist/core/data-provider.js": "./service/dist/core/data-provider.js",
+          "./service/dist/core/providers/mock.js": "./service/dist/core/providers/mock.js",
+          "./service/dist/core/providers/appview.js": "./service/dist/core/providers/appview.js",
+          "./service/dist/core/providers/pds.js": "./service/dist/core/providers/pds.js"
         }
       }
     </script>
@@ -50,10 +54,30 @@
 
       <div class="container">
         <div class="card controls-card">
-          <label>
-            <span>Streak count override:</span>
-            <input type="number" max="1000" min="0" />
-          </label>
+          <div class="control-group">
+            <label>
+              <span class="material-symbols-outlined">database</span>
+              <span>Data Source</span>
+            </label>
+            <select id="provider-select">
+              <option value="mock">Mock Data</option>
+              <option value="appview">App View (Local)</option>
+              <option value="pds">PDS (Direct)</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>
+              <span class="material-symbols-outlined">person</span>
+              <span>Actor DID</span>
+            </label>
+            <input type="text" id="actor-input" value="did:example:alice" />
+          </div>
+          <div class="control-group" style="display: none">
+            <label>
+              <span>Override:</span>
+              <input type="number" max="1000" min="0" />
+            </label>
+          </div>
         </div>
         <div class="card-container">
           <!-- JS will inject templates here -->

@@ -5,7 +5,7 @@ import {
   calculateNextCheckin,
   getIntervalIndex,
   validateCheckinSequence,
-} from "../labeler/src/streak-logic.js";
+} from "../service/src/core/streak-logic.ts";
 
 const minDate = new Date("2020-01-01").getTime();
 const maxDate = new Date("2030-01-01").getTime();

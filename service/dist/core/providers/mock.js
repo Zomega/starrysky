@@ -1,5 +1,8 @@
-import { generateCheckinHistory } from "./streak-logic.js";
-
+import { StreakDataProvider } from "../data-provider.js";
+import {
+  generateCheckinHistory,
+  getGridDataForRange,
+} from "../streak-logic.js";
 export const MOCK_POLICIES = {
   Wordle: {
     name: "Wordle",
@@ -73,7 +76,6 @@ export const MOCK_POLICIES = {
     subject: "Chess",
   },
 };
-
 const wordleData = generateCheckinHistory(
   MOCK_POLICIES.Wordle,
   "2025-01-01",
@@ -84,14 +86,12 @@ const wordleData = generateCheckinHistory(
     "2026-02-27": ["verified"],
   },
 );
-
 const tiledWordsData = generateCheckinHistory(
   MOCK_POLICIES["Tiled Words"],
   "2026-02-01",
   "2026-02-28",
   ["2026-02-25"],
 );
-
 const connectionsHistoryJan = generateCheckinHistory(
   MOCK_POLICIES.Connections,
   "2026-01-01",
@@ -104,7 +104,6 @@ const connectionsHistoryFeb = generateCheckinHistory(
   "2026-02-28",
   ["2026-02-20", "2026-02-21"],
 );
-
 const crosswordData = generateCheckinHistory(
   MOCK_POLICIES.Crossword,
   "2026-02-15",
@@ -114,14 +113,12 @@ const crosswordData = generateCheckinHistory(
     "2026-02-28": ["fitness_center"],
   },
 );
-
 const chessData = generateCheckinHistory(
   MOCK_POLICIES.Chess,
   "2026-02-01",
   "2026-02-28",
   ["2026-02-10", "2026-02-11", "2026-02-22", "2026-02-23"],
 );
-
 export const MOCK_CHECKINS = [
   ...wordleData.checkins,
   ...tiledWordsData.checkins,
@@ -130,7 +127,6 @@ export const MOCK_CHECKINS = [
   ...crosswordData.checkins,
   ...chessData.checkins,
 ];
-
 export const MOCK_INVENTORY = {
   Wordle: wordleData.inventory,
   "Tiled Words": tiledWordsData.inventory,
@@ -138,3 +134,49 @@ export const MOCK_INVENTORY = {
   Crossword: crosswordData.inventory,
   Chess: chessData.inventory,
 };
+export class MockDataProvider extends StreakDataProvider {
+  async getProfileStreaks(actor) {
+    const subjects = Object.keys(MOCK_POLICIES);
+    return subjects.map((subject) => {
+      const checkins = MOCK_CHECKINS.filter((c) => c.subject === subject);
+      const latestCheckin = checkins[checkins.length - 1];
+      const inventory = MOCK_INVENTORY[subject];
+      return {
+        subject,
+        streakSequence: latestCheckin ? latestCheckin.streakSequence : 0,
+        lastCheckinDate: latestCheckin ? latestCheckin.streakDate : null,
+        balance: inventory ? inventory.balance : 0,
+      };
+    });
+  }
+  async getStreakDetail(actor, subject, policyUri) {
+    const policy = MOCK_POLICIES[subject];
+    const checkins = MOCK_CHECKINS.filter((c) => c.subject === subject);
+    const inventory = MOCK_INVENTORY[subject];
+    const end = new Date("2026-02-28");
+    const start = new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const gridData = getGridDataForRange(
+      checkins,
+      subject,
+      start.toISOString().split("T")[0],
+      end.toISOString().split("T")[0],
+    );
+    return {
+      policy,
+      checkins,
+      inventory,
+      gridData,
+    };
+  }
+  async getStreakStatus(actor, subject) {
+    const checkins = MOCK_CHECKINS.filter((c) => c.subject === subject);
+    const latestCheckin = checkins[checkins.length - 1];
+    const inventory = MOCK_INVENTORY[subject];
+    return {
+      subject,
+      streakSequence: latestCheckin ? latestCheckin.streakSequence : 0,
+      balance: inventory ? inventory.balance : 0,
+      lastCheckinDate: latestCheckin ? latestCheckin.streakDate : null,
+    };
+  }
+}
